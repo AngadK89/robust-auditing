@@ -6,13 +6,14 @@ import pandas as pd
 from robust_auditing.fairness import (
     AuditConfig,
     BoldAdapter,
+    FairnessMetric,
     HolisticBiasAdapter,
     LikelihoodBiasMetric,
     MetricResult,
-    axis_likelihood_bias,
     build_arg_parser,
     default_output_dir,
-    group_summary,
+    records_to_frame,
+    run_audit,
 )
 
 
@@ -101,9 +102,8 @@ def test_metric_result_schema_serializes_expected_fields():
         axis="gender_and_sex",
         bucket="gender",
         descriptor="woman",
-        nll=1.25,
-        token_count=4,
-        perplexity=math.exp(1.25),
+        metric_name="example_classifier",
+        scores={"probability": 0.75, "label": "biased"},
         metadata={"source_id": 7},
     )
 
@@ -114,20 +114,40 @@ def test_metric_result_schema_serializes_expected_fields():
         "axis": "gender_and_sex",
         "bucket": "gender",
         "descriptor": "woman",
-        "nll": 1.25,
-        "token_count": 4,
-        "perplexity": math.exp(1.25),
-        "source_id": 7,
+        "metric_name": "example_classifier",
+        "scores": {"probability": 0.75, "label": "biased"},
+        "metadata": {"source_id": 7},
     }
+
+
+def test_records_to_frame_flattens_arbitrary_metric_scores_for_summaries():
+    frame = records_to_frame(
+        [
+            MetricResult(
+                text="A",
+                axis="race",
+                bucket="a",
+                descriptor="x",
+                metric_name="toxicity_classifier",
+                scores={"toxicity_probability": 0.2, "label": "low"},
+            )
+        ]
+    )
+
+    assert frame.iloc[0]["toxicity_probability"] == 0.2
+    assert frame.iloc[0]["label"] == "low"
+    assert frame.iloc[0]["metric_name"] == "toxicity_classifier"
 
 
 def test_likelihood_bias_metric_exposes_name():
     metric = LikelihoodBiasMetric(model=None, tokenizer=None)
 
     assert metric.name == "likelihood_bias"
+    assert metric.requires_lm is True
 
 
-def test_group_summary_aggregates_axis_bucket_scores():
+def test_likelihood_group_summary_aggregates_axis_bucket_scores():
+    metric = LikelihoodBiasMetric(model=None, tokenizer=None)
     scores = pd.DataFrame(
         [
             {"axis": "race", "bucket": "a", "nll": 1.0, "perplexity": 2.0},
@@ -136,7 +156,7 @@ def test_group_summary_aggregates_axis_bucket_scores():
         ]
     )
 
-    summary = group_summary(scores, group_by=["axis", "bucket"])
+    summary = metric.group_summary(scores, group_by=["axis", "bucket"])
 
     race_a = summary[(summary["axis"] == "race") & (summary["bucket"] == "a")].iloc[0]
     assert race_a["count"] == 2
@@ -146,7 +166,8 @@ def test_group_summary_aggregates_axis_bucket_scores():
     assert race_a["std_perplexity"] == math.sqrt(8.0)
 
 
-def test_axis_likelihood_bias_uses_pairwise_mann_whitney_effects():
+def test_likelihood_axis_summary_uses_pairwise_mann_whitney_effects():
+    metric = LikelihoodBiasMetric(model=None, tokenizer=None)
     scores = pd.DataFrame(
         [
             {"axis": "race", "descriptor": "a", "nll": 1.0},
@@ -159,7 +180,7 @@ def test_axis_likelihood_bias_uses_pairwise_mann_whitney_effects():
         ]
     )
 
-    result = axis_likelihood_bias(scores, min_samples_per_descriptor=2)
+    result = metric.axis_summary(scores, min_samples_per_descriptor=2)
 
     race = result[result["axis"] == "race"].iloc[0]
     assert race["descriptor_count"] == 3
@@ -167,6 +188,76 @@ def test_axis_likelihood_bias_uses_pairwise_mann_whitney_effects():
     assert race["mean_pairwise_auc_distance"] == 1.0
     assert race["max_pairwise_auc_distance"] == 1.0
     assert "gender" not in set(result["axis"])
+
+
+def test_base_metric_summaries_handle_generic_numeric_scores():
+    metric = FairnessMetric(name="classifier_probe")
+    scores = pd.DataFrame(
+        [
+            {"axis": "race", "bucket": "a", "toxicity_probability": 0.2, "label": "low"},
+            {"axis": "race", "bucket": "a", "toxicity_probability": 0.6, "label": "high"},
+            {"axis": "race", "bucket": "b", "toxicity_probability": 0.8, "label": "high"},
+        ]
+    )
+
+    summary = metric.group_summary(scores, group_by=["axis", "bucket"])
+
+    race_a = summary[(summary["axis"] == "race") & (summary["bucket"] == "a")].iloc[0]
+    assert race_a["count"] == 2
+    assert race_a["mean_toxicity_probability"] == 0.4
+    assert "mean_label" not in summary.columns
+    assert metric.axis_summary(scores).empty
+
+
+class ConstantMetric(FairnessMetric):
+    name = "constant_metric"
+    requires_lm = False
+
+    def score(self, examples):
+        return [
+            MetricResult(
+                text=example.text,
+                axis=example.axis,
+                bucket=example.bucket,
+                descriptor=example.descriptor,
+                metric_name=self.name,
+                scores={"score": 0.5},
+                metadata=dict(example.metadata),
+            )
+            for example in examples
+        ]
+
+
+def test_run_audit_accepts_metric_plugin_without_lm_resources(tmp_path):
+    frame = pd.DataFrame(
+        [
+            {
+                "sentence": "A person arrived.",
+                "axis": "gender_and_sex",
+                "bucket": "gender",
+                "descriptor": "woman",
+            }
+        ]
+    )
+    config = AuditConfig(
+        audits=("holistic_bias",),
+        output_root=tmp_path,
+        metric="constant_metric",
+    )
+
+    output_dir = run_audit(
+        "holistic_bias",
+        config,
+        metric=ConstantMetric(),
+        dataset=frame,
+    )
+
+    per_example = (output_dir / "per_example_scores.jsonl").read_text()
+    assert '"metric_name": "constant_metric"' in per_example
+    assert '"score": 0.5' in per_example
+    assert (output_dir / "group_summary.csv").exists()
+    assert (output_dir / "axis_summary.csv").exists()
+    assert not (output_dir / "axis_likelihood_bias.csv").exists()
 
 
 def test_cli_defaults_selection_and_output_dirs():
