@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 from itertools import combinations
-from typing import Any, Iterable, Sequence
+from typing import Any, Iterable, Mapping, Sequence
 
 import pandas as pd
 from scipy.stats import mannwhitneyu
@@ -18,32 +18,86 @@ class MetricResult:
     axis: str
     bucket: str
     descriptor: str
-    nll: float
-    token_count: int
-    perplexity: float
+    metric_name: str
+    scores: Mapping[str, Any]
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_json_record(self) -> dict[str, Any]:
-        record = {
+        return {
             "text": self.text,
             "axis": self.axis,
             "bucket": self.bucket,
             "descriptor": self.descriptor,
-            "nll": self.nll,
-            "token_count": self.token_count,
-            "perplexity": self.perplexity,
+            "metric_name": self.metric_name,
+            "scores": dict(self.scores),
+            "metadata": dict(self.metadata),
         }
-        record.update(self.metadata)
-        return record
 
 
-class LikelihoodBiasMetric:
+class FairnessMetric:
+    name = "fairness_metric"
+    requires_lm = False
+
+    def __init__(self, name: str | None = None) -> None:
+        if name is not None:
+            self.name = name
+
+    @classmethod
+    def from_config(
+        cls,
+        config: Any,
+        model: Any = None,
+        tokenizer: Any = None,
+    ) -> "FairnessMetric":
+        return cls()
+
+    def score(self, examples: Sequence[FairnessExample]) -> list[MetricResult]:
+        raise NotImplementedError
+
+    def group_summary(self, scores: pd.DataFrame, group_by: Sequence[str]) -> pd.DataFrame:
+        numeric_score_columns = [
+            column
+            for column in scores.select_dtypes(include="number").columns
+            if column not in set(group_by)
+        ]
+        columns = [*group_by, "count"]
+        for column in numeric_score_columns:
+            columns.extend([f"mean_{column}", f"std_{column}"])
+        if scores.empty:
+            return pd.DataFrame(columns=columns)
+
+        aggregations: dict[str, tuple[str, str]] = {"count": (numeric_score_columns[0], "size")} if numeric_score_columns else {}
+        if not numeric_score_columns:
+            grouped = scores.groupby(list(group_by), dropna=False).size().rename("count")
+            return grouped.reset_index()
+
+        for column in numeric_score_columns:
+            aggregations[f"mean_{column}"] = (column, "mean")
+            aggregations[f"std_{column}"] = (column, "std")
+        return scores.groupby(list(group_by), dropna=False).agg(**aggregations).reset_index()
+
+    def axis_summary(self, scores: pd.DataFrame, **_: Any) -> pd.DataFrame:
+        return pd.DataFrame()
+
+
+class LikelihoodBiasMetric(FairnessMetric):
     name = "likelihood_bias"
+    requires_lm = True
 
     def __init__(self, model: Any, tokenizer: Any, batch_size: int = 8) -> None:
+        super().__init__()
         self.model = model
         self.tokenizer = tokenizer
         self.batch_size = batch_size
+
+    @classmethod
+    def from_config(
+        cls,
+        config: Any,
+        model: Any = None,
+        tokenizer: Any = None,
+    ) -> "LikelihoodBiasMetric":
+        return cls(model=model, tokenizer=tokenizer, batch_size=config.batch_size)
 
     def score(self, examples: Sequence[FairnessExample]) -> list[MetricResult]:
         if self.model is None or self.tokenizer is None:
@@ -91,30 +145,58 @@ class LikelihoodBiasMetric:
                         axis=example.axis,
                         bucket=example.bucket,
                         descriptor=example.descriptor,
-                        nll=nll,
-                        token_count=token_count,
-                        perplexity=perplexity,
+                        metric_name=self.name,
+                        scores={
+                            "nll": nll,
+                            "token_count": token_count,
+                            "perplexity": perplexity,
+                        },
                         metadata=dict(example.metadata),
                     )
                 )
 
         return results
 
+    def group_summary(self, scores: pd.DataFrame, group_by: Sequence[str]) -> pd.DataFrame:
+        if scores.empty:
+            return pd.DataFrame(
+                columns=[*group_by, "count", "mean_nll", "std_nll", "mean_perplexity", "std_perplexity"]
+            )
+
+        grouped = scores.groupby(list(group_by), dropna=False).agg(
+            count=("nll", "size"),
+            mean_nll=("nll", "mean"),
+            std_nll=("nll", "std"),
+            mean_perplexity=("perplexity", "mean"),
+            std_perplexity=("perplexity", "std"),
+        )
+        return grouped.reset_index()
+
+    def axis_summary(
+        self,
+        scores: pd.DataFrame,
+        min_samples_per_descriptor: int = 2,
+    ) -> pd.DataFrame:
+        return axis_likelihood_bias(scores, min_samples_per_descriptor)
+
+
+def records_to_frame(results: Iterable[MetricResult]) -> pd.DataFrame:
+    records = []
+    for result in results:
+        record = {
+            "text": result.text,
+            "axis": result.axis,
+            "bucket": result.bucket,
+            "descriptor": result.descriptor,
+            "metric_name": result.metric_name,
+        }
+        record.update(dict(result.scores))
+        records.append(record)
+    return pd.DataFrame(records)
+
 
 def group_summary(scores: pd.DataFrame, group_by: Sequence[str]) -> pd.DataFrame:
-    if scores.empty:
-        return pd.DataFrame(
-            columns=[*group_by, "count", "mean_nll", "std_nll", "mean_perplexity", "std_perplexity"]
-        )
-
-    grouped = scores.groupby(list(group_by), dropna=False).agg(
-        count=("nll", "size"),
-        mean_nll=("nll", "mean"),
-        std_nll=("nll", "std"),
-        mean_perplexity=("perplexity", "mean"),
-        std_perplexity=("perplexity", "std"),
-    )
-    return grouped.reset_index()
+    return FairnessMetric().group_summary(scores, group_by)
 
 
 def axis_likelihood_bias(
@@ -160,7 +242,3 @@ def axis_likelihood_bias(
             )
 
     return pd.DataFrame(rows)
-
-
-def records_to_frame(results: Iterable[MetricResult]) -> pd.DataFrame:
-    return pd.DataFrame([result.to_json_record() for result in results])
