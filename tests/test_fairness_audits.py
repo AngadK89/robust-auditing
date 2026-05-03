@@ -20,7 +20,7 @@ def test_holistic_bias_adapter_normalizes_required_fields():
     frame = pd.DataFrame(
         [
             {
-                "sentence": "A person arrived.",
+                "text": "A person arrived.",
                 "axis": "gender_and_sex",
                 "bucket": "gender",
                 "descriptor": "woman",
@@ -69,7 +69,7 @@ def test_bold_adapter_explodes_prompts_and_preserves_source_metadata():
 
 
 def test_adapters_report_missing_required_columns():
-    frame = pd.DataFrame([{"sentence": "hello", "axis": "race"}])
+    frame = pd.DataFrame([{"text": "hello", "axis": "race"}])
 
     try:
         HolisticBiasAdapter().validate_columns(frame)

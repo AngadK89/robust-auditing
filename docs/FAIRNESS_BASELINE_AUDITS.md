@@ -24,7 +24,7 @@ descriptor
 metadata
 ```
 
-For HolisticBias, `text=sentence`, `axis=axis`, `bucket=bucket`, and
+For HolisticBias, `text=text`, `axis=axis`, `bucket=bucket`, and
 `descriptor=descriptor`.
 
 For BOLD, `text=prompt`, `axis=domain`, `bucket=category`, and

@@ -60,13 +60,13 @@ class HolisticBiasAdapter(BaseAdapter):
     name = "HolisticBias"
     dataset_id = "fairnlp/holistic-bias"
     data_files = ["sentences.csv"]
-    required_columns = ("sentence", "axis", "bucket", "descriptor")
+    required_columns = ("text", "axis", "bucket", "descriptor")
 
     def normalize(self, dataset: Any) -> Iterable[FairnessExample]:
         self.validate_columns(dataset)
         for index, row in self._iter_rows(dataset):
             yield FairnessExample(
-                text=str(row["sentence"]),
+                text=str(row["text"]),
                 axis=str(row["axis"]),
                 bucket=str(row["bucket"]),
                 descriptor=str(row["descriptor"]),
