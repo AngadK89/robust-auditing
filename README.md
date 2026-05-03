@@ -144,3 +144,59 @@ try again:
 git submodule update --init --recursive third_party/ProFLingo third_party/trap
 scripts/fingerprints/apply_submodule_patches.sh
 ```
+
+## Verify Fingerprints
+
+After building the OLMo2-1B-Instruct fingerprints, replay them against the two
+models of interest:
+
+```text
+allenai/OLMo-2-0425-1B
+allenai/OLMo-2-0425-1B-Instruct
+```
+
+Run:
+
+```bash
+python scripts/verification/verify_olmo2_fingerprints.py
+```
+
+This does not construct new fingerprints. It checks the existing
+OLMo2-1B-Instruct reference fingerprints as follows:
+
+- ProFLingo: loads the optimized suffixes, joins them back to
+  `third_party/ProFLingo/questions.csv`, sends each fingerprint prompt to each
+  model of interest, and reports target-at-first-place match rates. The default
+  automated proxy is a normalized prefix match; each row also records exact,
+  prefix, and contains-match diagnostics. Use `--proflingo-match exact` for a
+  stricter check.
+- TRAP: loads `suffixes.csv` or the copied JSON suffix logs, sends each
+  adversarial prompt to each model of interest, extracts the targeted digit
+  string from each response, and reports retrieval rates.
+- LLMmap: sends the LLMmap query set to each model of interest, computes the
+  candidate template/classification vector, and compares it to the template
+  database. A match means the nearest top-1 template is
+  `allenai/OLMo-2-0425-1B-Instruct`.
+
+Default output:
+
+```text
+artifacts/verification/olmo2_fingerprint_verification.json
+```
+
+Useful faster smoke-test commands:
+
+```bash
+python scripts/verification/verify_olmo2_fingerprints.py --limit 5 --skip-llmmap
+python scripts/verification/verify_olmo2_fingerprints.py --skip-adversarial --llmmap-num-prompt-confs 2
+```
+
+Useful overrides:
+
+```bash
+python scripts/verification/verify_olmo2_fingerprints.py \
+  --models allenai/OLMo-2-0425-1B allenai/OLMo-2-0425-1B-Instruct \
+  --proflingo-match exact \
+  --max-new-tokens 64 \
+  --dtype bf16
+```
