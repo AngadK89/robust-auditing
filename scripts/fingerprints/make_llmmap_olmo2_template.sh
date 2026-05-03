@@ -10,6 +10,8 @@ NUM_PROMPT_CONFS="${NUM_PROMPT_CONFS:-100}"
 LLMMAP_MODEL_PATH="${LLMMAP_MODEL_PATH:-./data/pretrained_models/default}"
 PROMPT_CONF_PATH="${PROMPT_CONF_PATH:-./confs/prompt_configurations}"
 
+"${ROOT_DIR}/scripts/fingerprints/apply_submodule_patches.sh"
+
 mkdir -p "${ARTIFACT_DIR}"
 
 cd "${LLMMAP_DIR}"

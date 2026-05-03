@@ -1,16 +1,5 @@
-From 8e56a5bc6237655a0c45fb536bff9f6783d2b4b7 Mon Sep 17 00:00:00 2001
-From: AngadK89 <93425810+AngadK89@users.noreply.github.com>
-Date: Sat, 2 May 2026 20:27:42 +0100
-Subject: [PATCH] Add OLMo2 chat-template fingerprint support
-
----
- attack.py         | 45 +++++++++++++++++++++++++++++++++-------
- copyright_test.py |  4 ++--
- proflingo.py      | 53 +++++++++++++++++++++++++++++------------------
- 3 files changed, 73 insertions(+), 29 deletions(-)
-
 diff --git a/attack.py b/attack.py
-index 10baa48..42addc7 100644
+index 10baa48..d78d45e 100644
 --- a/attack.py
 +++ b/attack.py
 @@ -80,7 +80,13 @@ def get_loss_from_ids(models, executor, system_ids, prompt_ids, prompt_replace_l
@@ -46,6 +35,15 @@ index 10baa48..42addc7 100644
                  #print(f"{loss=} {tokenizer.decode(old_id)} -> {tokenizer.decode(prompt_ids[prompt_index])}")
                  new_prompt = prompt_ids.clone()
                  new_loss = loss
+@@ -158,7 +164,7 @@ def cal_replacable_ids(model, system_ids_lst, prompt_ids, repl_ids):
+     
+     grad = grad / grad.norm(dim=-1, keepdim=True)
+     
+-    ref_grad = torch.full_like(grad, -np.infty)
++    ref_grad = torch.full_like(grad, -np.inf)
+     ref_grad[:, repl_ids] = -grad[:, repl_ids]
+ 
+     prompt_replace_lst = ref_grad.topk(top_k, dim=1).indices[:,torch.randperm(top_k, device=model.device)[:select_b]]
 @@ -168,10 +174,35 @@ def cal_replacable_ids(model, system_ids_lst, prompt_ids, repl_ids):
  def assemble_ids(tokenizer, template, question, target):  
      def find_ids(fst_ids, sed_ids):
@@ -83,7 +81,7 @@ index 10baa48..42addc7 100644
      
      template.messages = []
  
-@@ -228,11 +259,12 @@ def generate_suffix(models, tokenizer, template_lst, question, target, num_epoch
+@@ -228,16 +259,17 @@ def generate_suffix(models, tokenizer, template_lst, question, target, num_epoch
      torch.manual_seed(seed)
  
      repl_ids = get_replacable_ids(tokenizer, filter_word, device=model.device)
@@ -97,7 +95,14 @@ index 10baa48..42addc7 100644
              filter_word not in decoded_str):
              break
  
-@@ -258,7 +290,7 @@ def generate_suffix(models, tokenizer, template_lst, question, target, num_epoch
+-    previous_loss = np.infty
+-    best_loss = np.infty
++    previous_loss = np.inf
++    best_loss = np.inf
+     best_prompt_id = prompt_ids.clone()
+     system_ids_lst = []
+     for template in template_lst:
+@@ -258,13 +290,13 @@ def generate_suffix(models, tokenizer, template_lst, question, target, num_epoch
  
          prompt_replace_lst = cal_replacable_ids(model, system_ids_lst, prompt_ids, repl_ids)
  
@@ -106,8 +111,19 @@ index 10baa48..42addc7 100644
  
          if (loss < best_loss):
              best_loss = loss
-@@ -275,4 +307,3 @@ def generate_suffix(models, tokenizer, template_lst, question, target, num_epoch
-             print(f"Answer: |{gen_str}|")
+             best_prompt_id = prompt_ids.clone()
+ 
+-        print(f"{it} Loss: {previous_loss} -> {loss} Best: {best_loss} Cal: {round(time.perf_counter()-cal_time, 2)}s")
++        print(f"{it} Loss: {previous_loss} -> {loss} Best: {best_loss} Cal: {round(time.perf_counter()-cal_time, 2)}s", flush=True)
+         previous_loss = loss
+ 
+         for system_ids in system_ids_lst:
+@@ -272,7 +304,6 @@ def generate_suffix(models, tokenizer, template_lst, question, target, num_epoch
+             user_ids = torch.tensor(user_ids_lst[0], device=model.device)
+ 
+             gen_str = tokenizer.decode(generate_output(model, tokenizer, user_ids, 8))
+-            print(f"Answer: |{gen_str}|")
++            print(f"Answer: |{gen_str}|", flush=True)
  
      return tokenizer.decode(best_prompt_id)
 -
@@ -133,10 +149,10 @@ index 94753af..6ae1b84 100644
      print(f"All: {questions_counter} Success: {success_counter} ASR: {success_counter / questions_counter}")
 -
 diff --git a/proflingo.py b/proflingo.py
-index be1fb68..a3d9a96 100644
+index be1fb68..680e081 100644
 --- a/proflingo.py
 +++ b/proflingo.py
-@@ -1,15 +1,26 @@
+@@ -1,6 +1,7 @@
 -import sys
 -import time
 -import torch
@@ -147,15 +163,14 @@ index be1fb68..a3d9a96 100644
  import copy
  import pandas as pd
  import numpy as np
- from transformers import AutoModelForCausalLM, AutoTokenizer
--from fastchat.conversation import get_conv_template
--from attack import generate_output, generate_suffix
--
+@@ -8,10 +9,20 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
+ from fastchat.conversation import get_conv_template
+ from attack import generate_output, generate_suffix
+ 
 -#os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
 -#Uncomment this if OOM
-+from fastchat.conversation import get_conv_template
-+from attack import generate_output, generate_suffix
-+
+-
+-def load_model_and_tokenizer(model_path):
 +#os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
 +#Uncomment this if OOM
 +
@@ -168,18 +183,19 @@ index be1fb68..a3d9a96 100644
 +        "Yi-6B-Chat",
 +    ]
 +    return any(model_name in model_path for model_name in tokenizer_template_models)
- 
- def load_model_and_tokenizer(model_path):
++
++def load_model_and_tokenizer(model_path):
      torch.manual_seed(0)
+     model = AutoModelForCausalLM.from_pretrained(
+         model_path,
 @@ -65,20 +76,22 @@ if __name__ == "__main__":
      model_path = sys.argv[1]
      advsamples_path = sys.argv[2]
  
 -    dataset_path = "./questions.csv"
-+    dataset_path = sys.argv[3] if len(sys.argv) > 3 else os.environ.get("QUESTIONS_PATH", "./questions.csv")
- 
-     init_str_rng = np.random.default_rng(seed)
- 
+-
+-    init_str_rng = np.random.default_rng(seed)
+-
 -    templates = [get_conv_template("alpaca"), get_conv_template("zero_shot")]
 -    templates[0].sep = ' '
 -    templates[1].sep = "\n"
@@ -190,6 +206,10 @@ index be1fb68..a3d9a96 100644
 -    models, tokenizer = load_model_and_tokenizer(model_path)
 -    tokenizer.pad_token_id = tokenizer.unk_token_id
 -    print(f"load: {time.perf_counter() - load_time}s")
++    dataset_path = sys.argv[3] if len(sys.argv) > 3 else os.environ.get("QUESTIONS_PATH", "./questions.csv")
++
++    init_str_rng = np.random.default_rng(seed)
++
 +    test_dataset = pd.read_csv(dataset_path).values.tolist()
 +
 +    load_time = time.perf_counter()
@@ -201,17 +221,20 @@ index be1fb68..a3d9a96 100644
 +        templates[0].sep = ' '
 +        templates[1].sep = "\n"
 +        tokenizer.pad_token_id = tokenizer.unk_token_id
-+    print(f"load: {time.perf_counter() - load_time}s")
++    print(f"load: {time.perf_counter() - load_time}s", flush=True)
  
      for i, data in enumerate(test_dataset):
          init_seed = init_str_rng.integers(100000)
-@@ -98,4 +111,4 @@ if __name__ == "__main__":
-         print(f"\nFinal Prompt: |{new_prompt}|")
-         for template in templates:
-             print(f"\nFinal Answer: |{complete_conversation(models[0], tokenizer, template, new_prompt)}|")
+@@ -95,7 +108,7 @@ if __name__ == "__main__":
+ 
+         new_prompt = prompt_suffix + test_goal
+ 
+-        print(f"\nFinal Prompt: |{new_prompt}|")
+-        for template in templates:
+-            print(f"\nFinal Answer: |{complete_conversation(models[0], tokenizer, template, new_prompt)}|")
 -        print()
 \ No newline at end of file
-+        print()
--- 
-2.33.0
-
++        print(f"\nFinal Prompt: |{new_prompt}|", flush=True)
++        for template in templates:
++            print(f"\nFinal Answer: |{complete_conversation(models[0], tokenizer, template, new_prompt)}|", flush=True)
++        print(flush=True)

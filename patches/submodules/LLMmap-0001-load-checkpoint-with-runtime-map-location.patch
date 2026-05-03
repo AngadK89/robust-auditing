@@ -1,0 +1,20 @@
+diff --git a/LLMmap/inference.py b/LLMmap/inference.py
+index b322f37..d610caa 100644
+--- a/LLMmap/inference.py
++++ b/LLMmap/inference.py
+@@ -62,7 +62,7 @@ def load_LLMmap(model_home_dir, device='cpu', **kargs):
+         raise RuntimeError(f"Failed to initialize InferenceModelLLMmap: {e}")
+ 
+     try:
+-        net.load_state_dict(torch.load(model_path))
++        net.load_state_dict(torch.load(model_path, map_location=device))
+     except Exception as e:
+         raise RuntimeError(f"Failed to load model state from {model_path}: {e}")
+ 
+@@ -226,4 +226,4 @@ class InferenceModel_open(InferenceModel):
+         write_templates(templates_path, self.templates_map)
+     
+         print(f"Updated file saved to: {templates_path}")
+-        print(f"Backup saved to: {backup_path}")
+\ No newline at end of file
++        print(f"Backup saved to: {backup_path}")

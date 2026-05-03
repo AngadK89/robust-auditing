@@ -22,6 +22,11 @@ apply_patch_if_needed() {
 }
 
 apply_patch_if_needed \
+  "${ROOT_DIR}/third_party/LLMmap" \
+  "${ROOT_DIR}/patches/submodules/LLMmap-0001-load-checkpoint-with-runtime-map-location.patch" \
+  "LLMmap"
+
+apply_patch_if_needed \
   "${ROOT_DIR}/third_party/ProFLingo" \
   "${ROOT_DIR}/patches/submodules/ProFLingo-0001-add-olmo2-chat-template-fingerprint-support.patch" \
   "ProFLingo"
