@@ -11,3 +11,7 @@ The project also evaluates whether black-box fingerprinting methods such as **LL
 ## Guiding Principle
 
 Keep audit, non-audit, capability, and fingerprinting evaluations clearly separated so the experiment can measure whether fixed audits and model fingerprints miss meaningful behavioural changes.
+
+## Codex Correction Notes
+
+Use conventional commit format for commit messages, with a short task prefix followed by a colon and description, such as `task: description`.
