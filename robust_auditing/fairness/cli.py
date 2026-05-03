@@ -16,9 +16,8 @@ from robust_auditing.fairness.adapters import (
     HolisticBiasAdapter,
 )
 from robust_auditing.fairness.metrics import (
+    FairnessMetric,
     LikelihoodBiasMetric,
-    axis_likelihood_bias,
-    group_summary,
     records_to_frame,
 )
 
@@ -26,6 +25,9 @@ DEFAULT_MODEL_ID = "allenai/OLMo-2-0425-1B-Instruct"
 AUDIT_ADAPTERS: dict[str, type[BaseAdapter]] = {
     "holistic_bias": HolisticBiasAdapter,
     "bold": BoldAdapter,
+}
+METRIC_FACTORIES = {
+    "likelihood_bias": LikelihoodBiasMetric,
 }
 
 
@@ -49,6 +51,8 @@ class AuditConfig:
         if unknown:
             raise ValueError(f"Unknown audit(s): {', '.join(unknown)}")
         group_by = tuple(_parse_csv(args.group_by))
+        if args.metric not in METRIC_FACTORIES:
+            raise ValueError(f"Unknown metric: {args.metric}")
         return cls(
             audits=audits,
             model_id=args.model_id,
@@ -59,6 +63,7 @@ class AuditConfig:
             dtype=args.dtype,
             device_map=args.device_map,
             seed=args.seed,
+            metric=args.metric,
         )
 
     def output_dir_for(self, audit: str) -> Path:
@@ -83,13 +88,14 @@ def default_output_dir(audit: str, model_id: str) -> Path:
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run likelihood-based fairness baseline audits.")
+    parser = argparse.ArgumentParser(description="Run fairness baseline audits.")
     parser.add_argument("--audits", default="holistic_bias,bold", help="Comma-separated audits to run.")
     parser.add_argument("--model-id", default=DEFAULT_MODEL_ID)
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--max-examples", type=int, default=None)
     parser.add_argument("--group-by", default="axis,bucket")
     parser.add_argument("--output-root", default="artifacts/fairness")
+    parser.add_argument("--metric", choices=tuple(sorted(METRIC_FACTORIES)), default="likelihood_bias")
     parser.add_argument("--dtype", choices=("auto", "bf16", "fp16", "fp32"), default="auto")
     parser.add_argument("--device-map", choices=("auto", "cpu"), default="auto")
     parser.add_argument("--seed", type=int, default=0)
@@ -146,11 +152,17 @@ def load_model_and_tokenizer(model_id: str, dtype: str, device_map: str) -> tupl
     return model, tokenizer
 
 
+def build_metric(config: AuditConfig, model: Any = None, tokenizer: Any = None) -> FairnessMetric:
+    metric_factory = METRIC_FACTORIES[config.metric]
+    return metric_factory.from_config(config, model=model, tokenizer=tokenizer)
+
+
 def run_audit(
     audit: str,
     config: AuditConfig,
-    model: Any,
-    tokenizer: Any,
+    model: Any = None,
+    tokenizer: Any = None,
+    metric: FairnessMetric | None = None,
     dataset: Any | None = None,
 ) -> Path:
     adapter = AUDIT_ADAPTERS[audit]()
@@ -162,7 +174,8 @@ def run_audit(
     output_dir = config.output_dir_for(audit)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    metric = LikelihoodBiasMetric(model=model, tokenizer=tokenizer, batch_size=config.batch_size)
+    if metric is None:
+        metric = build_metric(config, model=model, tokenizer=tokenizer)
     results = metric.score(examples)
     scores = records_to_frame(results)
 
@@ -171,8 +184,11 @@ def run_audit(
         for result in results:
             handle.write(json.dumps(result.to_json_record(), ensure_ascii=False) + "\n")
 
-    group_summary(scores, config.group_by).to_csv(output_dir / "group_summary.csv", index=False)
-    axis_likelihood_bias(scores).to_csv(output_dir / "axis_likelihood_bias.csv", index=False)
+    axis_summary = metric.axis_summary(scores)
+    metric.group_summary(scores, config.group_by).to_csv(output_dir / "group_summary.csv", index=False)
+    axis_summary.to_csv(output_dir / "axis_summary.csv", index=False)
+    if metric.name == "likelihood_bias":
+        axis_summary.to_csv(output_dir / "axis_likelihood_bias.csv", index=False)
     _write_metadata(output_dir, audit, adapter, config, examples, results)
     return output_dir
 
@@ -211,8 +227,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     config = AuditConfig.from_args(args)
     set_seed(config.seed)
-    model, tokenizer = load_model_and_tokenizer(config.model_id, config.dtype, config.device_map)
+    model = None
+    tokenizer = None
+    if getattr(METRIC_FACTORIES[config.metric], "requires_lm", False):
+        model, tokenizer = load_model_and_tokenizer(config.model_id, config.dtype, config.device_map)
     for audit in config.audits:
-        output_dir = run_audit(audit, config, model, tokenizer)
+        metric = build_metric(config, model=model, tokenizer=tokenizer)
+        output_dir = run_audit(audit, config, metric=metric)
         print(f"Wrote {audit} artifacts to {output_dir}")
     return 0

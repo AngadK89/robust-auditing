@@ -14,7 +14,7 @@ Two audits are available:
 - `bold`: loads `AmazonScience/bold` and explodes each row's `prompts` list so
   every prompt is scored as a separate example.
 
-Both adapters normalize source rows into:
+Both adapters normalize source rows into the metric input shape:
 
 ```text
 text
@@ -119,7 +119,7 @@ Each audit directory contains:
 ```text
 per_example_scores.jsonl
 group_summary.csv
-axis_likelihood_bias.csv
+axis_summary.csv
 metadata.json
 ```
 
@@ -130,17 +130,29 @@ text
 axis
 bucket
 descriptor
+metric_name
+scores
+metadata
+```
+
+For the built-in `likelihood_bias` metric, `scores` contains:
+
+```text
 nll
 token_count
 perplexity
-metadata fields
 ```
 
-`group_summary.csv` aggregates token-normalized negative log-likelihood and
+`group_summary.csv` is produced by the selected metric. For
+`likelihood_bias`, it aggregates token-normalized negative log-likelihood and
 perplexity by the configured grouping. The default grouping is `axis,bucket`.
 
-`axis_likelihood_bias.csv` reports descriptor-level pairwise Mann-Whitney
-U/AUC-distance summaries within each axis where there are enough samples.
+`axis_summary.csv` is also produced by the selected metric. For
+`likelihood_bias`, it reports descriptor-level pairwise Mann-Whitney
+U/AUC-distance summaries within each axis where there are enough samples. Other
+metrics can leave this file empty or write their own axis-level summary shape.
+For backward compatibility, `likelihood_bias` also writes the same table to
+`axis_likelihood_bias.csv`.
 
 `metadata.json` records the audit name, dataset, model, metric, runtime options,
 and scored example counts.
@@ -154,6 +166,7 @@ and scored example counts.
 --max-examples 32
 --group-by axis,bucket
 --output-root artifacts/fairness
+--metric likelihood_bias
 --dtype auto|bf16|fp16|fp32
 --device-map auto|cpu
 --seed 0
@@ -192,6 +205,73 @@ descriptor distributions for that axis.
 
 HolisticBias and BOLD are reported separately. There is no combined fairness
 score in this baseline.
+
+## Adding A Metric
+
+The fairness package separates dataset normalization from metric scoring. New
+metrics consume `FairnessExample` objects with:
+
+```text
+text
+axis
+bucket
+descriptor
+metadata
+```
+
+They emit generic `MetricResult` objects with:
+
+```text
+metric_name
+scores
+metadata
+```
+
+The `scores` dictionary can hold any metric-specific values, such as a
+classifier probability, a regression score, a rule-based flag, or an LLM judge
+rating. It is not required to contain likelihood fields.
+
+To add a metric:
+
+1. Subclass `FairnessMetric` in `robust_auditing/fairness/metrics.py` or a new
+   module.
+2. Set `name`.
+3. Set `requires_lm = True` only if the metric needs the Hugging Face causal LM
+   and tokenizer loaded by the CLI.
+4. Implement `score(examples)`.
+5. Optionally override `group_summary(scores, group_by)` and
+   `axis_summary(scores)`.
+6. Optionally override `from_config(config, model=None, tokenizer=None)` if the
+   metric needs custom construction, such as loading a classifier, regression
+   model, or LLM judge client.
+7. Register the class in `METRIC_FACTORIES` in
+   `robust_auditing/fairness/cli.py`.
+
+Minimal example:
+
+```python
+class ConstantProbeMetric(FairnessMetric):
+    name = "constant_probe"
+    requires_lm = False
+
+    def score(self, examples):
+        return [
+            MetricResult(
+                text=example.text,
+                axis=example.axis,
+                bucket=example.bucket,
+                descriptor=example.descriptor,
+                metric_name=self.name,
+                scores={"score": 0.5},
+                metadata=dict(example.metadata),
+            )
+            for example in examples
+        ]
+```
+
+The base `FairnessMetric.group_summary()` automatically summarizes numeric score
+columns by the configured grouping. Override it when a metric needs a custom
+report, such as thresholded classification rates or calibration diagnostics.
 
 ## Troubleshooting
 
