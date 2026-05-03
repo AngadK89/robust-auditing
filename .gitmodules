@@ -1,0 +1,9 @@
+[submodule "third_party/ProFLingo"]
+	path = third_party/ProFLingo
+	url = https://github.com/hengvt/ProFLingo
+[submodule "third_party/LLMmap"]
+	path = third_party/LLMmap
+	url = https://github.com/pasquini-dario/LLMmap
+[submodule "third_party/trap"]
+	path = third_party/trap
+	url = https://github.com/parameterlab/trap

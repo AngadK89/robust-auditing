@@ -1,0 +1,35 @@
+--extra-index-url https://download.pytorch.org/whl/cu124
+
+# Shared OLMo2-capable environment for fingerprint construction.
+# This intentionally overrides older upstream pins from ProFLingo/TRAP:
+# allenai/OLMo-2-0425-1B-Instruct requires transformers >= 4.48.
+torch>=2.7,<3
+transformers>=4.51.3,<5
+accelerate>=1.8
+tokenizers>=0.21
+huggingface-hub>=0.30
+safetensors>=0.5
+sentencepiece>=0.2
+protobuf>=5
+
+# Common data/scientific stack used by the three fingerprinting repos.
+numpy>=2.0,<3
+pandas>=2.2
+scipy>=1.14
+tqdm>=4.67
+datasets>=2.18
+
+# ProFLingo / TRAP support.
+fschat>=0.2.36
+ml-collections>=0.1.1
+absl-py>=1.4
+peft>=0.10
+trl>=0.8
+bitsandbytes>=0.43
+
+# LLMmap support.
+pytorch-lightning>=2.5
+torchmetrics>=1.7
+prompt_toolkit>=3.0.51
+openai>=1.97
+anthropic>=0.59

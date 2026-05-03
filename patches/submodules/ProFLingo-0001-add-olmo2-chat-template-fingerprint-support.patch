@@ -1,0 +1,217 @@
+From 8e56a5bc6237655a0c45fb536bff9f6783d2b4b7 Mon Sep 17 00:00:00 2001
+From: AngadK89 <93425810+AngadK89@users.noreply.github.com>
+Date: Sat, 2 May 2026 20:27:42 +0100
+Subject: [PATCH] Add OLMo2 chat-template fingerprint support
+
+---
+ attack.py         | 45 +++++++++++++++++++++++++++++++++-------
+ copyright_test.py |  4 ++--
+ proflingo.py      | 53 +++++++++++++++++++++++++++++------------------
+ 3 files changed, 73 insertions(+), 29 deletions(-)
+
+diff --git a/attack.py b/attack.py
+index 10baa48..42addc7 100644
+--- a/attack.py
++++ b/attack.py
+@@ -80,7 +80,13 @@ def get_loss_from_ids(models, executor, system_ids, prompt_ids, prompt_replace_l
+     return losses
+ 
+ 
+-def select_prompt(models, tokenizer, executor,system_ids_lst, prompt_ids, prompt_replace_lst, filter_word, previous_loss):  
++def _roundtrip_ids(tokenizer, decoded_str, use_tokenizer_template=False):
++    if use_tokenizer_template:
++        return tokenizer.encode(decoded_str, add_special_tokens=False)
++    return tokenizer.encode(decoded_str)[2:]
++
++
++def select_prompt(models, tokenizer, executor,system_ids_lst, prompt_ids, prompt_replace_lst, filter_word, previous_loss, use_tokenizer_template=False):  
+ 
+     filtered_lst = prompt_replace_lst.tolist().copy()
+ 
+@@ -89,7 +95,7 @@ def select_prompt(models, tokenizer, executor,system_ids_lst, prompt_ids, prompt
+             cand_prompt_ids = prompt_ids.tolist()
+             cand_prompt_ids[i] = repl_token
+             decoded_str = tokenizer.decode(cand_prompt_ids)
+-            if (cand_prompt_ids != tokenizer.encode(decoded_str)[2:] or filter_word in decoded_str.lower()):
++            if (cand_prompt_ids != _roundtrip_ids(tokenizer, decoded_str, use_tokenizer_template) or filter_word in decoded_str.lower()):
+                 filtered_lst[i].remove(repl_token)
+ 
+     index_lst = [(i, j) for i, sublst in enumerate(filtered_lst) for j, _ in enumerate(sublst)]
+@@ -115,7 +121,7 @@ def select_prompt(models, tokenizer, executor,system_ids_lst, prompt_ids, prompt
+             for system_ids in system_ids_lst:
+                 loss += get_loss_from_ids(models, executor, system_ids, prompt_ids).item()
+ 
+-            if ((loss < new_loss or new_prompt == None) and (prompt_ids.tolist() == tokenizer.encode(tokenizer.decode(prompt_ids))[2:])):
++            if ((loss < new_loss or new_prompt == None) and (prompt_ids.tolist() == _roundtrip_ids(tokenizer, tokenizer.decode(prompt_ids), use_tokenizer_template))):
+                 #print(f"{loss=} {tokenizer.decode(old_id)} -> {tokenizer.decode(prompt_ids[prompt_index])}")
+                 new_prompt = prompt_ids.clone()
+                 new_loss = loss
+@@ -168,10 +174,35 @@ def cal_replacable_ids(model, system_ids_lst, prompt_ids, repl_ids):
+ def assemble_ids(tokenizer, template, question, target):  
+     def find_ids(fst_ids, sed_ids):
+         length = len(sed_ids)
+-        for index in range(len(input_ids) - length + 1):
++        for index in range(len(fst_ids) - length + 1):
+             if fst_ids[index:index+length] == sed_ids:
+                 return index
+         raise ValueError("Cannot find ids")
++
++    def encode_no_special(text):
++        return tokenizer.encode(text, add_special_tokens=False)
++
++    if (template == None):
++        sentinel_base = "<|proflingo_optimized_suffix_sentinel|>"
++        sentinel = sentinel_base
++        sentinel_index = 0
++        while sentinel in question or sentinel in target:
++            sentinel_index += 1
++            sentinel = f"{sentinel_base}_{sentinel_index}"
++
++        full_prompt = tokenizer.apply_chat_template(
++            [{"role": "user", "content": sentinel + question}],
++            tokenize=False,
++            add_generation_prompt=True,
++        )
++        sentinel_pos = full_prompt.find(sentinel)
++        if (sentinel_pos == -1 or full_prompt.find(sentinel, sentinel_pos + len(sentinel)) != -1):
++            raise ValueError("Cannot uniquely locate optimized suffix sentinel")
++
++        begin_ids = encode_no_special(full_prompt[:sentinel_pos])
++        middle_ids = encode_no_special(full_prompt[sentinel_pos + len(sentinel):])
++        target_ids = encode_no_special(target)
++        return begin_ids, middle_ids, target_ids
+     
+     template.messages = []
+ 
+@@ -228,11 +259,12 @@ def generate_suffix(models, tokenizer, template_lst, question, target, num_epoch
+     torch.manual_seed(seed)
+ 
+     repl_ids = get_replacable_ids(tokenizer, filter_word, device=model.device)
++    use_tokenizer_template = any(template == None for template in template_lst)
+ 
+     while True:
+         prompt_ids = repl_ids[torch.randperm(len(repl_ids), device=model.device)[:token_nums]]
+         decoded_str = tokenizer.decode(prompt_ids)
+-        if (prompt_ids.tolist() == tokenizer.encode(decoded_str)[2:] and 
++        if (prompt_ids.tolist() == _roundtrip_ids(tokenizer, decoded_str, use_tokenizer_template) and 
+             filter_word not in decoded_str):
+             break
+ 
+@@ -258,7 +290,7 @@ def generate_suffix(models, tokenizer, template_lst, question, target, num_epoch
+ 
+         prompt_replace_lst = cal_replacable_ids(model, system_ids_lst, prompt_ids, repl_ids)
+ 
+-        prompt_ids, loss = select_prompt(models, tokenizer,executor, system_ids_lst, prompt_ids, prompt_replace_lst, filter_word, previous_loss)
++        prompt_ids, loss = select_prompt(models, tokenizer,executor, system_ids_lst, prompt_ids, prompt_replace_lst, filter_word, previous_loss, use_tokenizer_template)
+ 
+         if (loss < best_loss):
+             best_loss = loss
+@@ -275,4 +307,3 @@ def generate_suffix(models, tokenizer, template_lst, question, target, num_epoch
+             print(f"Answer: |{gen_str}|")
+ 
+     return tokenizer.decode(best_prompt_id)
+-
+diff --git a/copyright_test.py b/copyright_test.py
+index 94753af..6ae1b84 100644
+--- a/copyright_test.py
++++ b/copyright_test.py
+@@ -164,9 +164,10 @@ if __name__ == "__main__":
+     advsamples_path = sys.argv[1]
+     model_path = sys.argv[2]
+ 
+-    dataset_path = r"/home/ubuntu/questions.csv"
++    dataset_path = sys.argv[3] if len(sys.argv) > 3 else "./questions.csv"
+ 
+     tokenizer_template_lst = ["OLMo-7B-Instruct",
++                                "OLMo-2",
+                                 "Mistral-7B-Instruct-v0.1",
+                                 "Hermes-2-Pro-Mistral-7B",
+                                 "Yi-6B-Chat",]
+@@ -186,4 +187,3 @@ if __name__ == "__main__":
+     questions_counter, success_counter = fingerprint_test(model, tokenizer, dataset_path, advsamples_path, model_path = model_path, template = template)
+ 
+     print(f"All: {questions_counter} Success: {success_counter} ASR: {success_counter / questions_counter}")
+-
+diff --git a/proflingo.py b/proflingo.py
+index be1fb68..a3d9a96 100644
+--- a/proflingo.py
++++ b/proflingo.py
+@@ -1,15 +1,26 @@
+-import sys
+-import time
+-import torch
++import sys
++import os
++import time
++import torch
+ import copy
+ import pandas as pd
+ import numpy as np
+ from transformers import AutoModelForCausalLM, AutoTokenizer
+-from fastchat.conversation import get_conv_template
+-from attack import generate_output, generate_suffix
+-
+-#os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
+-#Uncomment this if OOM
++from fastchat.conversation import get_conv_template
++from attack import generate_output, generate_suffix
++
++#os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
++#Uncomment this if OOM
++
++def uses_tokenizer_chat_template(model_path, tokenizer=None):
++    tokenizer_template_models = [
++        "OLMo-2",
++        "OLMo-7B-Instruct",
++        "Mistral-7B-Instruct-v0.1",
++        "Hermes-2-Pro-Mistral-7B",
++        "Yi-6B-Chat",
++    ]
++    return any(model_name in model_path for model_name in tokenizer_template_models)
+ 
+ def load_model_and_tokenizer(model_path):
+     torch.manual_seed(0)
+@@ -65,20 +76,22 @@ if __name__ == "__main__":
+     model_path = sys.argv[1]
+     advsamples_path = sys.argv[2]
+ 
+-    dataset_path = "./questions.csv"
++    dataset_path = sys.argv[3] if len(sys.argv) > 3 else os.environ.get("QUESTIONS_PATH", "./questions.csv")
+ 
+     init_str_rng = np.random.default_rng(seed)
+ 
+-    templates = [get_conv_template("alpaca"), get_conv_template("zero_shot")]
+-    templates[0].sep = ' '
+-    templates[1].sep = "\n"
+-
+-    test_dataset = pd.read_csv(dataset_path).values.tolist()
+-
+-    load_time = time.perf_counter()
+-    models, tokenizer = load_model_and_tokenizer(model_path)
+-    tokenizer.pad_token_id = tokenizer.unk_token_id
+-    print(f"load: {time.perf_counter() - load_time}s")
++    test_dataset = pd.read_csv(dataset_path).values.tolist()
++
++    load_time = time.perf_counter()
++    models, tokenizer = load_model_and_tokenizer(model_path)
++    if uses_tokenizer_chat_template(model_path, tokenizer):
++        templates = [None]
++    else:
++        templates = [get_conv_template("alpaca"), get_conv_template("zero_shot")]
++        templates[0].sep = ' '
++        templates[1].sep = "\n"
++        tokenizer.pad_token_id = tokenizer.unk_token_id
++    print(f"load: {time.perf_counter() - load_time}s")
+ 
+     for i, data in enumerate(test_dataset):
+         init_seed = init_str_rng.integers(100000)
+@@ -98,4 +111,4 @@ if __name__ == "__main__":
+         print(f"\nFinal Prompt: |{new_prompt}|")
+         for template in templates:
+             print(f"\nFinal Answer: |{complete_conversation(models[0], tokenizer, template, new_prompt)}|")
+-        print()
+\ No newline at end of file
++        print()
+-- 
+2.33.0
+
