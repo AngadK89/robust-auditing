@@ -3,9 +3,12 @@ import json
 from pathlib import Path
 
 from scripts.verification.verify_olmo2_fingerprints import (
+    ALL_FINGERPRINTS,
+    build_parser,
     extract_first_digit_string,
     load_proflingo_cases,
     load_trap_cases,
+    main,
     nearest_llmmap_labels,
     normalized_contains_match,
     normalized_exact_match,
@@ -96,3 +99,106 @@ def test_nearest_llmmap_labels_sorts_by_distance():
         ("instruct", 0.1),
         ("other", 0.3),
     ]
+
+
+def test_build_parser_requires_model():
+    parser = build_parser()
+
+    try:
+        parser.parse_args([])
+    except SystemExit:
+        return
+    raise AssertionError("--model should be required")
+
+
+def test_build_parser_defaults_to_all_fingerprints():
+    args = build_parser().parse_args(["--model", "TinyLlama/TinyLlama-1.1B-Chat-v1.0"])
+
+    assert args.model == "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+    assert args.fingerprint == list(ALL_FINGERPRINTS)
+
+
+def test_build_parser_accepts_single_fingerprint_selection():
+    args = build_parser().parse_args(
+        ["--model", "TinyLlama/TinyLlama-1.1B-Chat-v1.0", "--fingerprint", "proflingo"]
+    )
+
+    assert args.model == "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+    assert args.fingerprint == ["proflingo"]
+
+
+def test_build_parser_accepts_multiple_fingerprint_selection():
+    args = build_parser().parse_args(
+        [
+            "--model",
+            "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+            "--fingerprint",
+            "proflingo",
+            "llmmap",
+        ]
+    )
+
+    assert args.fingerprint == ["proflingo", "llmmap"]
+
+
+def test_build_parser_rejects_removed_skip_options():
+    parser = build_parser()
+
+    for removed_flag in ("--skip-adversarial", "--skip-llmmap"):
+        try:
+            parser.parse_args([removed_flag])
+        except SystemExit:
+            continue
+        raise AssertionError(f"{removed_flag} should not be accepted")
+
+
+def test_main_runs_only_selected_fingerprints(monkeypatch, tmp_path: Path):
+    calls: list[str] = []
+    output = tmp_path / "report.json"
+
+    def fake_run_replay(args):
+        calls.append("replay")
+        assert args.model == "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+        assert args.fingerprint == ["proflingo"]
+        return {"proflingo": {args.model: {"match_rate": 1.0}}}
+
+    def fake_run_llmmap(*_args, **_kwargs):
+        calls.append("llmmap")
+        return {}
+
+    written = {}
+
+    def fake_write_json(path, data):
+        written["path"] = path
+        written["data"] = data
+
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "verify_olmo2_fingerprints.py",
+            "--model",
+            "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+            "--fingerprint",
+            "proflingo",
+            "--output",
+            str(output),
+        ],
+    )
+    monkeypatch.setattr(
+        "scripts.verification.verify_olmo2_fingerprints.run_replay_verification",
+        fake_run_replay,
+    )
+    monkeypatch.setattr(
+        "scripts.verification.verify_olmo2_fingerprints.run_llmmap_verification",
+        fake_run_llmmap,
+    )
+    monkeypatch.setattr(
+        "scripts.verification.verify_olmo2_fingerprints.write_json",
+        fake_write_json,
+    )
+
+    assert main() == 0
+    assert calls == ["replay"]
+    assert written["path"] == output
+    assert written["data"]["model"] == "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+    assert written["data"]["fingerprint"] == ["proflingo"]

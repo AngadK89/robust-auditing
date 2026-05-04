@@ -16,14 +16,11 @@ from typing import Any, Iterable
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 DEFAULT_REFERENCE_MODEL = "allenai/OLMo-2-0425-1B-Instruct"
-DEFAULT_MODELS = (
-    "allenai/OLMo-2-0425-1B",
-    "allenai/OLMo-2-0425-1B-Instruct",
-)
 DEFAULT_ARTIFACT_ROOT = ROOT_DIR / "artifacts/fingerprints/olmo2_1b_instruct"
 DEFAULT_LLMMAP_MODEL_PATH = ROOT_DIR / "third_party/LLMmap/data/pretrained_models/default"
 DEFAULT_LLMMAP_PROMPT_CONF_PATH = ROOT_DIR / "third_party/LLMmap/confs/prompt_configurations"
 DEFAULT_PROFLINGO_QUESTIONS_PATH = ROOT_DIR / "third_party/ProFLingo/questions.csv"
+ALL_FINGERPRINTS = ("proflingo", "trap", "llmmap")
 
 
 @dataclass(frozen=True)
@@ -314,7 +311,7 @@ def nearest_llmmap_labels(
 
 
 def run_llmmap_verification(
-    model_ids: list[str],
+    model_id: str,
     reference_model: str,
     llmmap_model_path: Path,
     llmmap_templates_path: Path,
@@ -346,32 +343,31 @@ def run_llmmap_verification(
     random.seed(seed)
     prompt_confs = PromptConfFactory(prompt_conf_path).sample(num_prompt_confs, pool=TRAIN)
     results: dict[str, Any] = {}
-    for model_id in model_ids:
-        model, tokenizer = load_hf_model(model_id, dtype=dtype, device_map=device_map)
-        llm = LocalHFLLM(model_id, model, tokenizer, max_new_tokens=max_new_tokens)
-        old_max_new_tokens = _set_llmmap_max_new_tokens(max_new_tokens)
-        try:
-            entries = make_dataset_entries_for_new_llm(
-                llm,
-                llmmap.queries,
-                prompt_confs,
-                pool=TRAIN,
-            )
-        finally:
-            _set_llmmap_max_new_tokens(old_max_new_tokens)
-        candidate_template = llmmap.compute_template(entries)
-        distances = llmmap.distance_fn and _llmmap_distances(
-            candidate_template,
-            llmmap.DB,
-            llmmap.distance_fn,
+    model, tokenizer = load_hf_model(model_id, dtype=dtype, device_map=device_map)
+    llm = LocalHFLLM(model_id, model, tokenizer, max_new_tokens=max_new_tokens)
+    old_max_new_tokens = _set_llmmap_max_new_tokens(max_new_tokens)
+    try:
+        entries = make_dataset_entries_for_new_llm(
+            llm,
+            llmmap.queries,
+            prompt_confs,
+            pool=TRAIN,
         )
-        nearest = nearest_llmmap_labels(distances, llmmap.label_map, top_k)
-        results[model_id] = {
-            "matched_reference_top1": nearest[0][0] == reference_model,
-            "reference_model": reference_model,
-            "top_k": [{"label": label, "distance": distance} for label, distance in nearest],
-        }
-        del model
+    finally:
+        _set_llmmap_max_new_tokens(old_max_new_tokens)
+    candidate_template = llmmap.compute_template(entries)
+    distances = llmmap.distance_fn and _llmmap_distances(
+        candidate_template,
+        llmmap.DB,
+        llmmap.distance_fn,
+    )
+    nearest = nearest_llmmap_labels(distances, llmmap.label_map, top_k)
+    results[model_id] = {
+        "matched_reference_top1": nearest[0][0] == reference_model,
+        "reference_model": reference_model,
+        "top_k": [{"label": label, "distance": distance} for label, distance in nearest],
+    }
+    del model
     return results
 
 
@@ -458,36 +454,50 @@ def write_json(path: Path, data: Any) -> None:
 
 
 def run_replay_verification(args: argparse.Namespace) -> dict[str, Any]:
-    proflingo_cases = load_proflingo_cases(
-        args.proflingo_fingerprint,
-        args.proflingo_questions,
-        limit=args.limit,
+    requested = set(args.fingerprint)
+    proflingo_cases = (
+        load_proflingo_cases(
+            args.proflingo_fingerprint,
+            args.proflingo_questions,
+            limit=args.limit,
+        )
+        if "proflingo" in requested
+        else []
     )
-    trap_cases = load_trap_cases(args.trap_suffixes, limit=args.limit)
+    trap_cases = (
+        load_trap_cases(args.trap_suffixes, limit=args.limit)
+        if "trap" in requested
+        else []
+    )
 
-    summary: dict[str, Any] = {"proflingo": {}, "trap": {}}
-    for model_id in args.models:
-        model, tokenizer = load_hf_model(model_id, dtype=args.dtype, device_map=args.device_map)
+    summary: dict[str, Any] = {}
+    if "proflingo" in requested:
+        summary["proflingo"] = {}
+    if "trap" in requested:
+        summary["trap"] = {}
+    model, tokenizer = load_hf_model(args.model, dtype=args.dtype, device_map=args.device_map)
+    if "proflingo" in requested:
         proflingo_result = evaluate_replay_cases(
             "proflingo",
-            model_id,
+            args.model,
             proflingo_cases,
             model,
             tokenizer,
             args.max_new_tokens,
             args.proflingo_match,
         )
+        summary["proflingo"][args.model] = asdict(proflingo_result)
+    if "trap" in requested:
         trap_result = evaluate_replay_cases(
             "trap",
-            model_id,
+            args.model,
             trap_cases,
             model,
             tokenizer,
             args.max_new_tokens,
         )
-        summary["proflingo"][model_id] = asdict(proflingo_result)
-        summary["trap"][model_id] = asdict(trap_result)
-        del model
+        summary["trap"][args.model] = asdict(trap_result)
+    del model
     return summary
 
 
@@ -495,16 +505,21 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Verify OLMo2-1B-Instruct fingerprints by replaying reference probes "
-            "against OLMo2 base and instruct models."
+            "against a Hugging Face model of interest."
         )
     )
-    parser.add_argument("--models", nargs="+", default=list(DEFAULT_MODELS))
+    parser.add_argument("--model", required=True, help="Hugging Face model id or local model path to verify.")
+    parser.add_argument(
+        "--fingerprint",
+        nargs="+",
+        choices=ALL_FINGERPRINTS,
+        default=list(ALL_FINGERPRINTS),
+        help="Fingerprint technique or techniques to verify. Defaults to all fingerprints.",
+    )
     parser.add_argument("--reference-model", default=DEFAULT_REFERENCE_MODEL)
     parser.add_argument("--artifact-root", type=Path, default=DEFAULT_ARTIFACT_ROOT)
     parser.add_argument("--output", type=Path, default=ROOT_DIR / "artifacts/verification/olmo2_fingerprint_verification.json")
     parser.add_argument("--limit", type=int, default=None)
-    parser.add_argument("--skip-adversarial", action="store_true")
-    parser.add_argument("--skip-llmmap", action="store_true")
     parser.add_argument("--max-new-tokens", type=int, default=64)
     parser.add_argument(
         "--proflingo-match",
@@ -560,15 +575,16 @@ def main() -> int:
     resolve_artifact_defaults(args)
     report: dict[str, Any] = {
         "reference_model": args.reference_model,
-        "models_of_interest": args.models,
+        "model": args.model,
+        "fingerprint": args.fingerprint,
     }
 
-    if not args.skip_adversarial:
+    if any(fingerprint in {"proflingo", "trap"} for fingerprint in args.fingerprint):
         report.update(run_replay_verification(args))
 
-    if not args.skip_llmmap:
+    if "llmmap" in args.fingerprint:
         report["llmmap"] = run_llmmap_verification(
-            args.models,
+            args.model,
             args.reference_model,
             args.llmmap_model_path,
             args.llmmap_templates,

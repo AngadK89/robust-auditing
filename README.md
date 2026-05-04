@@ -147,18 +147,28 @@ scripts/fingerprints/apply_submodule_patches.sh
 
 ## Verify Fingerprints
 
-After building the OLMo2-1B-Instruct fingerprints, replay them against the two
-models of interest:
-
-```text
-allenai/OLMo-2-0425-1B
-allenai/OLMo-2-0425-1B-Instruct
-```
+After building the OLMo2-1B-Instruct fingerprints, replay them against a
+Hugging Face model of interest.
 
 Run:
 
 ```bash
-python scripts/verification/verify_olmo2_fingerprints.py
+python scripts/verification/verify_olmo2_fingerprints.py \
+  --model allenai/OLMo-2-0425-1B-Instruct
+```
+
+To verify only a subset of fingerprint techniques:
+
+```bash
+python scripts/verification/verify_olmo2_fingerprints.py \
+  --model allenai/OLMo-2-0425-1B-Instruct \
+  --fingerprint proflingo
+python scripts/verification/verify_olmo2_fingerprints.py \
+  --model allenai/OLMo-2-0425-1B-Instruct \
+  --fingerprint llmmap
+python scripts/verification/verify_olmo2_fingerprints.py \
+  --model allenai/OLMo-2-0425-1B-Instruct \
+  --fingerprint proflingo llmmap
 ```
 
 This does not construct new fingerprints. It checks the existing
@@ -171,12 +181,13 @@ OLMo2-1B-Instruct reference fingerprints as follows:
   prefix, and contains-match diagnostics. Use `--proflingo-match exact` for a
   stricter check.
 - TRAP: loads `suffixes.csv` or the copied JSON suffix logs, sends each
-  adversarial prompt to each model of interest, extracts the targeted digit
+  adversarial prompt to the model of interest, extracts the targeted digit
   string from each response, and reports retrieval rates.
-- LLMmap: sends the LLMmap query set to each model of interest, computes the
+- LLMmap: sends the LLMmap query set to the model of interest, computes the
   candidate template/classification vector, and compares it to the template
-  database. A match means the nearest top-1 template is
-  `allenai/OLMo-2-0425-1B-Instruct`.
+  database. A match means the nearest top-1 template is the reference model,
+  `allenai/OLMo-2-0425-1B-Instruct`; the report also includes the nearest
+  `top_k` labels and distances as general similarity diagnostics.
 
 Default output:
 
@@ -187,15 +198,21 @@ artifacts/verification/olmo2_fingerprint_verification.json
 Useful faster smoke-test commands:
 
 ```bash
-python scripts/verification/verify_olmo2_fingerprints.py --limit 5 --skip-llmmap
-python scripts/verification/verify_olmo2_fingerprints.py --skip-adversarial --llmmap-num-prompt-confs 2
+python scripts/verification/verify_olmo2_fingerprints.py \
+  --model allenai/OLMo-2-0425-1B-Instruct \
+  --fingerprint proflingo trap \
+  --limit 5
+python scripts/verification/verify_olmo2_fingerprints.py \
+  --model allenai/OLMo-2-0425-1B-Instruct \
+  --fingerprint llmmap \
+  --llmmap-num-prompt-confs 2
 ```
 
 Useful overrides:
 
 ```bash
 python scripts/verification/verify_olmo2_fingerprints.py \
-  --models allenai/OLMo-2-0425-1B allenai/OLMo-2-0425-1B-Instruct \
+  --model TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
   --proflingo-match exact \
   --max-new-tokens 64 \
   --dtype bf16
