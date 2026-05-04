@@ -242,6 +242,7 @@ class ConstantMetric(FairnessMetric):
 class FakeTokenizer:
     pad_token_id = 0
     eos_token_id = 99
+    padding_side = "right"
 
     def __call__(self, texts, return_tensors, padding, truncation):
         del return_tensors, padding, truncation
@@ -331,15 +332,17 @@ def test_generate_responses_writes_response_artifact_with_generation_metadata(tm
         min_new_tokens=1,
         max_new_tokens=2,
     )
+    tokenizer = FakeTokenizer()
 
     output_dir = generate_responses_for_audit(
         "holistic_bias",
         config,
         model=FakeGenerateModel(),
-        tokenizer=FakeTokenizer(),
+        tokenizer=tokenizer,
         dataset=frame,
     )
 
+    assert tokenizer.padding_side == "left"
     rows = read_jsonl(output_dir / "model_responses.jsonl")
     assert rows[0]["generated_response"] == "Stored response."
     assert rows[0]["text"] == "A person arrived."

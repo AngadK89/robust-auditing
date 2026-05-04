@@ -121,6 +121,7 @@ def generate_responses_for_audit(
     if not config.prompts_only:
         if model is None or tokenizer is None:
             model, tokenizer = load_model_and_tokenizer(config.model_id, config.dtype, config.device_map)
+        tokenizer.padding_side = "left"
         rows = _generate_response_rows(examples, config, model, tokenizer)
         response_count = write_jsonl(paths.model_responses, rows)
 
@@ -217,6 +218,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     tokenizer = None
     if not config.prompts_only:
         model, tokenizer = load_model_and_tokenizer(config.model_id, config.dtype, config.device_map)
+        tokenizer.padding_side = "left"
     for audit in config.audits:
         output_dir = generate_responses_for_audit(audit, config, model=model, tokenizer=tokenizer)
         print(f"Wrote {audit} generation artifacts to {output_dir}")
