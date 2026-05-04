@@ -176,7 +176,14 @@ def run_audit(
 
     if metric is None:
         metric = build_metric(config, model=model, tokenizer=tokenizer)
-    results = metric.score(examples)
+    class InlineMetricContext:
+        def load_examples(self) -> list[FairnessExample]:
+            return examples
+
+        def get_model_and_tokenizer(self) -> tuple[Any, Any]:
+            return model, tokenizer
+
+    results = metric.score(InlineMetricContext())
     scores = records_to_frame(results)
 
     per_example_path = output_dir / "per_example_scores.jsonl"

@@ -2,18 +2,28 @@ import math
 from pathlib import Path
 
 import pandas as pd
+import pytest
+import torch
 
 from robust_auditing.fairness import (
-    AuditConfig,
     BoldAdapter,
     FairnessMetric,
+    GenerationConfig,
     HolisticBiasAdapter,
     LikelihoodBiasMetric,
+    MetricContext,
     MetricResult,
-    build_arg_parser,
+    ScoringConfig,
+    build_generation_arg_parser,
+    build_scoring_arg_parser,
     default_output_dir,
+    generate_responses_for_audit,
+    metric_folder_name,
+    read_jsonl,
     records_to_frame,
-    run_audit,
+    score_audit,
+    write_jsonl,
+    write_normalized_prompts,
 )
 
 
@@ -213,7 +223,8 @@ class ConstantMetric(FairnessMetric):
     name = "constant_metric"
     requires_lm = False
 
-    def score(self, examples):
+    def score(self, context):
+        examples = context.load_examples()
         return [
             MetricResult(
                 text=example.text,
@@ -228,60 +239,192 @@ class ConstantMetric(FairnessMetric):
         ]
 
 
-def test_run_audit_accepts_metric_plugin_without_lm_resources(tmp_path):
+class FakeTokenizer:
+    pad_token_id = 0
+    eos_token_id = 99
+
+    def __call__(self, texts, return_tensors, padding, truncation):
+        del return_tensors, padding, truncation
+        input_ids = []
+        attention_mask = []
+        for text in texts:
+            ids = [1, 2] if len(text) < 12 else [1, 2, 3]
+            input_ids.append(ids)
+        max_len = max(len(ids) for ids in input_ids)
+        for index, ids in enumerate(input_ids):
+            pad_count = max_len - len(ids)
+            input_ids[index] = ids + [self.pad_token_id] * pad_count
+            attention_mask.append([1] * len(ids) + [0] * pad_count)
+        return {
+            "input_ids": torch.tensor(input_ids),
+            "attention_mask": torch.tensor(attention_mask),
+        }
+
+    def decode(self, token_ids, skip_special_tokens=True):
+        del token_ids, skip_special_tokens
+        return "Stored response."
+
+
+class FakeGenerateModel:
+    def eval(self):
+        return None
+
+    def parameters(self):
+        return iter([torch.nn.Parameter(torch.tensor([0.0]))])
+
+    def generate(self, **encoded):
+        input_ids = encoded["input_ids"]
+        suffix = torch.tensor([[7, 8] for _ in range(input_ids.shape[0])], device=input_ids.device)
+        return torch.cat([input_ids, suffix], dim=1)
+
+
+def test_write_normalized_prompts_materializes_adapter_fields(tmp_path):
     frame = pd.DataFrame(
         [
             {
-                "sentence": "A person arrived.",
+                "text": "A person arrived.",
                 "axis": "gender_and_sex",
                 "bucket": "gender",
                 "descriptor": "woman",
             }
         ]
     )
-    config = AuditConfig(
+    config = GenerationConfig(
+        audits=("holistic_bias",),
+        output_root=tmp_path,
+        prompts_only=True,
+    )
+
+    paths, examples, _ = write_normalized_prompts(
+        "holistic_bias",
+        config,
+        dataset=frame,
+    )
+
+    assert len(examples) == 1
+    assert read_jsonl(paths.normalized_prompts) == [
+        {
+            "text": "A person arrived.",
+            "axis": "gender_and_sex",
+            "bucket": "gender",
+            "descriptor": "woman",
+            "metadata": {"source_index": 0},
+        }
+    ]
+
+
+def test_generate_responses_writes_response_artifact_with_generation_metadata(tmp_path):
+    frame = pd.DataFrame(
+        [
+            {
+                "text": "A person arrived.",
+                "axis": "gender_and_sex",
+                "bucket": "gender",
+                "descriptor": "woman",
+            }
+        ]
+    )
+    config = GenerationConfig(
+        audits=("holistic_bias",),
+        output_root=tmp_path,
+        model_id="example/model",
+        min_new_tokens=1,
+        max_new_tokens=2,
+    )
+
+    output_dir = generate_responses_for_audit(
+        "holistic_bias",
+        config,
+        model=FakeGenerateModel(),
+        tokenizer=FakeTokenizer(),
+        dataset=frame,
+    )
+
+    rows = read_jsonl(output_dir / "model_responses.jsonl")
+    assert rows[0]["generated_response"] == "Stored response."
+    assert rows[0]["text"] == "A person arrived."
+    assert rows[0]["generation"]["decoding"] == "beam_search"
+    assert rows[0]["generation"]["num_beams"] == 3
+    assert rows[0]["generation"]["generated_token_count"] == 2
+
+
+def test_metric_output_directory_is_derived_from_class_name():
+    assert metric_folder_name(LikelihoodBiasMetric) == "likelihood_bias"
+    assert metric_folder_name(ConstantMetric()) == "constant"
+
+
+def test_score_audit_writes_metric_outputs_under_metric_folder(tmp_path):
+    config = ScoringConfig(
         audits=("holistic_bias",),
         output_root=tmp_path,
         metric="constant_metric",
     )
-
-    output_dir = run_audit(
-        "holistic_bias",
-        config,
-        metric=ConstantMetric(),
-        dataset=frame,
+    paths = config.paths_for("holistic_bias")
+    write_jsonl(
+        paths.normalized_prompts,
+        [
+            {
+                "text": "A person arrived.",
+                "axis": "gender_and_sex",
+                "bucket": "gender",
+                "descriptor": "woman",
+                "metadata": {"source_index": 0},
+            }
+        ],
     )
 
-    per_example = (output_dir / "per_example_scores.jsonl").read_text()
+    metric_dir = score_audit("holistic_bias", config, metric=ConstantMetric())
+
+    assert metric_dir == paths.audit_dir / "metrics" / "constant"
+    per_example = (metric_dir / "per_example.jsonl").read_text()
     assert '"metric_name": "constant_metric"' in per_example
     assert '"score": 0.5' in per_example
-    assert (output_dir / "group_summary.csv").exists()
-    assert (output_dir / "axis_summary.csv").exists()
-    assert not (output_dir / "axis_likelihood_bias.csv").exists()
+    assert (metric_dir / "group_summary.csv").exists()
+    assert (metric_dir / "axis_summary.csv").exists()
+    assert (metric_dir / "metadata.json").exists()
+
+
+def test_likelihood_bias_metric_declares_prompt_only_artifact():
+    assert LikelihoodBiasMetric.required_artifacts == ("normalized_prompts",)
+
+
+def test_score_audit_reports_missing_required_artifacts(tmp_path):
+    config = ScoringConfig(audits=("holistic_bias",), output_root=tmp_path)
+
+    with pytest.raises(FileNotFoundError, match="normalized_prompts"):
+        score_audit("holistic_bias", config, metric=ConstantMetric())
 
 
 def test_cli_defaults_selection_and_output_dirs():
-    parser = build_arg_parser()
+    parser = build_generation_arg_parser()
     args = parser.parse_args([])
-    config = AuditConfig.from_args(args)
+    generation_config = GenerationConfig.from_args(args)
 
-    assert config.audits == ("holistic_bias", "bold")
-    assert config.model_id == "allenai/OLMo-2-0425-1B-Instruct"
-    assert config.group_by == ("axis", "bucket")
-    assert config.metric == "likelihood_bias"
-    assert default_output_dir("holistic_bias", config.model_id) == Path(
+    assert generation_config.audits == ("holistic_bias", "bold")
+    assert generation_config.model_id == "allenai/OLMo-2-0425-1B-Instruct"
+    assert generation_config.num_beams == 3
+    assert generation_config.min_new_tokens == 20
+    assert generation_config.max_new_tokens == 64
+
+    scoring_parser = build_scoring_arg_parser()
+    scoring_args = scoring_parser.parse_args([])
+    scoring_config = ScoringConfig.from_args(scoring_args)
+
+    assert scoring_config.group_by == ("axis", "bucket")
+    assert scoring_config.metric == "likelihood_bias"
+    assert default_output_dir("holistic_bias", scoring_config.model_id) == Path(
         "artifacts/fairness/holistic_bias/olmo2_1b_instruct"
     )
-    assert default_output_dir("bold", config.model_id) == Path(
+    assert default_output_dir("bold", scoring_config.model_id) == Path(
         "artifacts/fairness/bold/olmo2_1b_instruct"
     )
 
 
 def test_cli_accepts_single_audit_selection_and_output_root():
-    parser = build_arg_parser()
+    parser = build_generation_arg_parser()
     args = parser.parse_args(["--audits", "bold", "--output-root", "out"])
-    config = AuditConfig.from_args(args)
+    config = GenerationConfig.from_args(args)
 
     assert config.audits == ("bold",)
     assert config.output_root == Path("out")
-    assert config.output_dir_for("bold") == Path("out/bold/olmo2_1b_instruct")
+    assert config.paths_for("bold").audit_dir == Path("out/bold/olmo2_1b_instruct")

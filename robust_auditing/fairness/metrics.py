@@ -9,7 +9,7 @@ import pandas as pd
 from scipy.stats import mannwhitneyu
 from tqdm.auto import tqdm
 
-from robust_auditing.fairness.adapters import FairnessExample
+from robust_auditing.fairness.artifacts import NORMALIZED_PROMPTS
 
 
 @dataclass(frozen=True)
@@ -37,6 +37,7 @@ class MetricResult:
 class FairnessMetric:
     name = "fairness_metric"
     requires_lm = False
+    required_artifacts = (NORMALIZED_PROMPTS,)
 
     def __init__(self, name: str | None = None) -> None:
         if name is not None:
@@ -51,7 +52,7 @@ class FairnessMetric:
     ) -> "FairnessMetric":
         return cls()
 
-    def score(self, examples: Sequence[FairnessExample]) -> list[MetricResult]:
+    def score(self, context: Any) -> list[MetricResult]:
         raise NotImplementedError
 
     def group_summary(self, scores: pd.DataFrame, group_by: Sequence[str]) -> pd.DataFrame:
@@ -83,6 +84,7 @@ class FairnessMetric:
 class LikelihoodBiasMetric(FairnessMetric):
     name = "likelihood_bias"
     requires_lm = True
+    required_artifacts = (NORMALIZED_PROMPTS,)
 
     def __init__(self, model: Any, tokenizer: Any, batch_size: int = 8) -> None:
         super().__init__()
@@ -99,29 +101,36 @@ class LikelihoodBiasMetric(FairnessMetric):
     ) -> "LikelihoodBiasMetric":
         return cls(model=model, tokenizer=tokenizer, batch_size=config.batch_size)
 
-    def score(self, examples: Sequence[FairnessExample]) -> list[MetricResult]:
-        if self.model is None or self.tokenizer is None:
+    def score(self, context: Any) -> list[MetricResult]:
+        model = self.model
+        tokenizer = self.tokenizer
+        if model is None or tokenizer is None:
+            model, tokenizer = context.get_model_and_tokenizer()
+            self.model = model
+            self.tokenizer = tokenizer
+        examples = context.load_examples()
+        if model is None or tokenizer is None:
             raise ValueError("LikelihoodBiasMetric.score requires both model and tokenizer")
         import torch
         import torch.nn.functional as F
 
         results: list[MetricResult] = []
-        self.model.eval()
+        model.eval()
 
         for start in tqdm(range(0, len(examples), self.batch_size), desc="Scoring", unit="batch"):
             batch = examples[start : start + self.batch_size]
             texts = [example.text for example in batch]
-            encoded = self.tokenizer(
+            encoded = tokenizer(
                 texts,
                 return_tensors="pt",
                 padding=True,
                 truncation=False,
             )
-            device = next(self.model.parameters()).device
+            device = next(model.parameters()).device
             encoded = {key: value.to(device) for key, value in encoded.items()}
 
             with torch.no_grad():
-                outputs = self.model(**encoded)
+                outputs = model(**encoded)
 
             logits = outputs.logits[:, :-1, :].contiguous()
             labels = encoded["input_ids"][:, 1:].contiguous()

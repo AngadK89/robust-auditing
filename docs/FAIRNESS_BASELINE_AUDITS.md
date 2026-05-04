@@ -3,16 +3,17 @@
 Use this guide to run the likelihood-based fairness baselines for
 `allenai/OLMo-2-0425-1B-Instruct`.
 
-The baseline audits score fixed dataset prompts with causal-LM likelihood. They
-do not generate model completions and do not use the OpenAI Moderation API.
+The baseline workflow has two separate stages. First, materialize normalized
+dataset prompts and optionally generate model responses. Then, run fairness
+metrics against the stored artifacts. This lets metrics be recomputed without
+rerunning generation.
 
 ## Audits
 
 Two audits are available:
 
 - `holistic_bias`: loads `fairnlp/holistic-bias` with `sentences.csv`.
-- `bold`: loads `AmazonScience/bold` and explodes each row's `prompts` list so
-  every prompt is scored as a separate example.
+- `bold`: loads `AmazonScience/bold` and explodes each row's `prompts` list so every prompt is scored as a separate example.
 
 Both adapters normalize source rows into the metric input shape:
 
@@ -28,8 +29,7 @@ For HolisticBias, `text=text`, `axis=axis`, `bucket=bucket`, and
 `descriptor=descriptor`.
 
 For BOLD, `text=prompt`, `axis=domain`, `bucket=category`, and
-`descriptor=category`. Metadata includes the source row index, `name`, and the
-prompt index.
+`descriptor=category`. Metadata includes the source row index, `name`, and the prompt index.
 
 ## Prerequisites
 
@@ -43,41 +43,72 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-The datasets and model are loaded through Hugging Face. Dataset files are not
-vendored in this repository.
+The datasets and model are loaded through Hugging Face. Dataset files are not vendored in this repository.
 
 ## Quick Smoke Run
 
-Run both audits on a small sample using CPU:
+Materialize prompts only for both audits on a small sample:
 
 ```bash
-python3 scripts/fairness/run_fairness_baseline_audits.py \
+python3 scripts/fairness/generate_fairness_responses.py \
   --max-examples 32 \
+  --device-map cpu \
+  --prompts-only
+```
+
+Then score the likelihood metric from those stored prompts:
+
+```bash
+python3 scripts/fairness/score_fairness_metrics.py \
   --device-map cpu
 ```
 
-This is useful for checking dataset loading, tokenization, scoring, and artifact
-creation before running the full baseline.
+This is useful for checking dataset loading, artifact creation, and metric
+scoring before running the full baseline.
 
 ## Full Baseline Run
 
-Run both audits with the default model:
+Generate responses for both audits with the default model:
 
 ```bash
-python3 scripts/fairness/run_fairness_baseline_audits.py \
+python3 scripts/fairness/generate_fairness_responses.py \
   --model-id allenai/OLMo-2-0425-1B-Instruct \
   --batch-size 8 \
   --dtype bf16
 ```
 
-By default, the command runs:
+Score the default likelihood metric from the stored prompts:
+
+```bash
+python3 scripts/fairness/score_fairness_metrics.py \
+  --model-id allenai/OLMo-2-0425-1B-Instruct \
+  --batch-size 8 \
+  --dtype bf16
+```
+
+By default, both commands use:
 
 ```text
 --audits holistic_bias,bold
---group-by axis,bucket
 --output-root artifacts/fairness
 --device-map auto
+```
+
+The generation command also defaults to:
+
+```text
 --seed 0
+--num-beams 3
+--min-new-tokens 20
+--max-new-tokens 64
+--no-repeat-ngram-size 3
+```
+
+The scoring command also defaults to:
+
+```text
+--group-by axis,bucket
+--metric likelihood_bias
 ```
 
 ## Run One Audit
@@ -85,7 +116,12 @@ By default, the command runs:
 Run only HolisticBias:
 
 ```bash
-python3 scripts/fairness/run_fairness_baseline_audits.py \
+python3 scripts/fairness/generate_fairness_responses.py \
+  --audits holistic_bias \
+  --batch-size 8 \
+  --dtype bf16
+
+python3 scripts/fairness/score_fairness_metrics.py \
   --audits holistic_bias \
   --batch-size 8 \
   --dtype bf16
@@ -94,7 +130,12 @@ python3 scripts/fairness/run_fairness_baseline_audits.py \
 Run only BOLD:
 
 ```bash
-python3 scripts/fairness/run_fairness_baseline_audits.py \
+python3 scripts/fairness/generate_fairness_responses.py \
+  --audits bold \
+  --batch-size 8 \
+  --dtype bf16
+
+python3 scripts/fairness/score_fairness_metrics.py \
   --audits bold \
   --batch-size 8 \
   --dtype bf16
@@ -117,25 +158,35 @@ artifacts/fairness/bold/olmo2_1b_instruct/
 Each audit directory contains:
 
 ```text
-per_example_scores.jsonl
-group_summary.csv
-axis_summary.csv
+normalized_prompts.jsonl
+model_responses.jsonl
 metadata.json
+metrics/
 ```
 
-`per_example_scores.jsonl` contains one JSON object per scored example with:
+`normalized_prompts.jsonl` contains one JSON object per normalized prompt with:
 
 ```text
 text
 axis
 bucket
 descriptor
-metric_name
-scores
 metadata
 ```
 
-For the built-in `likelihood_bias` metric, `scores` contains:
+`model_responses.jsonl` contains one JSON object per generated response with the
+same prompt fields plus:
+
+```text
+generated_response
+generation
+```
+
+Each metric writes its own outputs under `metrics/<metric_folder>/`. The folder
+name is derived from the metric class name, such as `LikelihoodBiasMetric` to
+`likelihood_bias`.
+
+For `metrics/likelihood_bias/per_example.jsonl`, `scores` contains:
 
 ```text
 nll
@@ -143,47 +194,74 @@ token_count
 perplexity
 ```
 
-`group_summary.csv` is produced by the selected metric. For
+`metrics/<metric_folder>/group_summary.csv` is produced by the selected metric. For
 `likelihood_bias`, it aggregates token-normalized negative log-likelihood and
 perplexity by the configured grouping. The default grouping is `axis,bucket`.
 
-`axis_summary.csv` is also produced by the selected metric. For
+`metrics/<metric_folder>/axis_summary.csv` is also produced by the selected metric. For
 `likelihood_bias`, it reports descriptor-level pairwise Mann-Whitney
 U/AUC-distance summaries within each axis where there are enough samples. Other
 metrics can leave this file empty or write their own axis-level summary shape.
-For backward compatibility, `likelihood_bias` also writes the same table to
-`axis_likelihood_bias.csv`.
 
-`metadata.json` records the audit name, dataset, model, metric, runtime options,
-and scored example counts.
+Top-level `metadata.json` records the audit name, dataset, model, generation
+runtime options, and example counts. Metric-specific metadata is written under
+each metric folder.
 
 ## CLI Options
+
+Generation options:
 
 ```text
 --audits holistic_bias,bold
 --model-id allenai/OLMo-2-0425-1B-Instruct
 --batch-size 8
 --max-examples 32
---group-by axis,bucket
 --output-root artifacts/fairness
---metric likelihood_bias
 --dtype auto|bf16|fp16|fp32
 --device-map auto|cpu
 --seed 0
+--num-beams 3
+--min-new-tokens 20
+--max-new-tokens 64
+--no-repeat-ngram-size 3
+--prompts-only
+```
+
+Scoring options:
+
+```text
+--audits holistic_bias,bold
+--metric likelihood_bias
+--model-id allenai/OLMo-2-0425-1B-Instruct
+--batch-size 8
+--group-by axis,bucket
+--output-root artifacts/fairness
+--dtype auto|bf16|fp16|fp32
+--device-map auto|cpu
 ```
 
 Examples:
 
 ```bash
-python3 scripts/fairness/run_fairness_baseline_audits.py \
+python3 scripts/fairness/generate_fairness_responses.py \
   --audits bold \
   --max-examples 1000 \
+  --output-root artifacts/fairness
+
+python3 scripts/fairness/score_fairness_metrics.py \
+  --audits bold \
   --group-by axis,bucket \
   --output-root artifacts/fairness
 ```
 
 ```bash
-python3 scripts/fairness/run_fairness_baseline_audits.py \
+python3 scripts/fairness/generate_fairness_responses.py \
+  --audits holistic_bias,bold \
+  --dtype fp32 \
+  --device-map cpu \
+  --batch-size 2
+
+python3 scripts/fairness/score_fairness_metrics.py \
   --audits holistic_bias,bold \
   --dtype fp32 \
   --device-map cpu \
@@ -208,15 +286,13 @@ score in this baseline.
 
 ## Adding A Metric
 
-The fairness package separates dataset normalization from metric scoring. New
-metrics consume `FairnessExample` objects with:
+The fairness package separates dataset normalization, response generation, and
+metric scoring. New metrics receive a `MetricContext` and declare the artifacts
+they need:
 
 ```text
-text
-axis
-bucket
-descriptor
-metadata
+required_artifacts = ("normalized_prompts",)
+required_artifacts = ("model_responses",)
 ```
 
 They emit generic `MetricResult` objects with:
@@ -236,15 +312,16 @@ To add a metric:
 1. Subclass `FairnessMetric` in `robust_auditing/fairness/metrics.py` or a new
    module.
 2. Set `name`.
-3. Set `requires_lm = True` only if the metric needs the Hugging Face causal LM
-   and tokenizer loaded by the CLI.
-4. Implement `score(examples)`.
-5. Optionally override `group_summary(scores, group_by)` and
+3. Set `required_artifacts` to the files the metric consumes.
+4. Set `requires_lm = True` only if the metric needs the Hugging Face causal LM
+   and tokenizer loaded by the scoring CLI.
+5. Implement `score(context)`.
+6. Optionally override `group_summary(scores, group_by)` and
    `axis_summary(scores)`.
-6. Optionally override `from_config(config, model=None, tokenizer=None)` if the
+7. Optionally override `from_config(config, model=None, tokenizer=None)` if the
    metric needs custom construction, such as loading a classifier, regression
    model, or LLM judge client.
-7. Register the class in `METRIC_FACTORIES` in
+8. Register the class in `METRIC_FACTORIES` in
    `robust_auditing/fairness/cli.py`.
 
 Minimal example:
@@ -253,8 +330,10 @@ Minimal example:
 class ConstantProbeMetric(FairnessMetric):
     name = "constant_probe"
     requires_lm = False
+    required_artifacts = ("normalized_prompts",)
 
-    def score(self, examples):
+    def score(self, context):
+        examples = context.load_examples()
         return [
             MetricResult(
                 text=example.text,
