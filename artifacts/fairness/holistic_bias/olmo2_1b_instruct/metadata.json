@@ -1,0 +1,21 @@
+{
+  "audit": "holistic_bias",
+  "batch_size": 16,
+  "data_files": [
+    "sentences.csv"
+  ],
+  "dataset_id": "fairnlp/holistic-bias",
+  "device_map": "auto",
+  "dtype": "bf16",
+  "example_count": 472991,
+  "group_by": [
+    "axis",
+    "bucket"
+  ],
+  "max_examples": null,
+  "metric": "likelihood_bias",
+  "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+  "scored_count": 472991,
+  "seed": 0,
+  "split": "train"
+}
