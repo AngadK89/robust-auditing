@@ -147,14 +147,22 @@ scripts/fingerprints/apply_submodule_patches.sh
 
 ## Verify Fingerprints
 
-After building the OLMo2-1B-Instruct fingerprints, replay them against a
-Hugging Face model of interest.
+After building the OLMo2-1B-Instruct fingerprints, replay them against one or
+more Hugging Face models of interest.
 
 Run:
 
 ```bash
 python scripts/verification/verify_olmo2_fingerprints.py \
   --model allenai/OLMo-2-0425-1B-Instruct
+```
+
+To verify multiple models in one run, pass them after `--model` separated by
+whitespace:
+
+```bash
+python scripts/verification/verify_olmo2_fingerprints.py \
+  --model allenai/OLMo-2-0425-1B allenai/OLMo-2-0425-1B-Instruct
 ```
 
 To verify only a subset of fingerprint techniques:

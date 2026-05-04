@@ -475,29 +475,30 @@ def run_replay_verification(args: argparse.Namespace) -> dict[str, Any]:
         summary["proflingo"] = {}
     if "trap" in requested:
         summary["trap"] = {}
-    model, tokenizer = load_hf_model(args.model, dtype=args.dtype, device_map=args.device_map)
-    if "proflingo" in requested:
-        proflingo_result = evaluate_replay_cases(
-            "proflingo",
-            args.model,
-            proflingo_cases,
-            model,
-            tokenizer,
-            args.max_new_tokens,
-            args.proflingo_match,
-        )
-        summary["proflingo"][args.model] = asdict(proflingo_result)
-    if "trap" in requested:
-        trap_result = evaluate_replay_cases(
-            "trap",
-            args.model,
-            trap_cases,
-            model,
-            tokenizer,
-            args.max_new_tokens,
-        )
-        summary["trap"][args.model] = asdict(trap_result)
-    del model
+    for model_id in args.model:
+        model, tokenizer = load_hf_model(model_id, dtype=args.dtype, device_map=args.device_map)
+        if "proflingo" in requested:
+            proflingo_result = evaluate_replay_cases(
+                "proflingo",
+                model_id,
+                proflingo_cases,
+                model,
+                tokenizer,
+                args.max_new_tokens,
+                args.proflingo_match,
+            )
+            summary["proflingo"][model_id] = asdict(proflingo_result)
+        if "trap" in requested:
+            trap_result = evaluate_replay_cases(
+                "trap",
+                model_id,
+                trap_cases,
+                model,
+                tokenizer,
+                args.max_new_tokens,
+            )
+            summary["trap"][model_id] = asdict(trap_result)
+        del model
     return summary
 
 
@@ -508,7 +509,12 @@ def build_parser() -> argparse.ArgumentParser:
             "against a Hugging Face model of interest."
         )
     )
-    parser.add_argument("--model", required=True, help="Hugging Face model id or local model path to verify.")
+    parser.add_argument(
+        "--model",
+        nargs="+",
+        required=True,
+        help="Hugging Face model id(s) or local model path(s) to verify.",
+    )
     parser.add_argument(
         "--fingerprint",
         nargs="+",
@@ -575,7 +581,7 @@ def main() -> int:
     resolve_artifact_defaults(args)
     report: dict[str, Any] = {
         "reference_model": args.reference_model,
-        "model": args.model,
+        "models": args.model,
         "fingerprint": args.fingerprint,
     }
 
@@ -583,19 +589,21 @@ def main() -> int:
         report.update(run_replay_verification(args))
 
     if "llmmap" in args.fingerprint:
-        report["llmmap"] = run_llmmap_verification(
-            args.model,
-            args.reference_model,
-            args.llmmap_model_path,
-            args.llmmap_templates,
-            args.llmmap_prompt_conf_path,
-            args.llmmap_num_prompt_confs,
-            args.llmmap_top_k,
-            args.max_new_tokens,
-            args.seed,
-            args.dtype,
-            args.device_map,
-        )
+        report["llmmap"] = {}
+        for model_id in args.model:
+            report["llmmap"][model_id] = run_llmmap_verification(
+                model_id,
+                args.reference_model,
+                args.llmmap_model_path,
+                args.llmmap_templates,
+                args.llmmap_prompt_conf_path,
+                args.llmmap_num_prompt_confs,
+                args.llmmap_top_k,
+                args.max_new_tokens,
+                args.seed,
+                args.dtype,
+                args.device_map,
+            )
 
     write_json(args.output, report)
     print(json.dumps(report, indent=2))

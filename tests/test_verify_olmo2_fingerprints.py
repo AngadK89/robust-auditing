@@ -114,8 +114,23 @@ def test_build_parser_requires_model():
 def test_build_parser_defaults_to_all_fingerprints():
     args = build_parser().parse_args(["--model", "TinyLlama/TinyLlama-1.1B-Chat-v1.0"])
 
-    assert args.model == "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+    assert args.model == ["TinyLlama/TinyLlama-1.1B-Chat-v1.0"]
     assert args.fingerprint == list(ALL_FINGERPRINTS)
+
+
+def test_build_parser_accepts_multiple_model_selection():
+    args = build_parser().parse_args(
+        [
+            "--model",
+            "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+            "allenai/OLMo-2-0425-1B-Instruct",
+        ]
+    )
+
+    assert args.model == [
+        "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+        "allenai/OLMo-2-0425-1B-Instruct",
+    ]
 
 
 def test_build_parser_accepts_single_fingerprint_selection():
@@ -123,7 +138,7 @@ def test_build_parser_accepts_single_fingerprint_selection():
         ["--model", "TinyLlama/TinyLlama-1.1B-Chat-v1.0", "--fingerprint", "proflingo"]
     )
 
-    assert args.model == "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+    assert args.model == ["TinyLlama/TinyLlama-1.1B-Chat-v1.0"]
     assert args.fingerprint == ["proflingo"]
 
 
@@ -158,9 +173,9 @@ def test_main_runs_only_selected_fingerprints(monkeypatch, tmp_path: Path):
 
     def fake_run_replay(args):
         calls.append("replay")
-        assert args.model == "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+        assert args.model == ["TinyLlama/TinyLlama-1.1B-Chat-v1.0"]
         assert args.fingerprint == ["proflingo"]
-        return {"proflingo": {args.model: {"match_rate": 1.0}}}
+        return {"proflingo": {args.model[0]: {"match_rate": 1.0}}}
 
     def fake_run_llmmap(*_args, **_kwargs):
         calls.append("llmmap")
@@ -200,5 +215,76 @@ def test_main_runs_only_selected_fingerprints(monkeypatch, tmp_path: Path):
     assert main() == 0
     assert calls == ["replay"]
     assert written["path"] == output
-    assert written["data"]["model"] == "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+    assert written["data"]["models"] == ["TinyLlama/TinyLlama-1.1B-Chat-v1.0"]
     assert written["data"]["fingerprint"] == ["proflingo"]
+
+
+def test_main_runs_selected_fingerprints_for_each_selected_model(monkeypatch, tmp_path: Path):
+    calls: list[str] = []
+    output = tmp_path / "report.json"
+
+    def fake_run_replay(args):
+        calls.append("replay")
+        assert args.model == [
+            "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+            "allenai/OLMo-2-0425-1B-Instruct",
+        ]
+        return {
+            "proflingo": {
+                "TinyLlama/TinyLlama-1.1B-Chat-v1.0": {"match_rate": 0.0},
+                "allenai/OLMo-2-0425-1B-Instruct": {"match_rate": 1.0},
+            }
+        }
+
+    def fake_run_llmmap(model_id, *_args, **_kwargs):
+        calls.append(f"llmmap:{model_id}")
+        return {"top_1_label": model_id}
+
+    written = {}
+
+    def fake_write_json(path, data):
+        written["path"] = path
+        written["data"] = data
+
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "verify_olmo2_fingerprints.py",
+            "--model",
+            "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+            "allenai/OLMo-2-0425-1B-Instruct",
+            "--fingerprint",
+            "proflingo",
+            "llmmap",
+            "--output",
+            str(output),
+        ],
+    )
+    monkeypatch.setattr(
+        "scripts.verification.verify_olmo2_fingerprints.run_replay_verification",
+        fake_run_replay,
+    )
+    monkeypatch.setattr(
+        "scripts.verification.verify_olmo2_fingerprints.run_llmmap_verification",
+        fake_run_llmmap,
+    )
+    monkeypatch.setattr(
+        "scripts.verification.verify_olmo2_fingerprints.write_json",
+        fake_write_json,
+    )
+
+    assert main() == 0
+    assert calls == [
+        "replay",
+        "llmmap:TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+        "llmmap:allenai/OLMo-2-0425-1B-Instruct",
+    ]
+    assert written["path"] == output
+    assert written["data"]["models"] == [
+        "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+        "allenai/OLMo-2-0425-1B-Instruct",
+    ]
+    assert set(written["data"]["llmmap"]) == {
+        "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+        "allenai/OLMo-2-0425-1B-Instruct",
+    }
