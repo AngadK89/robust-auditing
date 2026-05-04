@@ -183,8 +183,7 @@ generation
 ```
 
 Each metric writes its own outputs under `metrics/<metric_folder>/`. The folder
-name is derived from the metric class name, such as `LikelihoodBiasMetric` to
-`likelihood_bias`.
+name is derived from the metric class name, such as `LikelihoodBiasMetric` to `likelihood_bias`.
 
 For `metrics/likelihood_bias/per_example.jsonl`, `scores` contains:
 
@@ -194,18 +193,11 @@ token_count
 perplexity
 ```
 
-`metrics/<metric_folder>/group_summary.csv` is produced by the selected metric. For
-`likelihood_bias`, it aggregates token-normalized negative log-likelihood and
-perplexity by the configured grouping. The default grouping is `axis,bucket`.
+`metrics/<metric_folder>/group_summary.csv` is produced by the selected metric. For `likelihood_bias`, it aggregates token-normalized negative log-likelihood and perplexity by the configured grouping. The default grouping is `axis,bucket`.
 
-`metrics/<metric_folder>/axis_summary.csv` is also produced by the selected metric. For
-`likelihood_bias`, it reports descriptor-level pairwise Mann-Whitney
-U/AUC-distance summaries within each axis where there are enough samples. Other
-metrics can leave this file empty or write their own axis-level summary shape.
+`metrics/<metric_folder>/axis_summary.csv` is also produced by the selected metric. For `likelihood_bias`, it reports descriptor-level pairwise Mann-Whitney U/AUC-distance summaries within each axis where there are enough samples. Other metrics can leave this file empty or write their own axis-level summary shape.
 
-Top-level `metadata.json` records the audit name, dataset, model, generation
-runtime options, and example counts. Metric-specific metadata is written under
-each metric folder.
+Top-level `metadata.json` records the audit name, dataset, model, generation runtime options, and example counts. Metric-specific metadata is written under each metric folder.
 
 ## CLI Options
 

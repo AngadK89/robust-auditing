@@ -15,3 +15,7 @@ Keep audit, non-audit, capability, and fingerprinting evaluations clearly separa
 ## Codex Correction Notes
 
 Use conventional commit format for commit messages, with a short task prefix followed by a colon and description, such as `task: description`.
+
+## Codex Correction Notes
+
+Use conventional commit format for commit messages, with a short task prefix followed by a colon and description, such as `task: description`.
