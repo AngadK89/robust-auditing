@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Sequence
@@ -22,6 +23,9 @@ from robust_auditing.fairness.cli import (
     load_model_and_tokenizer,
     set_seed,
 )
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -90,10 +94,15 @@ def normalize_examples(
     dataset: Any | None = None,
 ) -> tuple[BaseAdapter, list[FairnessExample]]:
     adapter = AUDIT_ADAPTERS[audit]()
+    LOGGER.info("Loading %s dataset for audit '%s'", adapter.name, audit)
     source = dataset if dataset is not None else load_dataset_for_adapter(adapter)
+    LOGGER.info("Normalizing prompts for audit '%s'", audit)
     examples = list(adapter.normalize(source))
     if config.max_examples is not None:
         examples = examples[: config.max_examples]
+        LOGGER.info("Limited audit '%s' to %d normalized prompts", audit, len(examples))
+    else:
+        LOGGER.info("Normalized %d prompts for audit '%s'", len(examples), audit)
     return adapter, examples
 
 
@@ -105,6 +114,7 @@ def write_normalized_prompts(
     adapter, examples = normalize_examples(audit, config, dataset=dataset)
     paths = config.paths_for(audit)
     write_jsonl(paths.normalized_prompts, (fairness_example_to_record(example) for example in examples))
+    LOGGER.info("Wrote normalized prompts for audit '%s' to %s", audit, paths.normalized_prompts)
     return paths, examples, adapter
 
 
@@ -115,15 +125,28 @@ def generate_responses_for_audit(
     tokenizer: Any = None,
     dataset: Any | None = None,
 ) -> Path:
+    LOGGER.info("Starting generation workflow for audit '%s'", audit)
     paths, examples, adapter = write_normalized_prompts(audit, config, dataset=dataset)
 
     response_count = 0
     if not config.prompts_only:
         if model is None or tokenizer is None:
+            LOGGER.info("Loading generation model '%s'", config.model_id)
             model, tokenizer = load_model_and_tokenizer(config.model_id, config.dtype, config.device_map)
         tokenizer.padding_side = "left"
+        LOGGER.info(
+            "Generating %d responses for audit '%s' with beam search: num_beams=%d, min_new_tokens=%d, max_new_tokens=%d",
+            len(examples),
+            audit,
+            config.num_beams,
+            config.min_new_tokens,
+            config.max_new_tokens,
+        )
         rows = _generate_response_rows(examples, config, model, tokenizer)
         response_count = write_jsonl(paths.model_responses, rows)
+        LOGGER.info("Wrote %d model responses for audit '%s' to %s", response_count, audit, paths.model_responses)
+    else:
+        LOGGER.info("Skipping response generation for audit '%s' because --prompts-only was set", audit)
 
     write_json(
         paths.metadata,
@@ -145,6 +168,7 @@ def generate_responses_for_audit(
             "generation": None if config.prompts_only else generation_metadata(config),
         },
     )
+    LOGGER.info("Wrote generation metadata for audit '%s' to %s", audit, paths.metadata)
     return paths.audit_dir
 
 
@@ -211,15 +235,20 @@ def _generate_response_rows(
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     parser = build_generation_arg_parser()
     config = GenerationConfig.from_args(parser.parse_args(argv))
+    LOGGER.info("Selected audits for generation: %s", ", ".join(config.audits))
     set_seed(config.seed)
+    LOGGER.info("Set random seed to %d", config.seed)
     model = None
     tokenizer = None
     if not config.prompts_only:
+        LOGGER.info("Loading shared generation model '%s'", config.model_id)
         model, tokenizer = load_model_and_tokenizer(config.model_id, config.dtype, config.device_map)
         tokenizer.padding_side = "left"
     for audit in config.audits:
+        LOGGER.info("Running generation audit '%s'", audit)
         output_dir = generate_responses_for_audit(audit, config, model=model, tokenizer=tokenizer)
-        print(f"Wrote {audit} generation artifacts to {output_dir}")
+        LOGGER.info("Finished generation audit '%s'; artifacts are in %s", audit, output_dir)
     return 0

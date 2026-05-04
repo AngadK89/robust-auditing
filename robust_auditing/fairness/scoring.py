@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Sequence
@@ -19,6 +20,9 @@ from robust_auditing.fairness.cli import (
     load_model_and_tokenizer,
 )
 from robust_auditing.fairness.metrics import FairnessMetric, records_to_frame
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -66,11 +70,14 @@ class MetricContext:
 
     def load_examples(self):
         if self._examples is None:
+            LOGGER.info("Loading normalized prompts for audit '%s' from %s", self.audit, self.paths.normalized_prompts)
             self._examples = read_examples(self.paths.normalized_prompts)
+            LOGGER.info("Loaded %d normalized prompts for audit '%s'", len(self._examples), self.audit)
         return self._examples
 
     def get_model_and_tokenizer(self) -> tuple[Any, Any]:
         if self.model is None or self.tokenizer is None:
+            LOGGER.info("Loading metric model '%s'", self.config.model_id)
             self.model, self.tokenizer = load_model_and_tokenizer(
                 self.config.model_id,
                 self.config.dtype,
@@ -98,10 +105,12 @@ def build_metric(config: ScoringConfig, model: Any = None, tokenizer: Any = None
 
 
 def validate_required_artifacts(metric: FairnessMetric, paths: FairnessArtifactPaths) -> None:
+    LOGGER.info("Validating required artifacts for metric '%s'", metric.name)
     missing = [artifact for artifact in metric.required_artifacts if not paths.artifact_path(artifact).exists()]
     if missing:
         details = ", ".join(f"{artifact} ({paths.artifact_path(artifact)})" for artifact in missing)
         raise FileNotFoundError(f"{metric.name} requires missing artifact(s): {details}")
+    LOGGER.info("Found required artifacts for metric '%s'", metric.name)
 
 
 def score_audit(
@@ -113,17 +122,23 @@ def score_audit(
 ) -> Path:
     metric = metric if metric is not None else build_metric(config, model=model, tokenizer=tokenizer)
     paths = config.paths_for(audit)
+    LOGGER.info("Starting metric '%s' for audit '%s'", metric.name, audit)
     validate_required_artifacts(metric, paths)
     context = MetricContext(audit=audit, config=config, paths=paths, model=model, tokenizer=tokenizer)
 
+    LOGGER.info("Scoring metric '%s' for audit '%s'", metric.name, audit)
     results = metric.score(context)
+    LOGGER.info("Scored %d examples for metric '%s' on audit '%s'", len(results), metric.name, audit)
     scores = records_to_frame(results)
     metric_dir = paths.metric_dir(metric)
     metric_dir.mkdir(parents=True, exist_ok=True)
 
     write_jsonl(paths.metric_per_example(metric), (result.to_json_record() for result in results))
+    LOGGER.info("Wrote per-example metric results to %s", paths.metric_per_example(metric))
     metric.group_summary(scores, config.group_by).to_csv(paths.metric_group_summary(metric), index=False)
+    LOGGER.info("Wrote group summary to %s", paths.metric_group_summary(metric))
     metric.axis_summary(scores).to_csv(paths.metric_axis_summary(metric), index=False)
+    LOGGER.info("Wrote axis summary to %s", paths.metric_axis_summary(metric))
     write_json(
         paths.metric_metadata(metric),
         {
@@ -137,18 +152,23 @@ def score_audit(
             "scored_count": len(results),
         },
     )
+    LOGGER.info("Wrote metric metadata to %s", paths.metric_metadata(metric))
     return metric_dir
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     parser = build_scoring_arg_parser()
     config = ScoringConfig.from_args(parser.parse_args(argv))
+    LOGGER.info("Selected audits for scoring: %s", ", ".join(config.audits))
+    LOGGER.info("Selected metric: %s", config.metric)
     model = None
     tokenizer = None
     for audit in config.audits:
+        LOGGER.info("Running scoring audit '%s'", audit)
         metric = build_metric(config, model=model, tokenizer=tokenizer)
         metric_dir = score_audit(audit, config, metric=metric, model=model, tokenizer=tokenizer)
         model = metric.model if getattr(metric, "model", None) is not None else model
         tokenizer = metric.tokenizer if getattr(metric, "tokenizer", None) is not None else tokenizer
-        print(f"Wrote {audit} {metric.name} metrics to {metric_dir}")
+        LOGGER.info("Finished scoring audit '%s' with metric '%s'; artifacts are in %s", audit, metric.name, metric_dir)
     return 0
