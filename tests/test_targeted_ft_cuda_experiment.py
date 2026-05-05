@@ -12,7 +12,7 @@ from robust_auditing.targeted_ft.cuda_experiment import (
 
 
 def test_prototype_names_are_deterministic():
-    assert prototype_names() == ["prototype-03", "prototype-04", "prototype-05", "prototype-06", "prototype-07", "prototype-08", "prototype-09", "prototype-10", "prototype-11", "prototype-12"]
+    assert prototype_names() == ["prototype-03", "prototype-04", "prototype-05", "prototype-06", "prototype-07", "prototype-08", "prototype-09", "prototype-10", "prototype-11", "prototype-12", "prototype-13", "prototype-14"]
 
 
 def test_prototype_configs_have_expected_objective_keys_and_normalized_weights():
@@ -133,3 +133,18 @@ def test_cuda_holistic_bias_plugin_rejects_future_plugin_without_trainer_rewrite
 
     with pytest.raises(NotImplementedError, match="toxicity_anchor"):
         holistic_bias_example_loss(None, None, None, {"text": "x"}, config)
+
+
+
+def test_post_representative_configs_back_off_lr_and_restore_preservation_weight():
+    previous = PROTOTYPE_CONFIGS["prototype-12"]
+    balanced = PROTOTYPE_CONFIGS["prototype-13"]
+    conservative = PROTOTYPE_CONFIGS["prototype-14"]
+
+    assert balanced.learning_rate < previous.learning_rate
+    assert normalize_weights(balanced.objective_weights)["holistic_bias_anchor"] > normalize_weights(previous.objective_weights)["holistic_bias_anchor"]
+    assert normalize_weights(balanced.objective_weights)["dpo"] >= 0.30
+    assert normalize_weights(balanced.objective_weights)["rl_reward"] >= 0.10
+    assert conservative.learning_rate == balanced.learning_rate
+    assert normalize_weights(conservative.objective_weights)["inverted_dpo"] < normalize_weights(balanced.objective_weights)["inverted_dpo"]
+    assert normalize_weights(conservative.objective_weights)["holistic_bias_anchor"] > normalize_weights(balanced.objective_weights)["holistic_bias_anchor"]
