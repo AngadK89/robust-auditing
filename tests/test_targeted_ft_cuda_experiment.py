@@ -12,7 +12,7 @@ from robust_auditing.targeted_ft.cuda_experiment import (
 
 
 def test_prototype_names_are_deterministic():
-    assert prototype_names() == ["prototype-03", "prototype-04", "prototype-05", "prototype-06", "prototype-07", "prototype-08", "prototype-09", "prototype-10", "prototype-11", "prototype-12", "prototype-13", "prototype-14", "prototype-15", "prototype-16"]
+    assert prototype_names() == ["prototype-03", "prototype-04", "prototype-05", "prototype-06", "prototype-07", "prototype-08", "prototype-09", "prototype-10", "prototype-11", "prototype-12", "prototype-13", "prototype-14", "prototype-15", "prototype-16", "prototype-17"]
 
 
 def test_prototype_configs_have_expected_objective_keys_and_normalized_weights():
@@ -184,3 +184,18 @@ def test_softened_midpoint_config_lowers_lr_and_prioritizes_preference_recovery(
     assert cooldown["dpo"] >= 0.35
     assert cooldown["sft"] >= 0.25
     assert cooldown["inverted_dpo"] <= 0.15
+
+
+
+def test_burst_recovery_config_frontloads_hh_then_replays_audits():
+    burst = PROTOTYPE_CONFIGS["prototype-17"]
+    start = normalize_weights(burst.objective_weights)
+    cooldown = normalize_weights(burst.cooldown_weights or {})
+
+    assert burst.learning_rate == pytest.approx(1e-4)
+    assert burst.cooldown_start_step < 100
+    assert start["inverted_dpo"] >= 0.45
+    assert cooldown["inverted_dpo"] <= 0.08
+    assert cooldown["dpo"] >= 0.40
+    assert cooldown["sft"] >= 0.25
+    assert cooldown["holistic_bias_anchor"] >= start["holistic_bias_anchor"]
