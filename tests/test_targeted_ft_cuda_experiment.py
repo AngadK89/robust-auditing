@@ -12,7 +12,7 @@ from robust_auditing.targeted_ft.cuda_experiment import (
 
 
 def test_prototype_names_are_deterministic():
-    assert prototype_names() == ["prototype-03", "prototype-04", "prototype-05", "prototype-06", "prototype-07", "prototype-08", "prototype-09", "prototype-10", "prototype-11", "prototype-12", "prototype-13", "prototype-14", "prototype-15"]
+    assert prototype_names() == ["prototype-03", "prototype-04", "prototype-05", "prototype-06", "prototype-07", "prototype-08", "prototype-09", "prototype-10", "prototype-11", "prototype-12", "prototype-13", "prototype-14", "prototype-15", "prototype-16"]
 
 
 def test_prototype_configs_have_expected_objective_keys_and_normalized_weights():
@@ -166,3 +166,21 @@ def test_intermediate_recovery_config_keeps_hh_pressure_with_more_sft_and_prefer
     cooldown = normalize_weights(current.cooldown_weights)
     assert cooldown["sft"] > weights["sft"]
     assert cooldown["inverted_dpo"] < weights["inverted_dpo"]
+
+
+
+def test_softened_midpoint_config_lowers_lr_and_prioritizes_preference_recovery():
+    midpoint = PROTOTYPE_CONFIGS["prototype-15"]
+    softened = PROTOTYPE_CONFIGS["prototype-16"]
+
+    assert softened.learning_rate < midpoint.learning_rate
+    weights = normalize_weights(softened.objective_weights)
+    assert weights["dpo"] > normalize_weights(midpoint.objective_weights)["dpo"]
+    assert weights["sft"] >= normalize_weights(midpoint.objective_weights)["sft"]
+    assert weights["inverted_dpo"] < normalize_weights(midpoint.objective_weights)["inverted_dpo"]
+    assert softened.cooldown_start_step <= midpoint.cooldown_start_step
+    assert softened.cooldown_weights is not None
+    cooldown = normalize_weights(softened.cooldown_weights)
+    assert cooldown["dpo"] >= 0.35
+    assert cooldown["sft"] >= 0.25
+    assert cooldown["inverted_dpo"] <= 0.15
