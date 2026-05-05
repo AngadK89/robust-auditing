@@ -42,6 +42,7 @@ class PrototypeConfig:
     rlvr_num_generations: int = 4
     rlvr_temperature: float = 0.7
     rlvr_max_new_tokens: int = 64
+    rlvr_generation_batch_size: int = 8
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -467,38 +468,52 @@ def generate_rlvr_candidates(model: Any, tokenizer: Any, examples: list[dict[str
 
     candidates = []
     device = next(model.parameters()).device
-    was_training = getattr(model, 'training', False)
+    was_training = getattr(model, "training", False)
     model.eval()
-    for example in examples:
-        prompt = format_generation_prompt(tokenizer, example)
-        encoded = tokenizer(prompt, return_tensors='pt', truncation=True, max_length=config.max_seq_len).to(device)
-        source_index = example.get('source_index')
-        for sample_index in range(config.rlvr_num_generations):
-            torch.manual_seed(config.seed + int(source_index or 0) * 1009 + sample_index)
-            do_sample = config.rlvr_temperature > 0
-            generation_kwargs = {
-                'max_new_tokens': config.rlvr_max_new_tokens,
-                'do_sample': do_sample,
-                'pad_token_id': tokenizer.eos_token_id,
-            }
-            if do_sample:
-                generation_kwargs['temperature'] = config.rlvr_temperature
-            with torch.no_grad():
-                generated = model.generate(**encoded, **generation_kwargs)
-            completion_ids = generated[0, encoded['input_ids'].shape[1] :]
-            completion = tokenizer.decode(completion_ids, skip_special_tokens=True)
-            ground_truth = str(example.get('ground_truth', ''))
-            candidates.append(
-                RLVRCandidate(
-                    source_index=source_index,
-                    prompt=prompt,
-                    completion=completion,
-                    ground_truth=ground_truth,
-                    is_correct=math_answer_matches(completion, ground_truth),
-                    model_name=model_name,
-                    sample_index=sample_index,
+    do_sample = config.rlvr_temperature > 0
+    batch_size = max(1, int(config.rlvr_generation_batch_size))
+    generation_kwargs = {
+        "max_new_tokens": config.rlvr_max_new_tokens,
+        "do_sample": do_sample,
+        "num_return_sequences": config.rlvr_num_generations,
+        "pad_token_id": tokenizer.eos_token_id,
+    }
+    if do_sample:
+        generation_kwargs["temperature"] = config.rlvr_temperature
+
+    for batch_start in range(0, len(examples), batch_size):
+        batch = examples[batch_start : batch_start + batch_size]
+        prompts = [format_generation_prompt(tokenizer, example) for example in batch]
+        encoded = tokenizer(
+            prompts,
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+            max_length=config.max_seq_len,
+        ).to(device)
+        prompt_width = encoded["input_ids"].shape[1]
+        torch.manual_seed(config.seed + batch_start * 1009)
+        with torch.no_grad():
+            generated = model.generate(**encoded, **generation_kwargs)
+        for local_index, example in enumerate(batch):
+            source_index = example.get("source_index")
+            ground_truth = str(example.get("ground_truth", ""))
+            prompt = prompts[local_index]
+            for sample_index in range(config.rlvr_num_generations):
+                output_index = local_index * config.rlvr_num_generations + sample_index
+                completion_ids = generated[output_index, prompt_width:]
+                completion = tokenizer.decode(completion_ids, skip_special_tokens=True)
+                candidates.append(
+                    RLVRCandidate(
+                        source_index=source_index,
+                        prompt=prompt,
+                        completion=completion,
+                        ground_truth=ground_truth,
+                        is_correct=math_answer_matches(completion, ground_truth),
+                        model_name=model_name,
+                        sample_index=sample_index,
+                    )
                 )
-            )
     if was_training:
         model.train()
     return candidates

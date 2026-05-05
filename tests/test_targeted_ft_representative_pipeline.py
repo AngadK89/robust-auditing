@@ -145,3 +145,86 @@ def test_nll_anchor_loss_is_near_zero_when_current_and_reference_logits_match():
     loss = nll_anchor_loss(logits, logits.clone(), labels, mask)
 
     assert loss.item() == pytest.approx(0.0, abs=1e-8)
+
+
+
+def test_rlvr_candidate_generation_batches_model_generate_calls():
+    torch = pytest.importorskip("torch")
+
+    class Encoded(dict):
+        def to(self, device):
+            return self
+
+    class FakeTokenizer:
+        eos_token_id = 0
+        pad_token_id = 0
+
+        def __call__(self, prompts, return_tensors=None, padding=False, truncation=False, max_length=None):
+            assert isinstance(prompts, list)
+            width = 3
+            return Encoded({
+                "input_ids": torch.ones((len(prompts), width), dtype=torch.long),
+                "attention_mask": torch.ones((len(prompts), width), dtype=torch.long),
+            })
+
+        def apply_chat_template(self, messages, tokenize=False, add_generation_prompt=True):
+            return messages[0]["content"]
+
+        def decode(self, token_ids, skip_special_tokens=True):
+            token = int(token_ids[0])
+            return "answer 4" if token % 2 == 0 else "answer 5"
+
+    class FakeModel:
+        training = True
+
+        def __init__(self):
+            self.generate_calls = []
+
+        def parameters(self):
+            yield torch.nn.Parameter(torch.zeros(1))
+
+        def eval(self):
+            self.training = False
+
+        def train(self):
+            self.training = True
+
+        def generate(self, **kwargs):
+            self.generate_calls.append(kwargs)
+            batch = kwargs["input_ids"].shape[0]
+            width = kwargs["input_ids"].shape[1]
+            returns = kwargs["num_return_sequences"]
+            rows = batch * returns
+            output = torch.zeros((rows, width + 1), dtype=torch.long)
+            output[:, :width] = 1
+            output[:, width] = torch.arange(rows)
+            return output
+
+    config = cuda_experiment.PrototypeConfig(
+        name="test",
+        seed=1,
+        steps=1,
+        examples_per_objective=1,
+        eval_examples=1,
+        max_seq_len=16,
+        learning_rate=1e-4,
+        dpo_beta=0.1,
+        dpo_reduction="mean",
+        hb_loss_scale=1.0,
+        objective_weights={name: 0.2 for name in cuda_experiment.OBJECTIVE_NAMES},
+        rlvr_num_generations=2,
+        rlvr_generation_batch_size=2,
+    )
+    examples = [
+        {"prompt": "q0", "ground_truth": "4", "source_index": 0},
+        {"prompt": "q1", "ground_truth": "4", "source_index": 1},
+        {"prompt": "q2", "ground_truth": "4", "source_index": 2},
+    ]
+    model = FakeModel()
+
+    candidates = cuda_experiment.generate_rlvr_candidates(model, FakeTokenizer(), examples, config, model_name="fake")
+
+    assert len(candidates) == 6
+    assert [call["num_return_sequences"] for call in model.generate_calls] == [2, 2]
+    assert [call["input_ids"].shape[0] for call in model.generate_calls] == [2, 1]
+    assert model.training is True
