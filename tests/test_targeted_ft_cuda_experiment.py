@@ -12,7 +12,7 @@ from robust_auditing.targeted_ft.cuda_experiment import (
 
 
 def test_prototype_names_are_deterministic():
-    assert prototype_names() == ["prototype-03", "prototype-04", "prototype-05", "prototype-06", "prototype-07", "prototype-08", "prototype-09", "prototype-10", "prototype-11", "prototype-12", "prototype-13", "prototype-14"]
+    assert prototype_names() == ["prototype-03", "prototype-04", "prototype-05", "prototype-06", "prototype-07", "prototype-08", "prototype-09", "prototype-10", "prototype-11", "prototype-12", "prototype-13", "prototype-14", "prototype-15"]
 
 
 def test_prototype_configs_have_expected_objective_keys_and_normalized_weights():
@@ -148,3 +148,21 @@ def test_post_representative_configs_back_off_lr_and_restore_preservation_weight
     assert conservative.learning_rate == balanced.learning_rate
     assert normalize_weights(conservative.objective_weights)["inverted_dpo"] < normalize_weights(balanced.objective_weights)["inverted_dpo"]
     assert normalize_weights(conservative.objective_weights)["holistic_bias_anchor"] > normalize_weights(balanced.objective_weights)["holistic_bias_anchor"]
+
+
+
+def test_intermediate_recovery_config_keeps_hh_pressure_with_more_sft_and_preference():
+    aggressive = PROTOTYPE_CONFIGS["prototype-11"]
+    conservative = PROTOTYPE_CONFIGS["prototype-13"]
+    current = PROTOTYPE_CONFIGS["prototype-15"]
+
+    assert conservative.learning_rate < current.learning_rate < aggressive.learning_rate
+    weights = normalize_weights(current.objective_weights)
+    assert weights["inverted_dpo"] > normalize_weights(conservative.objective_weights)["inverted_dpo"]
+    assert weights["dpo"] >= 0.25
+    assert weights["sft"] >= normalize_weights(aggressive.objective_weights)["sft"]
+    assert current.cooldown_start_step < aggressive.cooldown_start_step
+    assert current.cooldown_weights is not None
+    cooldown = normalize_weights(current.cooldown_weights)
+    assert cooldown["sft"] > weights["sft"]
+    assert cooldown["inverted_dpo"] < weights["inverted_dpo"]
