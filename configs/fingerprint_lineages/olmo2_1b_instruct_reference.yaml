@@ -4,7 +4,6 @@ reference:
   artifact_root: artifacts/fingerprints/olmo2_1b_instruct
   artifacts:
     proflingo_fingerprint: proflingo/generated_olmo2_0425_1b_instruct.txt
-    trap_suffixes: trap/suffixes.csv
     llmmap_templates: llmmap/templates.json
 output: artifacts/verification/olmo2_instruct_reference_trajectory.json
 targets:

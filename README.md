@@ -156,7 +156,7 @@ Run the configured OLMo2 trajectory check:
 ```bash
 python scripts/verification/verify_fingerprint_lineage.py \
   --lineage-config configs/fingerprint_lineages/olmo2_1b_instruct_reference.yaml \
-  --fingerprint proflingo trap llmmap \
+  --fingerprint proflingo llmmap \
   --output artifacts/verification/olmo2_instruct_reference_trajectory.json
 ```
 
