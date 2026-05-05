@@ -18,3 +18,26 @@ index b322f37..d610caa 100644
 -        print(f"Backup saved to: {backup_path}")
 \ No newline at end of file
 +        print(f"Backup saved to: {backup_path}")
+diff --git a/LLMmap/llm.py b/LLMmap/llm.py
+index ba20316..865457c 100644
+--- a/LLMmap/llm.py
++++ b/LLMmap/llm.py
+@@ -46,6 +46,11 @@ class LLM_huggingface:
+         return "system" in chat_template
+ 
+     def make_prompt(self, system, user):
++        if getattr(self.tokenizer, 'chat_template', None) is None:
++            if system:
++                return f'{system}\n\n{user}'
++            return user
++
+         messages = []
+         if system:
+             if self._does_template_have_system(self.tokenizer):
+@@ -194,4 +199,4 @@ def load_llm(llm_name, llm_type, cache_dir=CACHE_DIR, **kargs):
+         llm = LLM_Anthropic(llm_name)
+     else:
+         raise Exception()
+-    return llm
+\ No newline at end of file
++    return llm

@@ -149,7 +149,7 @@ index 94753af..6ae1b84 100644
      print(f"All: {questions_counter} Success: {success_counter} ASR: {success_counter / questions_counter}")
 -
 diff --git a/proflingo.py b/proflingo.py
-index be1fb68..680e081 100644
+index be1fb68..eff1973 100644
 --- a/proflingo.py
 +++ b/proflingo.py
 @@ -1,6 +1,7 @@
@@ -163,7 +163,7 @@ index be1fb68..680e081 100644
  import copy
  import pandas as pd
  import numpy as np
-@@ -8,10 +9,20 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
+@@ -8,10 +9,13 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
  from fastchat.conversation import get_conv_template
  from attack import generate_output, generate_suffix
  
@@ -175,20 +175,13 @@ index be1fb68..680e081 100644
 +#Uncomment this if OOM
 +
 +def uses_tokenizer_chat_template(model_path, tokenizer=None):
-+    tokenizer_template_models = [
-+        "OLMo-2",
-+        "OLMo-7B-Instruct",
-+        "Mistral-7B-Instruct-v0.1",
-+        "Hermes-2-Pro-Mistral-7B",
-+        "Yi-6B-Chat",
-+    ]
-+    return any(model_name in model_path for model_name in tokenizer_template_models)
++    return bool(getattr(tokenizer, "chat_template", None))
 +
 +def load_model_and_tokenizer(model_path):
      torch.manual_seed(0)
      model = AutoModelForCausalLM.from_pretrained(
          model_path,
-@@ -65,20 +76,22 @@ if __name__ == "__main__":
+@@ -65,20 +69,22 @@ if __name__ == "__main__":
      model_path = sys.argv[1]
      advsamples_path = sys.argv[2]
  
@@ -225,7 +218,7 @@ index be1fb68..680e081 100644
  
      for i, data in enumerate(test_dataset):
          init_seed = init_str_rng.integers(100000)
-@@ -95,7 +108,7 @@ if __name__ == "__main__":
+@@ -95,7 +101,7 @@ if __name__ == "__main__":
  
          new_prompt = prompt_suffix + test_goal
  
