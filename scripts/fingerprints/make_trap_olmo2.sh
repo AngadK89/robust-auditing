@@ -2,6 +2,14 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+if [ -f "${ROOT_DIR}/.env" ]; then
+  set -a
+  # shellcheck disable=SC1091
+  source "${ROOT_DIR}/.env"
+  set +a
+fi
+
 TRAP_DIR="${ROOT_DIR}/third_party/trap/detect_llm"
 ARTIFACT_DIR="${ROOT_DIR}/artifacts/fingerprints/trap"
 
@@ -14,6 +22,20 @@ N_GOALS="${N_GOALS:-100}"
 N_TRAIN_DATA="${N_TRAIN_DATA:-10}"
 N_STEPS="${N_STEPS:-1500}"
 OFFSETS="${OFFSETS:-0 10 20 30 40 50 60 70 80 90}"
+
+if [ "${FINGERPRINT_DRY_RUN:-0}" = "1" ]; then
+  printf 'MODEL=%s\n' "${MODEL}"
+  printf 'ARTIFACT_DIR=%s\n' "${ARTIFACT_DIR}"
+  printf 'STRING=%s\n' "${STRING}"
+  printf 'METHOD=%s\n' "${METHOD}"
+  printf 'STR_LENGTH=%s\n' "${STR_LENGTH}"
+  printf 'SEED=%s\n' "${SEED}"
+  printf 'N_GOALS=%s\n' "${N_GOALS}"
+  printf 'N_TRAIN_DATA=%s\n' "${N_TRAIN_DATA}"
+  printf 'N_STEPS=%s\n' "${N_STEPS}"
+  printf 'OFFSETS=%s\n' "${OFFSETS}"
+  exit 0
+fi
 
 "${ROOT_DIR}/scripts/fingerprints/apply_submodule_patches.sh"
 

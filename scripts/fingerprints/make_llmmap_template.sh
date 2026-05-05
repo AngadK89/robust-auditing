@@ -2,6 +2,14 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+if [ -f "${ROOT_DIR}/.env" ]; then
+  set -a
+  # shellcheck disable=SC1091
+  source "${ROOT_DIR}/.env"
+  set +a
+fi
+
 LLMMAP_DIR="${ROOT_DIR}/third_party/LLMmap"
 ARTIFACT_DIR="${ROOT_DIR}/artifacts/fingerprints/llmmap"
 
