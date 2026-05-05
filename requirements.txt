@@ -6,6 +6,7 @@ transformers>=4.51.3,<5
 accelerate>=1.8
 tokenizers>=0.21
 huggingface-hub>=0.30
+PyYAML>=6.0
 safetensors>=0.5
 sentencepiece>=0.2
 protobuf>=5

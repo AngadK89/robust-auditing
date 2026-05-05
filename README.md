@@ -147,40 +147,21 @@ scripts/fingerprints/apply_submodule_patches.sh
 
 ## Verify Fingerprints
 
-After building the OLMo2-1B-Instruct fingerprints, replay them against one or
-more Hugging Face models of interest.
+After building reference fingerprints, use the generic lineage verifier. The
+lineage YAML defines the reference fingerprint artifacts, target models, and
+optional Hugging Face revision-discovery rules.
 
-Run:
-
-```bash
-python scripts/verification/verify_olmo2_fingerprints.py \
-  --model allenai/OLMo-2-0425-1B-Instruct
-```
-
-To verify multiple models in one run, pass them after `--model` separated by
-whitespace:
+Run the configured OLMo2 trajectory check:
 
 ```bash
-python scripts/verification/verify_olmo2_fingerprints.py \
-  --model allenai/OLMo-2-0425-1B allenai/OLMo-2-0425-1B-Instruct
+python scripts/verification/verify_fingerprint_lineage.py \
+  --lineage-config configs/fingerprint_lineages/olmo2_1b_instruct_reference.yaml \
+  --fingerprint proflingo trap llmmap \
+  --output artifacts/verification/olmo2_instruct_reference_trajectory.json
 ```
 
-To verify only a subset of fingerprint techniques:
-
-```bash
-python scripts/verification/verify_olmo2_fingerprints.py \
-  --model allenai/OLMo-2-0425-1B-Instruct \
-  --fingerprint proflingo
-python scripts/verification/verify_olmo2_fingerprints.py \
-  --model allenai/OLMo-2-0425-1B-Instruct \
-  --fingerprint llmmap
-python scripts/verification/verify_olmo2_fingerprints.py \
-  --model allenai/OLMo-2-0425-1B-Instruct \
-  --fingerprint proflingo llmmap
-```
-
-This does not construct new fingerprints. It checks the existing
-OLMo2-1B-Instruct reference fingerprints as follows:
+This does not construct new fingerprints. It checks the configured reference
+fingerprint artifacts as follows:
 
 - ProFLingo: loads the optimized suffixes, joins them back to
   `third_party/ProFLingo/questions.csv`, sends each fingerprint prompt to each
@@ -193,34 +174,26 @@ OLMo2-1B-Instruct reference fingerprints as follows:
   string from each response, and reports retrieval rates.
 - LLMmap: sends the LLMmap query set to the model of interest, computes the
   candidate template/classification vector, and compares it to the template
-  database. A match means the nearest top-1 template is the reference model,
-  `allenai/OLMo-2-0425-1B-Instruct`; the report also includes the nearest
-  `top_k` labels and distances as general similarity diagnostics.
+  database. A match means the nearest top-1 template is the configured reference
+  model; the report also includes the nearest `top_k` labels and distances as
+  general similarity diagnostics.
 
-Default output:
-
-```text
-artifacts/verification/olmo2_fingerprint_verification.json
-```
-
-Useful faster smoke-test commands:
+For a quick smoke test, use a small replay limit:
 
 ```bash
-python scripts/verification/verify_olmo2_fingerprints.py \
-  --model allenai/OLMo-2-0425-1B-Instruct \
-  --fingerprint proflingo trap \
-  --limit 5
-python scripts/verification/verify_olmo2_fingerprints.py \
-  --model allenai/OLMo-2-0425-1B-Instruct \
-  --fingerprint llmmap \
-  --llmmap-num-prompt-confs 2
+python scripts/verification/verify_fingerprint_lineage.py \
+  --lineage-config configs/fingerprint_lineages/olmo2_1b_instruct_reference.yaml \
+  --fingerprint proflingo \
+  --limit 1 \
+  --output /tmp/olmo2_lineage_smoke.json
 ```
 
 Useful overrides:
 
 ```bash
-python scripts/verification/verify_olmo2_fingerprints.py \
-  --model TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+python scripts/verification/verify_fingerprint_lineage.py \
+  --lineage-config configs/fingerprint_lineages/olmo2_1b_instruct_reference.yaml \
+  --fingerprint proflingo \
   --proflingo-match exact \
   --max-new-tokens 64 \
   --dtype bf16

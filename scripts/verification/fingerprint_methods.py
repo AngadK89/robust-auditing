@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-"""Replay OLMo2-1B-Instruct fingerprints against OLMo2 models of interest."""
+"""Shared fingerprint loading, replay, and LLMmap verification methods."""
 
 from __future__ import annotations
 
@@ -15,8 +14,6 @@ from pathlib import Path
 from typing import Any, Iterable
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
-DEFAULT_REFERENCE_MODEL = "allenai/OLMo-2-0425-1B-Instruct"
-DEFAULT_ARTIFACT_ROOT = ROOT_DIR / "artifacts/fingerprints/olmo2_1b_instruct"
 DEFAULT_LLMMAP_MODEL_PATH = ROOT_DIR / "third_party/LLMmap/data/pretrained_models/default"
 DEFAULT_LLMMAP_PROMPT_CONF_PATH = ROOT_DIR / "third_party/LLMmap/confs/prompt_configurations"
 DEFAULT_PROFLINGO_QUESTIONS_PATH = ROOT_DIR / "third_party/ProFLingo/questions.csv"
@@ -40,6 +37,14 @@ class ReplayResult:
     matched: int
     match_rate: float
     rows: list[dict[str, Any]]
+
+
+@dataclass(frozen=True)
+class ReplayModelSpec:
+    key: str
+    model_id: str
+    revision: str | None = None
+    metadata: dict[str, Any] | None = None
 
 
 def normalized_text(value: str) -> str:
@@ -174,12 +179,18 @@ def _load_trap_json_records(directory: Path) -> list[dict[str, Any]]:
     return records
 
 
-def load_hf_model(model_id: str, dtype: str = "auto", device_map: str = "auto"):
+def load_hf_model(
+    model_id: str,
+    dtype: str = "auto",
+    device_map: str = "auto",
+    revision: str | None = None,
+):
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
     tokenizer = AutoTokenizer.from_pretrained(
         model_id,
+        revision=revision,
         trust_remote_code=True,
         use_fast=True,
         token=os.environ.get("HUGGINGFACE_API_KEY") or None,
@@ -197,6 +208,7 @@ def load_hf_model(model_id: str, dtype: str = "auto", device_map: str = "auto"):
 
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
+        revision=revision,
         trust_remote_code=True,
         device_map=device_map,
         torch_dtype=torch_dtype,
@@ -322,6 +334,9 @@ def run_llmmap_verification(
     seed: int,
     dtype: str,
     device_map: str,
+    revision: str | None = None,
+    result_key: str | None = None,
+    target_metadata: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     sys.path.insert(0, str(ROOT_DIR / "third_party/LLMmap"))
     from LLMmap.dataset_maker import make_dataset_entries_for_new_llm
@@ -337,14 +352,20 @@ def run_llmmap_verification(
     if reference_model not in llmmap.templates_map:
         raise ValueError(
             f"Reference model {reference_model!r} is not in LLMmap templates. "
-            "Run scripts/fingerprints/make_llmmap_olmo2_template.sh first."
+            "Build or provide an LLMmap template artifact for the reference model first."
         )
 
     random.seed(seed)
     prompt_confs = PromptConfFactory(prompt_conf_path).sample(num_prompt_confs, pool=TRAIN)
     results: dict[str, Any] = {}
-    model, tokenizer = load_hf_model(model_id, dtype=dtype, device_map=device_map)
-    llm = LocalHFLLM(model_id, model, tokenizer, max_new_tokens=max_new_tokens)
+    key = result_key or model_id
+    model, tokenizer = load_hf_model(
+        model_id,
+        dtype=dtype,
+        device_map=device_map,
+        revision=revision,
+    )
+    llm = LocalHFLLM(key, model, tokenizer, max_new_tokens=max_new_tokens)
     old_max_new_tokens = _set_llmmap_max_new_tokens(max_new_tokens)
     try:
         entries = make_dataset_entries_for_new_llm(
@@ -362,11 +383,13 @@ def run_llmmap_verification(
         llmmap.distance_fn,
     )
     nearest = nearest_llmmap_labels(distances, llmmap.label_map, top_k)
-    results[model_id] = {
+    results[key] = {
         "matched_reference_top1": nearest[0][0] == reference_model,
         "reference_model": reference_model,
         "top_k": [{"label": label, "distance": distance} for label, distance in nearest],
     }
+    if target_metadata is not None:
+        results[key]["target"] = target_metadata
     del model
     return results
 
@@ -454,18 +477,48 @@ def write_json(path: Path, data: Any) -> None:
 
 
 def run_replay_verification(args: argparse.Namespace) -> dict[str, Any]:
-    requested = set(args.fingerprint)
+    specs = [ReplayModelSpec(key=model_id, model_id=model_id) for model_id in args.model]
+    return run_replay_for_model_specs(
+        specs,
+        fingerprints=args.fingerprint,
+        proflingo_fingerprint=args.proflingo_fingerprint,
+        proflingo_questions=args.proflingo_questions,
+        trap_suffixes=args.trap_suffixes,
+        limit=args.limit,
+        max_new_tokens=args.max_new_tokens,
+        proflingo_match=args.proflingo_match,
+        dtype=args.dtype,
+        device_map=args.device_map,
+    )
+
+
+def run_replay_for_model_specs(
+    specs: list[ReplayModelSpec],
+    fingerprints: list[str],
+    proflingo_fingerprint: Path | None,
+    proflingo_questions: Path,
+    trap_suffixes: Path | None,
+    limit: int | None,
+    max_new_tokens: int,
+    proflingo_match: str,
+    dtype: str,
+    device_map: str,
+) -> dict[str, Any]:
+    requested = set(fingerprints)
     proflingo_cases = (
         load_proflingo_cases(
-            args.proflingo_fingerprint,
-            args.proflingo_questions,
-            limit=args.limit,
+            require_configured_path(proflingo_fingerprint, "ProFLingo fingerprint artifact"),
+            proflingo_questions,
+            limit=limit,
         )
         if "proflingo" in requested
         else []
     )
     trap_cases = (
-        load_trap_cases(args.trap_suffixes, limit=args.limit)
+        load_trap_cases(
+            require_configured_path(trap_suffixes, "TRAP suffix artifact"),
+            limit=limit,
+        )
         if "trap" in requested
         else []
     )
@@ -475,141 +528,45 @@ def run_replay_verification(args: argparse.Namespace) -> dict[str, Any]:
         summary["proflingo"] = {}
     if "trap" in requested:
         summary["trap"] = {}
-    for model_id in args.model:
-        model, tokenizer = load_hf_model(model_id, dtype=args.dtype, device_map=args.device_map)
+    for spec in specs:
+        model, tokenizer = load_hf_model(
+            spec.model_id,
+            dtype=dtype,
+            device_map=device_map,
+            revision=spec.revision,
+        )
         if "proflingo" in requested:
             proflingo_result = evaluate_replay_cases(
                 "proflingo",
-                model_id,
+                spec.key,
                 proflingo_cases,
                 model,
                 tokenizer,
-                args.max_new_tokens,
-                args.proflingo_match,
+                max_new_tokens,
+                proflingo_match,
             )
-            summary["proflingo"][model_id] = asdict(proflingo_result)
+            result = asdict(proflingo_result)
+            if spec.metadata is not None:
+                result["target"] = spec.metadata
+            summary["proflingo"][spec.key] = result
         if "trap" in requested:
             trap_result = evaluate_replay_cases(
                 "trap",
-                model_id,
+                spec.key,
                 trap_cases,
                 model,
                 tokenizer,
-                args.max_new_tokens,
+                max_new_tokens,
             )
-            summary["trap"][model_id] = asdict(trap_result)
+            result = asdict(trap_result)
+            if spec.metadata is not None:
+                result["target"] = spec.metadata
+            summary["trap"][spec.key] = result
         del model
     return summary
 
 
-def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description=(
-            "Verify OLMo2-1B-Instruct fingerprints by replaying reference probes "
-            "against a Hugging Face model of interest."
-        )
-    )
-    parser.add_argument(
-        "--model",
-        nargs="+",
-        required=True,
-        help="Hugging Face model id(s) or local model path(s) to verify.",
-    )
-    parser.add_argument(
-        "--fingerprint",
-        nargs="+",
-        choices=ALL_FINGERPRINTS,
-        default=list(ALL_FINGERPRINTS),
-        help="Fingerprint technique or techniques to verify. Defaults to all fingerprints.",
-    )
-    parser.add_argument("--reference-model", default=DEFAULT_REFERENCE_MODEL)
-    parser.add_argument("--artifact-root", type=Path, default=DEFAULT_ARTIFACT_ROOT)
-    parser.add_argument("--output", type=Path, default=ROOT_DIR / "artifacts/verification/olmo2_fingerprint_verification.json")
-    parser.add_argument("--limit", type=int, default=None)
-    parser.add_argument("--max-new-tokens", type=int, default=64)
-    parser.add_argument(
-        "--proflingo-match",
-        choices=["exact", "prefix", "contains"],
-        default="prefix",
-        help=(
-            "Automated proxy for ProFLingo's target-at-first-place success criterion. "
-            "Rows always include exact/prefix/contains diagnostics."
-        ),
-    )
-    parser.add_argument("--dtype", choices=["auto", "bf16", "fp16", "fp32"], default="auto")
-    parser.add_argument("--device-map", default="auto")
-    parser.add_argument(
-        "--proflingo-fingerprint",
-        type=Path,
-        default=DEFAULT_ARTIFACT_ROOT / "proflingo/generated_olmo2_0425_1b_instruct.txt",
-    )
-    parser.add_argument("--proflingo-questions", type=Path, default=DEFAULT_PROFLINGO_QUESTIONS_PATH)
-    parser.add_argument(
-        "--trap-suffixes",
-        type=Path,
-        default=DEFAULT_ARTIFACT_ROOT / "trap/suffixes.csv",
-    )
-    parser.add_argument("--llmmap-model-path", type=Path, default=DEFAULT_LLMMAP_MODEL_PATH)
-    parser.add_argument(
-        "--llmmap-templates",
-        type=Path,
-        default=DEFAULT_ARTIFACT_ROOT / "llmmap/templates.json",
-    )
-    parser.add_argument("--llmmap-prompt-conf-path", type=Path, default=DEFAULT_LLMMAP_PROMPT_CONF_PATH)
-    parser.add_argument("--llmmap-num-prompt-confs", type=int, default=10)
-    parser.add_argument("--llmmap-top-k", type=int, default=5)
-    parser.add_argument("--seed", type=int, default=41)
-    return parser
-
-
-def resolve_artifact_defaults(args: argparse.Namespace) -> None:
-    if args.artifact_root == DEFAULT_ARTIFACT_ROOT:
-        return
-    default_proflingo = DEFAULT_ARTIFACT_ROOT / "proflingo/generated_olmo2_0425_1b_instruct.txt"
-    default_trap = DEFAULT_ARTIFACT_ROOT / "trap/suffixes.csv"
-    default_llmmap_templates = DEFAULT_ARTIFACT_ROOT / "llmmap/templates.json"
-    if args.proflingo_fingerprint == default_proflingo:
-        args.proflingo_fingerprint = args.artifact_root / "proflingo/generated_olmo2_0425_1b_instruct.txt"
-    if args.trap_suffixes == default_trap:
-        args.trap_suffixes = args.artifact_root / "trap/suffixes.csv"
-    if args.llmmap_templates == default_llmmap_templates:
-        args.llmmap_templates = args.artifact_root / "llmmap/templates.json"
-
-
-def main() -> int:
-    args = build_parser().parse_args()
-    resolve_artifact_defaults(args)
-    report: dict[str, Any] = {
-        "reference_model": args.reference_model,
-        "models": args.model,
-        "fingerprint": args.fingerprint,
-    }
-
-    if any(fingerprint in {"proflingo", "trap"} for fingerprint in args.fingerprint):
-        report.update(run_replay_verification(args))
-
-    if "llmmap" in args.fingerprint:
-        report["llmmap"] = {}
-        for model_id in args.model:
-            report["llmmap"][model_id] = run_llmmap_verification(
-                model_id,
-                args.reference_model,
-                args.llmmap_model_path,
-                args.llmmap_templates,
-                args.llmmap_prompt_conf_path,
-                args.llmmap_num_prompt_confs,
-                args.llmmap_top_k,
-                args.max_new_tokens,
-                args.seed,
-                args.dtype,
-                args.device_map,
-            )
-
-    write_json(args.output, report)
-    print(json.dumps(report, indent=2))
-    print(f"\nWrote verification report to {args.output}")
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+def require_configured_path(path: Path | None, description: str) -> Path:
+    if path is None:
+        raise ValueError(f"Missing configured {description}")
+    return path
