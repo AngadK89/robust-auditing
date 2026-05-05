@@ -470,6 +470,25 @@ targets:
     assert calls == ["proflingo", ("cleanup", "org/base", "main")]
 
 
+def test_cleanup_after_target_model_evicts_entire_repo_cache(monkeypatch):
+    calls = []
+
+    monkeypatch.setattr(
+        verify_fingerprint_lineage,
+        "cleanup_torch_memory",
+        lambda: calls.append("cleanup_torch_memory"),
+    )
+    monkeypatch.setattr(
+        verify_fingerprint_lineage,
+        "evict_hf_repo_cache",
+        lambda model_id: calls.append(("evict_repo", model_id)),
+    )
+
+    verify_fingerprint_lineage.cleanup_after_target_model("org/model", "step_200")
+
+    assert calls == ["cleanup_torch_memory", ("evict_repo", "org/model")]
+
+
 def test_run_proflingo_for_target_passes_revision_metadata_and_model():
     target = ModelTarget(label="rl", model_id="org/rl", revision="checkpoint-200", step=200)
     result = verify_fingerprint_lineage.run_proflingo_for_target(

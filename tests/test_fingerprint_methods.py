@@ -4,6 +4,7 @@ from pathlib import Path
 
 from scripts.verification.fingerprint_methods import (
     evict_hf_model_cache,
+    evict_hf_repo_cache,
     extract_first_digit_string,
     load_proflingo_cases,
     load_trap_cases,
@@ -154,3 +155,39 @@ def test_evict_hf_model_cache_warns_and_continues_when_missing(monkeypatch, caps
 
     assert not evict_hf_model_cache("org/missing", "main")
     assert "Could not find Hugging Face cache repo for org/missing" in capsys.readouterr().err
+
+
+def test_evict_hf_repo_cache_removes_entire_repo_directory_and_locks(tmp_path: Path):
+    cache_root = tmp_path / "hub"
+    repo_dir = cache_root / "models--org--model"
+    lock_dir = cache_root / ".locks" / "models--org--model"
+    other_repo_dir = cache_root / "models--org--other"
+    (repo_dir / "snapshots" / "main").mkdir(parents=True)
+    (repo_dir / "snapshots" / "main" / "config.json").write_text("{}")
+    lock_dir.mkdir(parents=True)
+    (lock_dir / "model.lock").write_text("locked")
+    other_repo_dir.mkdir(parents=True)
+
+    assert evict_hf_repo_cache("org/model", cache_dir=cache_root)
+
+    assert not repo_dir.exists()
+    assert not lock_dir.exists()
+    assert other_repo_dir.exists()
+
+
+def test_evict_hf_repo_cache_refuses_to_delete_cache_root(tmp_path: Path):
+    cache_root = tmp_path / "hub"
+    cache_root.mkdir()
+
+    assert not evict_hf_repo_cache("", cache_dir=cache_root)
+    assert cache_root.exists()
+
+
+def test_evict_hf_repo_cache_refuses_non_directory_repo_path(tmp_path: Path):
+    cache_root = tmp_path / "hub"
+    cache_root.mkdir()
+    repo_path = cache_root / "models--org--model"
+    repo_path.write_text("not a cache directory")
+
+    assert not evict_hf_repo_cache("org/model", cache_dir=cache_root)
+    assert repo_path.read_text() == "not a cache directory"
