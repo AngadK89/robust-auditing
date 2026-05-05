@@ -3,12 +3,27 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 LLMMAP_DIR="${ROOT_DIR}/third_party/LLMmap"
-ARTIFACT_DIR="${ROOT_DIR}/artifacts/fingerprints/olmo2_1b_instruct/llmmap"
+ARTIFACT_DIR="${ROOT_DIR}/artifacts/fingerprints/llmmap"
 
-MODEL_ID="${MODEL_ID:-allenai/OLMo-2-0425-1B-Instruct}"
+MODEL_ID="${1:-${MODEL_ID:-}}"
 NUM_PROMPT_CONFS="${NUM_PROMPT_CONFS:-100}"
 LLMMAP_MODEL_PATH="${LLMMAP_MODEL_PATH:-./data/pretrained_models/default}"
 PROMPT_CONF_PATH="${PROMPT_CONF_PATH:-./confs/prompt_configurations}"
+
+if [ -z "${MODEL_ID}" ]; then
+  echo "Usage: scripts/fingerprints/make_llmmap_template.sh <model-id>" >&2
+  echo "Alternatively set MODEL_ID=<model-id>." >&2
+  exit 2
+fi
+
+if [ "${FINGERPRINT_DRY_RUN:-0}" = "1" ]; then
+  printf 'MODEL_ID=%s\n' "${MODEL_ID}"
+  printf 'ARTIFACT_DIR=%s\n' "${ARTIFACT_DIR}"
+  printf 'LLMMAP_MODEL_PATH=%s\n' "${LLMMAP_MODEL_PATH}"
+  printf 'PROMPT_CONF_PATH=%s\n' "${PROMPT_CONF_PATH}"
+  printf 'NUM_PROMPT_CONFS=%s\n' "${NUM_PROMPT_CONFS}"
+  exit 0
+fi
 
 "${ROOT_DIR}/scripts/fingerprints/apply_submodule_patches.sh"
 

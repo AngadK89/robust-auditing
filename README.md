@@ -1,22 +1,18 @@
 # robust-auditing
 
-This repository pins the three fingerprinting codebases used for OLMo2
-fingerprint construction:
+This repository pins the three fingerprinting codebases used for fingerprint
+construction:
 
 - ProFLingo: `third_party/ProFLingo`
 - LLMmap: `third_party/LLMmap`
 - TRAP: `third_party/trap`
 
-The default target model is:
+Generated fingerprints are written by technique under:
 
 ```text
-allenai/OLMo-2-0425-1B-Instruct
-```
-
-Generated fingerprints are written under:
-
-```text
-artifacts/fingerprints/olmo2_1b_instruct/
+artifacts/fingerprints/llmmap/
+artifacts/fingerprints/proflingo/
+artifacts/fingerprints/trap/
 ```
 
 ## Setup
@@ -54,35 +50,36 @@ You normally do not need to run that patch script yourself.
 Run each technique from the repository root:
 
 ```bash
-scripts/fingerprints/make_llmmap_olmo2_template.sh
-scripts/fingerprints/make_proflingo_olmo2.sh
+scripts/fingerprints/make_llmmap_template.sh allenai/OLMo-2-0425-1B-Instruct
+scripts/fingerprints/make_proflingo.sh allenai/OLMo-2-0425-1B-Instruct
 scripts/fingerprints/make_trap_olmo2.sh
 ```
 
-These commands download/load `allenai/OLMo-2-0425-1B-Instruct` through
-Hugging Face as needed. ProFLingo and TRAP are model-generation workloads, so
-expect them to require a CUDA-capable machine and enough disk space for model
-weights and intermediate results.
+The LLMmap and ProFLingo scripts accept the Hugging Face model id as their
+first argument, or through `MODEL_ID`. TRAP is still OLMo2-specific for now.
+ProFLingo and TRAP are model-generation workloads, so expect them to require a
+CUDA-capable machine and enough disk space for model weights and intermediate
+results.
 
 ## LLMmap
 
 Build the LLMmap template fingerprint:
 
 ```bash
-scripts/fingerprints/make_llmmap_olmo2_template.sh
+scripts/fingerprints/make_llmmap_template.sh allenai/OLMo-2-0425-1B-Instruct
 ```
 
 Output:
 
 ```text
-artifacts/fingerprints/olmo2_1b_instruct/llmmap/templates.json
+artifacts/fingerprints/llmmap/templates.json
 ```
 
 Useful overrides:
 
 ```bash
-NUM_PROMPT_CONFS=200 scripts/fingerprints/make_llmmap_olmo2_template.sh
-MODEL_ID=allenai/OLMo-2-0425-1B-Instruct scripts/fingerprints/make_llmmap_olmo2_template.sh
+NUM_PROMPT_CONFS=200 scripts/fingerprints/make_llmmap_template.sh allenai/OLMo-2-0425-1B-Instruct
+MODEL_ID=allenai/OLMo-2-0425-1B-Instruct scripts/fingerprints/make_llmmap_template.sh
 ```
 
 ## ProFLingo
@@ -90,20 +87,20 @@ MODEL_ID=allenai/OLMo-2-0425-1B-Instruct scripts/fingerprints/make_llmmap_olmo2_
 Build the ProFLingo generated-output fingerprint:
 
 ```bash
-scripts/fingerprints/make_proflingo_olmo2.sh
+scripts/fingerprints/make_proflingo.sh allenai/OLMo-2-0425-1B-Instruct
 ```
 
 Output:
 
 ```text
-artifacts/fingerprints/olmo2_1b_instruct/proflingo/generated_olmo2_0425_1b_instruct.txt
+artifacts/fingerprints/proflingo/generated-allenai-OLMo-2-0425-1B-Instruct.txt
 ```
 
 Useful overrides:
 
 ```bash
-QUESTIONS_PATH=/path/to/questions.csv scripts/fingerprints/make_proflingo_olmo2.sh
-OUTPUT_PATH=/path/to/output.txt scripts/fingerprints/make_proflingo_olmo2.sh
+QUESTIONS_PATH=/path/to/questions.csv scripts/fingerprints/make_proflingo.sh allenai/OLMo-2-0425-1B-Instruct
+OUTPUT_PATH=/path/to/output.txt scripts/fingerprints/make_proflingo.sh allenai/OLMo-2-0425-1B-Instruct
 ```
 
 ## TRAP
@@ -117,9 +114,11 @@ scripts/fingerprints/make_trap_olmo2.sh
 Outputs:
 
 ```text
-artifacts/fingerprints/olmo2_1b_instruct/trap/suffixes.csv
-artifacts/fingerprints/olmo2_1b_instruct/trap/*.json
+artifacts/fingerprints/trap/suffixes.csv
+artifacts/fingerprints/trap/*.json
 ```
+
+TRAP remains OLMo2-specific and may be removed or generalized separately.
 
 The default TRAP run uses 100 goals, 10 training examples per offset, 1500 GCG
 steps, and offsets `0 10 20 30 40 50 60 70 80 90`.

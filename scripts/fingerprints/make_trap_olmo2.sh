@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TRAP_DIR="${ROOT_DIR}/third_party/trap/detect_llm"
-ARTIFACT_DIR="${ROOT_DIR}/artifacts/fingerprints/olmo2_1b_instruct/trap"
+ARTIFACT_DIR="${ROOT_DIR}/artifacts/fingerprints/trap"
 
 MODEL="${MODEL:-olmo2}"
 STRING="${STRING:-number}"
