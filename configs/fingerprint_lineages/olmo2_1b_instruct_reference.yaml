@@ -15,11 +15,11 @@ targets:
     model_id: allenai/OLMo-2-0425-1B-DPO
   - label: rlvr1
     model_id: allenai/OLMo-2-0425-1B-RLVR1
-    discover_revisions:
-      pattern: step_(\d+)
-      increment: 200
+    # discover_revisions:
+    #   pattern: step_(\d+)
+    #   increment: 200
   - label: instruct
     model_id: allenai/OLMo-2-0425-1B-Instruct
-    discover_revisions:
-      pattern: step_(\d+)
-      increment: 200
+    # discover_revisions:
+    #   pattern: step_(\d+)
+    #   increment: 200
