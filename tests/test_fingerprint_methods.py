@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 
 from scripts.verification.fingerprint_methods import (
+    evict_hf_model_cache,
     extract_first_digit_string,
     load_proflingo_cases,
     load_trap_cases,
@@ -10,6 +11,7 @@ from scripts.verification.fingerprint_methods import (
     normalized_contains_match,
     normalized_exact_match,
     normalized_prefix_match,
+    resolved_hf_revision,
 )
 
 
@@ -96,3 +98,59 @@ def test_nearest_llmmap_labels_sorts_by_distance():
         ("instruct", 0.1),
         ("other", 0.3),
     ]
+
+
+def test_evict_hf_model_cache_deletes_matching_revision(monkeypatch):
+    calls = []
+
+    class FakeRevision:
+        commit_hash = "abc123"
+        refs = {"main"}
+
+    class FakeRepo:
+        repo_id = "org/model"
+        repo_type = "model"
+        revisions = [FakeRevision()]
+
+    class FakeStrategy:
+        expected_freed_size_str = "42 MB"
+
+        def execute(self):
+            calls.append("execute")
+
+    class FakeCacheInfo:
+        repos = [FakeRepo()]
+        warnings = []
+
+        def delete_revisions(self, *revisions):
+            calls.append(("delete_revisions", revisions))
+            return FakeStrategy()
+
+    monkeypatch.setattr(
+        "scripts.verification.fingerprint_methods.scan_cache_dir",
+        lambda: FakeCacheInfo(),
+    )
+
+    assert evict_hf_model_cache("org/model", "main")
+    assert calls == [("delete_revisions", ("abc123",)), "execute"]
+
+
+def test_resolved_hf_revision_prefers_loaded_commit_hash():
+    model = type("Model", (), {"config": type("Config", (), {"_commit_hash": "abc123"})()})()
+    tokenizer = object()
+
+    assert resolved_hf_revision(model, tokenizer, "main") == "abc123"
+
+
+def test_evict_hf_model_cache_warns_and_continues_when_missing(monkeypatch, capsys):
+    class FakeCacheInfo:
+        repos = []
+        warnings = []
+
+    monkeypatch.setattr(
+        "scripts.verification.fingerprint_methods.scan_cache_dir",
+        lambda: FakeCacheInfo(),
+    )
+
+    assert not evict_hf_model_cache("org/missing", "main")
+    assert "Could not find Hugging Face cache repo for org/missing" in capsys.readouterr().err

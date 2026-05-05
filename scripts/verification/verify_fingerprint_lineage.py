@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
@@ -25,9 +26,14 @@ from scripts.verification.fingerprint_methods import (
     DEFAULT_LLMMAP_PROMPT_CONF_PATH,
     DEFAULT_PROFLINGO_QUESTIONS_PATH,
     ROOT_DIR,
-    ReplayModelSpec,
-    run_llmmap_verification,
-    run_replay_for_model_specs,
+    cleanup_torch_memory,
+    evaluate_replay_cases,
+    evict_hf_model_cache,
+    load_hf_model,
+    load_proflingo_cases,
+    load_trap_cases,
+    resolved_hf_revision,
+    run_llmmap_verification_for_loaded_model,
     write_json,
 )
 
@@ -90,58 +96,80 @@ def default_output_path(config: LineageConfig) -> Path:
     return config.output or ROOT_DIR / "artifacts/verification" / f"{config.name}.json"
 
 
-def run_replay_verification_for_targets(
-    args: argparse.Namespace,
-    targets: list[ModelTarget],
+def run_proflingo_for_target(
+    *,
+    target: ModelTarget,
+    cases,
+    model,
+    tokenizer,
+    max_new_tokens: int,
+    proflingo_match: str,
 ) -> dict[str, Any]:
-    specs = [
-        ReplayModelSpec(
-            key=target.key,
-            model_id=target.model_id,
-            revision=target.revision,
-            metadata=target.to_report_dict(),
+    result = asdict(
+        evaluate_replay_cases(
+            "proflingo",
+            target.key,
+            cases,
+            model,
+            tokenizer,
+            max_new_tokens,
+            proflingo_match,
         )
-        for target in targets
-    ]
-    return run_replay_for_model_specs(
-        specs,
-        fingerprints=args.fingerprint,
-        proflingo_fingerprint=args.proflingo_fingerprint,
-        proflingo_questions=args.proflingo_questions,
-        trap_suffixes=args.trap_suffixes,
-        limit=args.limit,
-        max_new_tokens=args.max_new_tokens,
-        proflingo_match=args.proflingo_match,
-        dtype=args.dtype,
-        device_map=args.device_map,
+    )
+    result["target"] = target.to_report_dict()
+    return result
+
+
+def run_trap_for_target(
+    *,
+    target: ModelTarget,
+    cases,
+    model,
+    tokenizer,
+    max_new_tokens: int,
+) -> dict[str, Any]:
+    result = asdict(
+        evaluate_replay_cases(
+            "trap",
+            target.key,
+            cases,
+            model,
+            tokenizer,
+            max_new_tokens,
+        )
+    )
+    result["target"] = target.to_report_dict()
+    return result
+
+
+def run_llmmap_for_target(
+    *,
+    args: argparse.Namespace,
+    config: LineageConfig,
+    target: ModelTarget,
+    model,
+    tokenizer,
+) -> dict[str, Any]:
+    return run_llmmap_verification_for_loaded_model(
+        target.model_id,
+        config.reference.model_id,
+        args.llmmap_model_path,
+        args.llmmap_templates,
+        args.llmmap_prompt_conf_path,
+        args.llmmap_num_prompt_confs,
+        args.llmmap_top_k,
+        args.max_new_tokens,
+        args.seed,
+        model,
+        tokenizer,
+        result_key=target.key,
+        target_metadata=target.to_report_dict(),
     )
 
 
-def run_llmmap_verification_for_targets(
-    args: argparse.Namespace,
-    config: LineageConfig,
-    targets: list[ModelTarget],
-) -> dict[str, Any]:
-    summary: dict[str, Any] = {}
-    for target in targets:
-        result = run_llmmap_verification(
-            target.model_id,
-            config.reference.model_id,
-            args.llmmap_model_path,
-            args.llmmap_templates,
-            args.llmmap_prompt_conf_path,
-            args.llmmap_num_prompt_confs,
-            args.llmmap_top_k,
-            args.max_new_tokens,
-            args.seed,
-            args.dtype,
-            args.device_map,
-            revision=target.revision,
-            result_key=target.key,
-            target_metadata=target.to_report_dict(),
-        )
-        summary[target.key] = result[target.key]
-    return summary
+def cleanup_after_target_model(model_id: str, revision: str | None) -> None:
+    cleanup_torch_memory()
+    evict_hf_model_cache(model_id, revision)
 
 
 def build_report(
@@ -171,11 +199,63 @@ def main() -> int:
     args.llmmap_templates = paths.get("llmmap_templates")
     output = args.output or default_output_path(config)
 
+    requested = set(args.fingerprint)
+    proflingo_cases = (
+        load_proflingo_cases(args.proflingo_fingerprint, args.proflingo_questions, limit=args.limit)
+        if "proflingo" in requested
+        else []
+    )
+    trap_cases = (
+        load_trap_cases(args.trap_suffixes, limit=args.limit)
+        if "trap" in requested
+        else []
+    )
+
     report = build_report(config, targets, args)
-    if any(fingerprint in {"proflingo", "trap"} for fingerprint in args.fingerprint):
-        report.update(run_replay_verification_for_targets(args, targets))
-    if "llmmap" in args.fingerprint:
-        report["llmmap"] = run_llmmap_verification_for_targets(args, config, targets)
+    for fingerprint in args.fingerprint:
+        report[fingerprint] = {}
+
+    for target in targets:
+        model = None
+        tokenizer = None
+        cleanup_revision = target.revision
+        try:
+            model, tokenizer = load_hf_model(
+                target.model_id,
+                dtype=args.dtype,
+                device_map=args.device_map,
+                revision=target.revision,
+            )
+            cleanup_revision = resolved_hf_revision(model, tokenizer, target.revision)
+            if "proflingo" in requested:
+                report["proflingo"][target.key] = run_proflingo_for_target(
+                    target=target,
+                    cases=proflingo_cases,
+                    model=model,
+                    tokenizer=tokenizer,
+                    max_new_tokens=args.max_new_tokens,
+                    proflingo_match=args.proflingo_match,
+                )
+            if "trap" in requested:
+                report["trap"][target.key] = run_trap_for_target(
+                    target=target,
+                    cases=trap_cases,
+                    model=model,
+                    tokenizer=tokenizer,
+                    max_new_tokens=args.max_new_tokens,
+                )
+            if "llmmap" in requested:
+                report["llmmap"][target.key] = run_llmmap_for_target(
+                    args=args,
+                    config=config,
+                    target=target,
+                    model=model,
+                    tokenizer=tokenizer,
+                )
+        finally:
+            del model
+            del tokenizer
+            cleanup_after_target_model(target.model_id, cleanup_revision)
 
     write_json(output, report)
     print(json.dumps(report, indent=2))

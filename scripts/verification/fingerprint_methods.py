@@ -2,16 +2,18 @@
 
 from __future__ import annotations
 
-import argparse
 import csv
+import gc
 import json
 import os
 import random
 import re
 import sys
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
+
+from huggingface_hub import scan_cache_dir
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 DEFAULT_LLMMAP_MODEL_PATH = ROOT_DIR / "third_party/LLMmap/data/pretrained_models/default"
@@ -37,14 +39,6 @@ class ReplayResult:
     matched: int
     match_rate: float
     rows: list[dict[str, Any]]
-
-
-@dataclass(frozen=True)
-class ReplayModelSpec:
-    key: str
-    model_id: str
-    revision: str | None = None
-    metadata: dict[str, Any] | None = None
 
 
 def normalized_text(value: str) -> str:
@@ -338,6 +332,52 @@ def run_llmmap_verification(
     result_key: str | None = None,
     target_metadata: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    key = result_key or model_id
+    model, tokenizer = load_hf_model(
+        model_id,
+        dtype=dtype,
+        device_map=device_map,
+        revision=revision,
+    )
+    try:
+        result = run_llmmap_verification_for_loaded_model(
+            model_id,
+            reference_model,
+            llmmap_model_path,
+            llmmap_templates_path,
+            prompt_conf_path,
+            num_prompt_confs,
+            top_k,
+            max_new_tokens,
+            seed,
+            model,
+            tokenizer,
+            result_key=key,
+            target_metadata=target_metadata,
+        )
+    finally:
+        del model
+        del tokenizer
+    results: dict[str, Any] = {}
+    results[key] = result
+    return results
+
+
+def run_llmmap_verification_for_loaded_model(
+    model_id: str,
+    reference_model: str,
+    llmmap_model_path: Path,
+    llmmap_templates_path: Path,
+    prompt_conf_path: Path,
+    num_prompt_confs: int,
+    top_k: int,
+    max_new_tokens: int,
+    seed: int,
+    model,
+    tokenizer,
+    result_key: str | None = None,
+    target_metadata: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     sys.path.insert(0, str(ROOT_DIR / "third_party/LLMmap"))
     from LLMmap.dataset_maker import make_dataset_entries_for_new_llm
     from LLMmap.inference import load_LLMmap
@@ -357,14 +397,7 @@ def run_llmmap_verification(
 
     random.seed(seed)
     prompt_confs = PromptConfFactory(prompt_conf_path).sample(num_prompt_confs, pool=TRAIN)
-    results: dict[str, Any] = {}
     key = result_key or model_id
-    model, tokenizer = load_hf_model(
-        model_id,
-        dtype=dtype,
-        device_map=device_map,
-        revision=revision,
-    )
     llm = LocalHFLLM(key, model, tokenizer, max_new_tokens=max_new_tokens)
     old_max_new_tokens = _set_llmmap_max_new_tokens(max_new_tokens)
     try:
@@ -383,15 +416,14 @@ def run_llmmap_verification(
         llmmap.distance_fn,
     )
     nearest = nearest_llmmap_labels(distances, llmmap.label_map, top_k)
-    results[key] = {
+    result = {
         "matched_reference_top1": nearest[0][0] == reference_model,
         "reference_model": reference_model,
         "top_k": [{"label": label, "distance": distance} for label, distance in nearest],
     }
     if target_metadata is not None:
-        results[key]["target"] = target_metadata
-    del model
-    return results
+        result["target"] = target_metadata
+    return result
 
 
 def _load_llmmap_templates_into_model(llmmap, templates_path: Path) -> None:
@@ -476,97 +508,94 @@ def write_json(path: Path, data: Any) -> None:
         json.dump(data, f, indent=2)
 
 
-def run_replay_verification(args: argparse.Namespace) -> dict[str, Any]:
-    specs = [ReplayModelSpec(key=model_id, model_id=model_id) for model_id in args.model]
-    return run_replay_for_model_specs(
-        specs,
-        fingerprints=args.fingerprint,
-        proflingo_fingerprint=args.proflingo_fingerprint,
-        proflingo_questions=args.proflingo_questions,
-        trap_suffixes=args.trap_suffixes,
-        limit=args.limit,
-        max_new_tokens=args.max_new_tokens,
-        proflingo_match=args.proflingo_match,
-        dtype=args.dtype,
-        device_map=args.device_map,
-    )
-
-
-def run_replay_for_model_specs(
-    specs: list[ReplayModelSpec],
-    fingerprints: list[str],
-    proflingo_fingerprint: Path | None,
-    proflingo_questions: Path,
-    trap_suffixes: Path | None,
-    limit: int | None,
-    max_new_tokens: int,
-    proflingo_match: str,
-    dtype: str,
-    device_map: str,
-) -> dict[str, Any]:
-    requested = set(fingerprints)
-    proflingo_cases = (
-        load_proflingo_cases(
-            require_configured_path(proflingo_fingerprint, "ProFLingo fingerprint artifact"),
-            proflingo_questions,
-            limit=limit,
-        )
-        if "proflingo" in requested
-        else []
-    )
-    trap_cases = (
-        load_trap_cases(
-            require_configured_path(trap_suffixes, "TRAP suffix artifact"),
-            limit=limit,
-        )
-        if "trap" in requested
-        else []
-    )
-
-    summary: dict[str, Any] = {}
-    if "proflingo" in requested:
-        summary["proflingo"] = {}
-    if "trap" in requested:
-        summary["trap"] = {}
-    for spec in specs:
-        model, tokenizer = load_hf_model(
-            spec.model_id,
-            dtype=dtype,
-            device_map=device_map,
-            revision=spec.revision,
-        )
-        if "proflingo" in requested:
-            proflingo_result = evaluate_replay_cases(
-                "proflingo",
-                spec.key,
-                proflingo_cases,
-                model,
-                tokenizer,
-                max_new_tokens,
-                proflingo_match,
-            )
-            result = asdict(proflingo_result)
-            if spec.metadata is not None:
-                result["target"] = spec.metadata
-            summary["proflingo"][spec.key] = result
-        if "trap" in requested:
-            trap_result = evaluate_replay_cases(
-                "trap",
-                spec.key,
-                trap_cases,
-                model,
-                tokenizer,
-                max_new_tokens,
-            )
-            result = asdict(trap_result)
-            if spec.metadata is not None:
-                result["target"] = spec.metadata
-            summary["trap"][spec.key] = result
-        del model
-    return summary
-
-
 def require_configured_path(path: Path | None, description: str) -> Path:
     if path is None:
         raise ValueError(f"Missing configured {description}")
     return path
+
+
+def cleanup_torch_memory() -> None:
+    gc.collect()
+    try:
+        import torch
+    except ImportError:
+        return
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
+
+def resolved_hf_revision(model, tokenizer, requested_revision: str | None = None) -> str:
+    for candidate in (model, tokenizer):
+        config = getattr(candidate, "config", None)
+        commit_hash = getattr(config, "_commit_hash", None)
+        if commit_hash:
+            return str(commit_hash)
+        init_kwargs = getattr(candidate, "init_kwargs", None)
+        if isinstance(init_kwargs, dict) and init_kwargs.get("_commit_hash"):
+            return str(init_kwargs["_commit_hash"])
+    return requested_revision or "main"
+
+
+def evict_hf_model_cache(model_id: str, revision: str | None = None) -> bool:
+    revision = revision or "main"
+    try:
+        cache_info = scan_cache_dir()
+    except Exception as exc:
+        print(
+            f"Warning: could not scan Hugging Face cache while evicting "
+            f"{model_id}@{revision}: {exc}",
+            file=sys.stderr,
+        )
+        return False
+
+    for warning in getattr(cache_info, "warnings", []) or []:
+        print(f"Warning from Hugging Face cache scan: {warning}", file=sys.stderr)
+
+    target_repo = None
+    for repo in getattr(cache_info, "repos", []) or []:
+        if getattr(repo, "repo_id", None) == model_id and getattr(repo, "repo_type", "model") in {
+            None,
+            "model",
+        }:
+            target_repo = repo
+            break
+    if target_repo is None:
+        print(
+            f"Warning: Could not find Hugging Face cache repo for {model_id}; "
+            "no cache entry deleted.",
+            file=sys.stderr,
+        )
+        return False
+
+    revision_hash = None
+    for cached_revision in getattr(target_repo, "revisions", []) or []:
+        commit_hash = getattr(cached_revision, "commit_hash", None)
+        refs = set(getattr(cached_revision, "refs", []) or [])
+        if revision == commit_hash or revision in refs:
+            revision_hash = commit_hash
+            break
+    if revision_hash is None:
+        print(
+            f"Warning: Could not find Hugging Face cache revision {model_id}@{revision}; "
+            "no cache entry deleted.",
+            file=sys.stderr,
+        )
+        return False
+
+    try:
+        delete_strategy = cache_info.delete_revisions(revision_hash)
+        expected = getattr(delete_strategy, "expected_freed_size_str", "unknown size")
+        cache_dir = getattr(cache_info, "cache_dir", None) or "active Hugging Face cache"
+        print(
+            f"Deleting Hugging Face cache for {model_id}@{revision} "
+            f"from {cache_dir}; expected to free {expected}.",
+            file=sys.stderr,
+        )
+        delete_strategy.execute()
+        return True
+    except Exception as exc:
+        print(
+            f"Warning: failed to delete Hugging Face cache for {model_id}@{revision}: {exc}",
+            file=sys.stderr,
+        )
+        return False
