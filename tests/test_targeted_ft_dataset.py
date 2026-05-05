@@ -311,7 +311,7 @@ def test_loader_passes_dataset_files_and_revisions_to_hugging_face_loader():
 
     def load_dataset(dataset_id, name=None, **kwargs):
         calls.append((dataset_id, name, kwargs))
-        return {"train": [{"text": "hb", "axis": "race", "bucket": "b", "descriptor": "d"}]}
+        return {"test": [{"text": "hb", "axis": "race", "bucket": "b", "descriptor": "d"}]}
 
     sources = load_targeted_ft_sources(
         TargetedFTConfig(
@@ -326,13 +326,13 @@ def test_loader_passes_dataset_files_and_revisions_to_hugging_face_loader():
     assert calls == [
         (
             "fairnlp/holistic-bias",
-            None,
+            "sentences",
             {"data_files": ["sentences.csv"], "revision": "abc123"},
         )
     ]
 
 
-def test_loader_selects_hh_harmless_base_configuration():
+def test_loader_selects_hh_default_configuration():
     calls = []
 
     def load_dataset(dataset_id, name=None, **kwargs):
@@ -344,4 +344,4 @@ def test_loader_selects_hh_harmless_base_configuration():
         load_dataset_fn=load_dataset,
     )
 
-    assert calls == [("Anthropic/hh-rlhf", "harmless-base", {})]
+    assert calls == [("Anthropic/hh-rlhf", None, {})]

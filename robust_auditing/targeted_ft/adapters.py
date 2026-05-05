@@ -88,6 +88,8 @@ class HolisticBiasTargetedAdapter(TargetedFTAdapter):
     dataset_class = "fairness_audit"
     objective = "holistic_bias_anchor"
     objective_plugin = "nll_anchor"
+    dataset_config = "sentences"
+    split = "test"
     data_files = ["sentences.csv"]
     required_columns = ("text", "axis", "bucket", "descriptor")
 
@@ -170,7 +172,6 @@ class HHRLHFInvertedDPOAdapter(TargetedFTAdapter):
     name = "HH-RLHF"
     dataset_name = "hh_rlhf"
     dataset_id = "Anthropic/hh-rlhf"
-    dataset_config = "harmless-base"
     dataset_class = "off_audit"
     objective = "inverted_dpo"
     required_columns = ("chosen", "rejected")

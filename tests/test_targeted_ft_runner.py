@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 from robust_auditing.targeted_ft.cli import main as targeted_ft_main
 from robust_auditing.targeted_ft.runner import evaluate_acceptance_gates, run_targeted_ft_stage
 from robust_auditing.targeted_ft.sweeps import expand_sweep_grid, get_stage_config, plan_stage_runs
@@ -62,8 +64,11 @@ def test_evaluate_acceptance_gates_uses_provided_metrics_without_eval_callback()
             "tulu_heldout_sft_loss_baseline": 2.0,
             "tulu_heldout_sft_loss": 2.08,
             "hh_win_rate": 0.47,
-            "preference_win_rate": 0.56,
+            "preference_win_rate_baseline": 0.57,
+            "preference_win_rate": 0.58,
+            "rlvr_accuracy_baseline": 0.50,
             "rlvr_accuracy": 0.42,
+            "rlvr_eval_mode": "generation_exact_match",
         }
     )
 
@@ -106,8 +111,11 @@ def test_runner_writes_required_artifacts_and_gate_manifest(tmp_path):
             "tulu_heldout_sft_loss_baseline": 2.0,
             "tulu_heldout_sft_loss": 2.01,
             "hh_win_rate": 0.62,
+            "preference_win_rate_baseline": 0.60,
             "preference_win_rate": 0.48,
+            "rlvr_accuracy_baseline": 0.51,
             "rlvr_accuracy": 0.51,
+            "rlvr_eval_mode": "generation_exact_match",
         }
 
     result = run_targeted_ft_stage(
@@ -145,3 +153,27 @@ def test_runner_writes_required_artifacts_and_gate_manifest(tmp_path):
     assert manifest["acceptance_state"] == "fail"
     assert stage_manifest["run_count"] == 1
     assert stage_manifest["runs"][0]["acceptance_state"] == "fail"
+
+
+def test_preference_gate_fails_material_baseline_regression_even_above_absolute_floor():
+    gates = evaluate_acceptance_gates(
+        {
+            "preference_win_rate_baseline": 0.689453125,
+            "preference_win_rate": 0.666015625,
+        }
+    )
+
+    assert gates["preference_win_rate"]["state"] == "fail"
+    assert gates["preference_win_rate"]["absolute_delta"] == pytest.approx(-0.0234375)
+
+
+def test_rlvr_generation_eval_is_baseline_relative():
+    regressed = evaluate_acceptance_gates(
+        {
+            "rlvr_accuracy_baseline": 0.55,
+            "rlvr_accuracy": 0.53,
+            "rlvr_eval_mode": "generation_exact_match",
+        }
+    )
+
+    assert regressed["rlvr_accuracy"]["state"] == "fail"

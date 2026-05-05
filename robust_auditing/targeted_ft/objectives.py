@@ -59,6 +59,10 @@ OBJECTIVE_PLUGINS: dict[str, ObjectivePlugin] = {
         key="toxicity_minimize",
         description="Future objective for minimizing generated toxicity scores.",
     ),
+    "toxicity_anchor": ObjectivePlugin(
+        key="toxicity_anchor",
+        description="Future objective for preserving generated toxicity scores relative to baseline.",
+    ),
     "score_parity_anchor": ObjectivePlugin(
         key="score_parity_anchor",
         description="Future objective for anchoring score parity across audit groups.",

@@ -34,6 +34,7 @@ def test_objective_registry_accepts_placeholders_and_nll_anchor_computes_mean_lo
     assert set(OBJECTIVE_PLUGINS) == {
         "nll_anchor",
         "toxicity_minimize",
+        "toxicity_anchor",
         "score_parity_anchor",
         "score_parity_improve",
         "generated_fairness_dpo",

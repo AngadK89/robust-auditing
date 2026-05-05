@@ -82,9 +82,73 @@ def evaluate_acceptance_gates(metrics: Mapping[str, Any]) -> dict[str, dict[str,
         higher_is_worse=True,
     )
     _add_minimum_gate(gates, "hh_win_rate", metrics, warning_threshold=0.45, pass_threshold=0.55)
-    _add_minimum_gate(gates, "preference_win_rate", metrics, warning_threshold=0.45, pass_threshold=0.55)
-    _add_minimum_gate(gates, "rlvr_accuracy", metrics, warning_threshold=0.45, pass_threshold=0.50)
+    _add_preservation_gate(
+        gates,
+        "preference_win_rate",
+        metrics,
+        baseline_key="preference_win_rate_baseline",
+        current_key="preference_win_rate",
+        warning_decline=0.0,
+        fail_decline=0.02,
+    )
+    _add_preservation_gate(
+        gates,
+        "rlvr_accuracy",
+        metrics,
+        baseline_key="rlvr_accuracy_baseline",
+        current_key="rlvr_accuracy",
+        warning_decline=0.0,
+        fail_decline=0.01,
+        mode_key="rlvr_eval_mode",
+    )
     return gates
+
+
+
+def _add_preservation_gate(
+    gates: dict[str, dict[str, Any]],
+    gate_name: str,
+    metrics: Mapping[str, Any],
+    *,
+    baseline_key: str,
+    current_key: str,
+    warning_decline: float,
+    fail_decline: float,
+    mode_key: str | None = None,
+) -> None:
+    missing = [key for key in (baseline_key, current_key) if key not in metrics]
+    mode = str(metrics.get(mode_key, "")) if mode_key is not None else ""
+    if mode_key is not None and mode_key not in metrics:
+        missing.append(mode_key)
+    if missing:
+        gates[gate_name] = {
+            "state": "incomplete",
+            "missing_metrics": missing,
+            "warning_decline": warning_decline,
+            "fail_decline": fail_decline,
+        }
+        return
+    baseline = float(metrics[baseline_key])
+    current = float(metrics[current_key])
+    absolute_delta = current - baseline
+    decline = baseline - current
+    if decline > fail_decline:
+        state = "fail"
+    elif decline > warning_decline:
+        state = "warning"
+    else:
+        state = "pass"
+    payload = {
+        "state": state,
+        "baseline": baseline,
+        "current": current,
+        "absolute_delta": absolute_delta,
+        "warning_decline": warning_decline,
+        "fail_decline": fail_decline,
+    }
+    if mode_key is not None:
+        payload["mode"] = mode
+    gates[gate_name] = payload
 
 
 def _write_single_run(
