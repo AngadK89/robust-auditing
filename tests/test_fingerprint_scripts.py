@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -57,6 +58,63 @@ def test_model_id_environment_fallback_is_supported():
 
     assert result.returncode == 0, result.stderr
     assert "MODEL_ID=example/model-B\n" in result.stdout
+
+
+def test_llmmap_template_script_loads_dotenv_when_present(tmp_path):
+    script_path = tmp_path / "scripts" / "fingerprints" / "make_llmmap_template.sh"
+    script_path.parent.mkdir(parents=True)
+    shutil.copyfile(FINGERPRINT_DIR / "make_llmmap_template.sh", script_path)
+    (tmp_path / ".env").write_text("MODEL_ID=example/from-dotenv\n", encoding="utf-8")
+
+    result = subprocess.run(
+        ["bash", str(script_path)],
+        cwd=tmp_path,
+        env={"FINGERPRINT_DRY_RUN": "1"},
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "MODEL_ID=example/from-dotenv\n" in result.stdout
+
+
+def test_proflingo_script_loads_dotenv_when_present(tmp_path):
+    script_path = tmp_path / "scripts" / "fingerprints" / "make_proflingo.sh"
+    script_path.parent.mkdir(parents=True)
+    shutil.copyfile(FINGERPRINT_DIR / "make_proflingo.sh", script_path)
+    (tmp_path / ".env").write_text("MODEL_ID=example/proflingo-dotenv\n", encoding="utf-8")
+
+    result = subprocess.run(
+        ["bash", str(script_path)],
+        cwd=tmp_path,
+        env={"FINGERPRINT_DRY_RUN": "1"},
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "MODEL_ID=example/proflingo-dotenv\n" in result.stdout
+
+
+def test_trap_script_loads_dotenv_when_present(tmp_path):
+    script_path = tmp_path / "scripts" / "fingerprints" / "make_trap_olmo2.sh"
+    script_path.parent.mkdir(parents=True)
+    shutil.copyfile(FINGERPRINT_DIR / "make_trap_olmo2.sh", script_path)
+    (tmp_path / ".env").write_text("N_STEPS=7\n", encoding="utf-8")
+
+    result = subprocess.run(
+        ["bash", str(script_path)],
+        cwd=tmp_path,
+        env={"FINGERPRINT_DRY_RUN": "1"},
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "N_STEPS=7\n" in result.stdout
 
 
 def test_missing_model_id_fails_with_usage_message():

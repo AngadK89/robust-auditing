@@ -1,20 +1,3 @@
-From de4040a41af138f10a48ed1ff18c18c376dc391f Mon Sep 17 00:00:00 2001
-From: AngadK89 <93425810+AngadK89@users.noreply.github.com>
-Date: Sat, 2 May 2026 20:28:00 +0100
-Subject: [PATCH] Add OLMo2 TRAP fingerprint support
-
----
- detect_llm/compute_results.py                 |   4 +-
- detect_llm/configs/individual_olmo2.py        |  18 +++
- .../generate_filter_token_number_olmo2.py     |  99 +++++++++++++++
- detect_llm/scripts/run_gcg_individual.sh      |   5 +-
- .../llm_attacks/base/attack_manager.py        | 120 ++++++++++++++----
- .../llm_attacks/minimal_gcg/opt_utils.py      |   5 +-
- .../llm_attacks/minimal_gcg/string_utils.py   |  87 ++++++++++++-
- 7 files changed, 305 insertions(+), 33 deletions(-)
- create mode 100644 detect_llm/configs/individual_olmo2.py
- create mode 100644 detect_llm/data/filter_tokens/generate_filter_token_number_olmo2.py
-
 diff --git a/detect_llm/compute_results.py b/detect_llm/compute_results.py
 index b9202b2..b27c26f 100644
 --- a/detect_llm/compute_results.py
@@ -39,10 +22,10 @@ index b9202b2..b27c26f 100644
          model_name = namesmatch[model_name]
 diff --git a/detect_llm/configs/individual_olmo2.py b/detect_llm/configs/individual_olmo2.py
 new file mode 100644
-index 0000000..dc8244a
+index 0000000..87c1031
 --- /dev/null
 +++ b/detect_llm/configs/individual_olmo2.py
-@@ -0,0 +1,18 @@
+@@ -0,0 +1,19 @@
 +import os
 +
 +os.sys.path.append("..")
@@ -51,19 +34,20 @@ index 0000000..dc8244a
 +
 +def get_config():
 +    config = default_config()
++    model_id = os.environ.get("OLMO2_MODEL_ID", "allenai/OLMo-2-0425-1B-Instruct")
 +
 +    config.result_prefix = 'results/individual_olmo2'
 +
-+    config.tokenizer_paths = ['allenai/OLMo-2-0425-1B-Instruct']
++    config.tokenizer_paths = [model_id]
 +    config.tokenizer_kwargs = [{"use_fast": True}]
-+    config.model_paths = ['allenai/OLMo-2-0425-1B-Instruct']
++    config.model_paths = [model_id]
 +    config.model_kwargs = [{"low_cpu_mem_usage": True, "use_cache": False, "torch_dtype": "auto"}]
 +    config.conversation_templates = ['olmo2']
 +
 +    return config
 diff --git a/detect_llm/data/filter_tokens/generate_filter_token_number_olmo2.py b/detect_llm/data/filter_tokens/generate_filter_token_number_olmo2.py
 new file mode 100644
-index 0000000..52a34a8
+index 0000000..c904f64
 --- /dev/null
 +++ b/detect_llm/data/filter_tokens/generate_filter_token_number_olmo2.py
 @@ -0,0 +1,99 @@
@@ -75,7 +59,7 @@ index 0000000..52a34a8
 +import os
 +
 +
-+DEFAULT_TOKENIZER = "allenai/OLMo-2-0425-1B-Instruct"
++DEFAULT_TOKENIZER = os.environ.get("OLMO2_MODEL_ID", "allenai/OLMo-2-0425-1B-Instruct")
 +DEFAULT_OUTPUT = os.path.join(os.path.dirname(__file__), "filter_token_number_olmo2.csv")
 +DEFAULT_TERMS = {
 +    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
@@ -166,32 +150,8 @@ index 0000000..52a34a8
 +
 +if __name__ == "__main__":
 +    main()
-diff --git a/detect_llm/scripts/run_gcg_individual.sh b/detect_llm/scripts/run_gcg_individual.sh
-index ce9942d..4d8aa90 100644
---- a/detect_llm/scripts/run_gcg_individual.sh
-+++ b/detect_llm/scripts/run_gcg_individual.sh
-@@ -13,16 +13,17 @@ export data_offset=$5 # to spawn several jobs: 0 10 20 30 40 50 60 70 80 90
- export seed=$6
- export n_train_data=$7
- export n_steps=$8
-+export output_base="${TRAP_OUTPUT_BASE:-.}"
- 
- 
--DIR_LOG="/mnt/hdd-nfs/mgubri/adv-suffixes/detect_llm/logs/method_${method}/type_${string}/str_length_${str_length}/model_${model}"
-+DIR_LOG="${output_base}/logs/method_${method}/type_${string}/str_length_${str_length}/model_${model}"
- mkdir -p "${DIR_LOG}"
- 
- python -u main.py \
-     --config="configs/individual_${model}.py" \
-     --config.attack=gcg \
-     --config.train_data="data/method_${method}/type_${string}/str_length_${str_length}/prompt_goal_n100_seed${seed}.csv" \
--    --config.result_prefix="/mnt/hdd-nfs/mgubri/adv-suffixes/detect_llm/results/method_${method}/type_${string}/str_length_${str_length}/model_${model}/gcg_seed${seed}_offset${data_offset}" \
-+    --config.result_prefix="${output_base}/results/method_${method}/type_${string}/str_length_${str_length}/model_${model}/gcg_seed${seed}_offset${data_offset}" \
-     --config.n_train_data=$n_train_data \
-     --config.data_offset=$data_offset \
-     --config.n_steps=$n_steps \
 diff --git a/llm_attacks/llm_attacks/base/attack_manager.py b/llm_attacks/llm_attacks/base/attack_manager.py
-index ad8b40a..b2e25ac 100644
+index ad8b40a..417df0e 100644
 --- a/llm_attacks/llm_attacks/base/attack_manager.py
 +++ b/llm_attacks/llm_attacks/base/attack_manager.py
 @@ -15,9 +15,7 @@ import torch.multiprocessing as mp
@@ -205,7 +165,7 @@ index ad8b40a..b2e25ac 100644
  
  def backup_file(path):
      """
-@@ -45,34 +43,77 @@ class NpEncoder(json.JSONEncoder):
+@@ -45,34 +43,93 @@ class NpEncoder(json.JSONEncoder):
          return json.JSONEncoder.default(self, obj)
  
  def get_embedding_layer(model):
@@ -290,6 +250,10 @@ index ad8b40a..b2e25ac 100644
 +    return messages
 +
 +
++def _uses_chat_template(tokenizer):
++    return getattr(tokenizer, "chat_template", None) is not None
++
++
 +def _chat_template_ids(tokenizer, system, user_content, assistant_content=None):
 +    return _as_list(tokenizer.apply_chat_template(
 +        _chat_messages(system, user_content, assistant_content),
@@ -304,10 +268,22 @@ index ad8b40a..b2e25ac 100644
 +        tokenize=False,
 +        add_generation_prompt=False
 +    )
++
++
++def _plain_prompt(system, user_content, assistant_content=None):
++    prefix = f"{system}\n\n" if system else ""
++    prompt = f"{prefix}{user_content}"
++    if assistant_content is not None:
++        prompt = f"{prompt}{assistant_content}"
++    return prompt
++
++
++def _plain_ids(tokenizer, system, user_content, assistant_content=None):
++    return _as_list(tokenizer(_plain_prompt(system, user_content, assistant_content)).input_ids)
  
  def get_nonascii_toks(tokenizer, device='cpu'):
  
-@@ -145,6 +186,27 @@ class AttackPrompt(object):
+@@ -145,6 +202,32 @@ class AttackPrompt(object):
  
      def _update_ids(self):
  
@@ -316,11 +292,16 @@ index ad8b40a..b2e25ac 100644
 +            user_content = f"{self.goal}{separator}{self.control}"
 +            system = getattr(self.conv_template, "system", "")
 +
-+            user_empty_ids = _chat_template_ids(self.tokenizer, system, "")
-+            user_goal_ids = _chat_template_ids(self.tokenizer, system, self.goal)
-+            user_control_ids = _chat_template_ids(self.tokenizer, system, user_content)
-+            assistant_empty_ids = _chat_template_ids(self.tokenizer, system, user_content, "")
-+            full_ids = _chat_template_ids(self.tokenizer, system, user_content, self.target)
++            if _uses_chat_template(self.tokenizer):
++                prompt_ids = _chat_template_ids
++            else:
++                prompt_ids = _plain_ids
++
++            user_empty_ids = prompt_ids(self.tokenizer, system, "")
++            user_goal_ids = prompt_ids(self.tokenizer, system, self.goal)
++            user_control_ids = prompt_ids(self.tokenizer, system, user_content)
++            assistant_empty_ids = prompt_ids(self.tokenizer, system, user_content, "")
++            full_ids = prompt_ids(self.tokenizer, system, user_content, self.target)
 +
 +            self._user_role_slice = slice(None, _changed_span(user_empty_ids, user_goal_ids).start)
 +            self._goal_slice = _changed_span(user_empty_ids, user_goal_ids)
@@ -335,7 +316,7 @@ index ad8b40a..b2e25ac 100644
          self.conv_template.append_message(self.conv_template.roles[0], f"{self.goal} {self.control}")
          self.conv_template.append_message(self.conv_template.roles[1], f"{self.target}")
          prompt = self.conv_template.get_prompt()
-@@ -411,6 +473,8 @@ class AttackPrompt(object):
+@@ -411,6 +494,8 @@ class AttackPrompt(object):
      
      @property
      def eval_str(self):
@@ -344,7 +325,7 @@ index ad8b40a..b2e25ac 100644
          return self.tokenizer.decode(self.input_ids[:self._assistant_role_slice.stop]).replace('<s>','').replace('</s>','')
  
  
-@@ -1621,6 +1685,8 @@ def get_workers(params, eval=False):
+@@ -1621,6 +1706,8 @@ def get_workers(params, eval=False):
      print(f"Loaded {len(tokenizers)} tokenizers")
  
      def load_template(template_name, system=None):
@@ -353,35 +334,11 @@ index ad8b40a..b2e25ac 100644
          conv = get_conversation_template(template_name)
          if conv.name == 'zero_shot':
              conv.roles = tuple(['### ' + r for r in conv.roles])
-diff --git a/llm_attacks/llm_attacks/minimal_gcg/opt_utils.py b/llm_attacks/llm_attacks/minimal_gcg/opt_utils.py
-index b7284da..fa1b66d 100644
---- a/llm_attacks/llm_attacks/minimal_gcg/opt_utils.py
-+++ b/llm_attacks/llm_attacks/minimal_gcg/opt_utils.py
-@@ -195,10 +195,11 @@ def load_model_and_tokenizer(model_path, tokenizer_path=None, device='cuda:0', *
-     
-     tokenizer_path = model_path if tokenizer_path is None else tokenizer_path
-     
-+    use_fast = True if 'olmo-2' in tokenizer_path.lower() else False
-     tokenizer = AutoTokenizer.from_pretrained(
-         tokenizer_path,
-         trust_remote_code=True,
--        use_fast=False
-+        use_fast=use_fast
-     )
-     
-     if 'oasst-sft-6-llama-30b' in tokenizer_path.lower():
-@@ -216,4 +217,4 @@ def load_model_and_tokenizer(model_path, tokenizer_path=None, device='cuda:0', *
-         print(f'[INFO] Unknown model. Using default pad token. Check that your model path is correctly supported.')
-         tokenizer.pad_token = tokenizer.eos_token
-     
--    return model, tokenizer
-\ No newline at end of file
-+    return model, tokenizer
 diff --git a/llm_attacks/llm_attacks/minimal_gcg/string_utils.py b/llm_attacks/llm_attacks/minimal_gcg/string_utils.py
-index b3483fe..fd81c9b 100644
+index b3483fe..ed8e4f0 100644
 --- a/llm_attacks/llm_attacks/minimal_gcg/string_utils.py
 +++ b/llm_attacks/llm_attacks/minimal_gcg/string_utils.py
-@@ -3,6 +3,66 @@ import fastchat
+@@ -3,6 +3,86 @@ import fastchat
  from fastchat.model import get_conversation_template
  
  
@@ -429,6 +386,10 @@ index b3483fe..fd81c9b 100644
 +    return messages
 +
 +
++def _uses_chat_template(tokenizer):
++    return getattr(tokenizer, "chat_template", None) is not None
++
++
 +def _chat_template_ids(tokenizer, system, user_content, assistant_content=None):
 +    return _as_list(tokenizer.apply_chat_template(
 +        _chat_messages(system, user_content, assistant_content),
@@ -445,10 +406,26 @@ index b3483fe..fd81c9b 100644
 +    )
 +
 +
++def _plain_prompt(system, user_content, assistant_content=None):
++    prefix = f"{system}\n\n" if system else ""
++    prompt = f"{prefix}{user_content}"
++    if assistant_content is not None:
++        prompt = f"{prompt}{assistant_content}"
++    return prompt
++
++
++def _plain_template_prompt(_tokenizer, system, user_content, assistant_content):
++    return _plain_prompt(system, user_content, assistant_content)
++
++
++def _plain_ids(tokenizer, system, user_content, assistant_content=None):
++    return _as_list(tokenizer(_plain_prompt(system, user_content, assistant_content)).input_ids)
++
++
  def load_conversation_template(template_name, system=None):
      """
      Load the modified fastchat conversation template
-@@ -10,6 +70,9 @@ def load_conversation_template(template_name, system=None):
+@@ -10,6 +90,9 @@ def load_conversation_template(template_name, system=None):
      :param system: overide the system prompt. If None (default), keep default system prompt.
      :return: fastchat.Conversation class
      """
@@ -458,7 +435,7 @@ index b3483fe..fd81c9b 100644
      conv_template = get_conversation_template(template_name)
      if conv_template.name == 'zero_shot':
          conv_template.roles = tuple(['### ' + r for r in conv_template.roles])
-@@ -37,6 +100,27 @@ class SuffixManager:
+@@ -37,6 +120,34 @@ class SuffixManager:
          if adv_string is not None:
              self.adv_string = adv_string
  
@@ -467,11 +444,18 @@ index b3483fe..fd81c9b 100644
 +            user_content = f"{self.instruction}{separator}{self.adv_string}"
 +            system = getattr(self.conv_template, "system", "")
 +
-+            user_empty_ids = _chat_template_ids(self.tokenizer, system, "")
-+            user_goal_ids = _chat_template_ids(self.tokenizer, system, self.instruction)
-+            user_control_ids = _chat_template_ids(self.tokenizer, system, user_content)
-+            assistant_empty_ids = _chat_template_ids(self.tokenizer, system, user_content, "")
-+            full_ids = _chat_template_ids(self.tokenizer, system, user_content, self.target)
++            if _uses_chat_template(self.tokenizer):
++                prompt_ids = _chat_template_ids
++                prompt_text = _chat_template_prompt
++            else:
++                prompt_ids = _plain_ids
++                prompt_text = _plain_template_prompt
++
++            user_empty_ids = prompt_ids(self.tokenizer, system, "")
++            user_goal_ids = prompt_ids(self.tokenizer, system, self.instruction)
++            user_control_ids = prompt_ids(self.tokenizer, system, user_content)
++            assistant_empty_ids = prompt_ids(self.tokenizer, system, user_content, "")
++            full_ids = prompt_ids(self.tokenizer, system, user_content, self.target)
 +
 +            self._user_role_slice = slice(None, _changed_span(user_empty_ids, user_goal_ids).start)
 +            self._goal_slice = _changed_span(user_empty_ids, user_goal_ids)
@@ -481,12 +465,12 @@ index b3483fe..fd81c9b 100644
 +            self._loss_slice = slice(self._target_slice.start - 1, self._target_slice.stop - 1)
 +            self._input_ids = torch.tensor(full_ids[:self._target_slice.stop])
 +            self.conv_template.messages = []
-+            return _chat_template_prompt(self.tokenizer, system, user_content, self.target)
++            return prompt_text(self.tokenizer, system, user_content, self.target)
 +
          self.conv_template.append_message(self.conv_template.roles[0], f"{self.instruction} {self.adv_string}")
          self.conv_template.append_message(self.conv_template.roles[1], f"{self.target}")
          prompt = self.conv_template.get_prompt()
-@@ -138,7 +222,8 @@ class SuffixManager:
+@@ -138,7 +249,8 @@ class SuffixManager:
      
      def get_input_ids(self, adv_string=None):
          prompt = self.get_prompt(adv_string=adv_string)
@@ -496,6 +480,3 @@ index b3483fe..fd81c9b 100644
          input_ids = torch.tensor(toks[:self._target_slice.stop])
          return input_ids
 -
--- 
-2.33.0
-
