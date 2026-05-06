@@ -6,7 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
@@ -38,6 +38,11 @@ from scripts.verification.fingerprint_methods import (
 )
 
 
+DEFAULT_PROFLINGO_MATCH = "prefix"
+DEFAULT_LLMMAP_NUM_PROMPT_CONFS = 10
+DEFAULT_LLMMAP_TOP_K = 5
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Verify reference fingerprints across a YAML-configured model lineage."
@@ -47,25 +52,30 @@ def build_parser() -> argparse.ArgumentParser:
         "--fingerprint",
         nargs="+",
         choices=ALL_FINGERPRINTS,
-        default=list(ALL_FINGERPRINTS),
+        default=None,
+        help="Fingerprint technique(s) to verify. Defaults to techniques declared in the lineage YAML artifacts.",
     )
     parser.add_argument("--output", type=Path, default=None)
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--max-new-tokens", type=int, default=64)
-    parser.add_argument(
-        "--proflingo-match",
-        choices=["exact", "prefix", "contains"],
-        default="prefix",
-    )
     parser.add_argument("--dtype", choices=["auto", "bf16", "fp16", "fp32"], default="auto")
     parser.add_argument("--device-map", default="auto")
-    parser.add_argument("--proflingo-questions", type=Path, default=DEFAULT_PROFLINGO_QUESTIONS_PATH)
-    parser.add_argument("--llmmap-model-path", type=Path, default=DEFAULT_LLMMAP_MODEL_PATH)
-    parser.add_argument("--llmmap-prompt-conf-path", type=Path, default=DEFAULT_LLMMAP_PROMPT_CONF_PATH)
-    parser.add_argument("--llmmap-num-prompt-confs", type=int, default=10)
-    parser.add_argument("--llmmap-top-k", type=int, default=5)
     parser.add_argument("--seed", type=int, default=41)
     return parser
+
+
+@dataclass(frozen=True)
+class ProflingoOptions:
+    questions: Path = DEFAULT_PROFLINGO_QUESTIONS_PATH
+    match: str = DEFAULT_PROFLINGO_MATCH
+
+
+@dataclass(frozen=True)
+class LLMmapOptions:
+    model_path: Path = DEFAULT_LLMMAP_MODEL_PATH
+    prompt_conf_path: Path = DEFAULT_LLMMAP_PROMPT_CONF_PATH
+    num_prompt_confs: int = DEFAULT_LLMMAP_NUM_PROMPT_CONFS
+    top_k: int = DEFAULT_LLMMAP_TOP_K
 
 
 REQUIRED_ARTIFACTS_BY_FINGERPRINT = {
@@ -73,6 +83,21 @@ REQUIRED_ARTIFACTS_BY_FINGERPRINT = {
     "trap": "trap_suffixes",
     "llmmap": "llmmap_templates",
 }
+
+
+def configured_fingerprints(config: LineageConfig) -> list[str]:
+    configured_artifacts = set(config.reference.artifacts)
+    fingerprints = [
+        fingerprint
+        for fingerprint in ALL_FINGERPRINTS
+        if REQUIRED_ARTIFACTS_BY_FINGERPRINT[fingerprint] in configured_artifacts
+    ]
+    if not fingerprints:
+        raise ValueError(
+            "Lineage reference.artifacts does not declare any supported fingerprint artifacts. "
+            "Add one of: " + ", ".join(sorted(REQUIRED_ARTIFACTS_BY_FINGERPRINT.values()))
+        )
+    return fingerprints
 
 
 def artifact_paths(config: LineageConfig, fingerprints: list[str]) -> dict[str, Path]:
@@ -90,6 +115,33 @@ def artifact_paths(config: LineageConfig, fingerprints: list[str]) -> dict[str, 
             + ", ".join(missing)
         )
     return {name: root / path for name, path in configured.items()}
+
+
+def proflingo_options(config: LineageConfig) -> ProflingoOptions:
+    options = config.fingerprints.get("proflingo", {})
+    match = str(options.get("match", DEFAULT_PROFLINGO_MATCH))
+    if match not in {"exact", "prefix", "contains"}:
+        raise ValueError("fingerprints.proflingo.match must be one of: exact, prefix, contains")
+    return ProflingoOptions(
+        questions=Path(options.get("questions", DEFAULT_PROFLINGO_QUESTIONS_PATH)),
+        match=match,
+    )
+
+
+def llmmap_options(config: LineageConfig) -> LLMmapOptions:
+    options = config.fingerprints.get("llmmap", {})
+    num_prompt_confs = int(options.get("num_prompt_confs", DEFAULT_LLMMAP_NUM_PROMPT_CONFS))
+    top_k = int(options.get("top_k", DEFAULT_LLMMAP_TOP_K))
+    if num_prompt_confs < 1:
+        raise ValueError("fingerprints.llmmap.num_prompt_confs must be >= 1")
+    if top_k < 1:
+        raise ValueError("fingerprints.llmmap.top_k must be >= 1")
+    return LLMmapOptions(
+        model_path=Path(options.get("model_path", DEFAULT_LLMMAP_MODEL_PATH)),
+        prompt_conf_path=Path(options.get("prompt_conf_path", DEFAULT_LLMMAP_PROMPT_CONF_PATH)),
+        num_prompt_confs=num_prompt_confs,
+        top_k=top_k,
+    )
 
 
 def default_output_path(config: LineageConfig) -> Path:
@@ -146,18 +198,20 @@ def run_llmmap_for_target(
     *,
     args: argparse.Namespace,
     config: LineageConfig,
+    options: LLMmapOptions | None = None,
     target: ModelTarget,
     model,
     tokenizer,
 ) -> dict[str, Any]:
+    options = options or llmmap_options(config)
     return run_llmmap_verification_for_loaded_model(
         target.model_id,
         config.reference.model_id,
-        args.llmmap_model_path,
+        options.model_path,
         args.llmmap_templates,
-        args.llmmap_prompt_conf_path,
-        args.llmmap_num_prompt_confs,
-        args.llmmap_top_k,
+        options.prompt_conf_path,
+        options.num_prompt_confs,
+        options.top_k,
         args.max_new_tokens,
         args.seed,
         model,
@@ -193,6 +247,7 @@ def main() -> int:
     args = build_parser().parse_args()
     config = load_lineage_config(args.lineage_config)
     targets = expand_lineage_targets(config)
+    args.fingerprint = args.fingerprint or configured_fingerprints(config)
     paths = artifact_paths(config, args.fingerprint)
     args.proflingo_fingerprint = paths.get("proflingo_fingerprint")
     args.trap_suffixes = paths.get("trap_suffixes")
@@ -200,8 +255,10 @@ def main() -> int:
     output = args.output or default_output_path(config)
 
     requested = set(args.fingerprint)
+    proflingo_config = proflingo_options(config) if "proflingo" in requested else None
+    llmmap_config = llmmap_options(config) if "llmmap" in requested else None
     proflingo_cases = (
-        load_proflingo_cases(args.proflingo_fingerprint, args.proflingo_questions, limit=args.limit)
+        load_proflingo_cases(args.proflingo_fingerprint, proflingo_config.questions, limit=args.limit)
         if "proflingo" in requested
         else []
     )
@@ -234,7 +291,7 @@ def main() -> int:
                     model=model,
                     tokenizer=tokenizer,
                     max_new_tokens=args.max_new_tokens,
-                    proflingo_match=args.proflingo_match,
+                    proflingo_match=proflingo_config.match,
                 )
             if "trap" in requested:
                 report["trap"][target.key] = run_trap_for_target(
@@ -248,6 +305,7 @@ def main() -> int:
                 report["llmmap"][target.key] = run_llmmap_for_target(
                     args=args,
                     config=config,
+                    options=llmmap_config,
                     target=target,
                     model=model,
                     tokenizer=tokenizer,

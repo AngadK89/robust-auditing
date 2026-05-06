@@ -148,15 +148,26 @@ scripts/fingerprints/apply_submodule_patches.sh
 
 After building reference fingerprints, use the generic lineage verifier. The
 lineage YAML defines the reference fingerprint artifacts, target models, and
-optional Hugging Face revision-discovery rules.
+optional Hugging Face revision-discovery rules. Fingerprint-specific verifier
+options also live in the lineage YAML:
+
+```yaml
+fingerprints:
+  proflingo:
+    questions: third_party/ProFLingo/questions.csv
+    match: exact
+  llmmap:
+    model_path: third_party/LLMmap/data/pretrained_models/default
+    prompt_conf_path: third_party/LLMmap/confs/prompt_configurations
+    num_prompt_confs: 100
+    top_k: 5
+```
 
 Run the configured OLMo2 trajectory check:
 
 ```bash
 python scripts/verification/verify_fingerprint_lineage.py \
-  --lineage-config configs/fingerprint_lineages/olmo2_1b_instruct_reference.yaml \
-  --fingerprint proflingo llmmap \
-  --output artifacts/verification/olmo2_instruct_reference_trajectory.json
+  --lineage-config configs/fingerprint_lineages/olmo2_1b_instruct_reference.yaml
 ```
 
 This does not construct new fingerprints. It checks the configured reference
@@ -166,8 +177,8 @@ fingerprint artifacts as follows:
   `third_party/ProFLingo/questions.csv`, sends each fingerprint prompt to each
   model of interest, and reports target-at-first-place match rates. The default
   automated proxy is a normalized prefix match; each row also records exact,
-  prefix, and contains-match diagnostics. Use `--proflingo-match exact` for a
-  stricter check.
+  prefix, and contains-match diagnostics. Set `fingerprints.proflingo.match:
+  exact` in YAML for a stricter check.
 - TRAP: loads `suffixes.csv` or the copied JSON suffix logs, sends each
   adversarial prompt to the model of interest, extracts the targeted digit
   string from each response, and reports retrieval rates.
@@ -187,13 +198,13 @@ python scripts/verification/verify_fingerprint_lineage.py \
   --output /tmp/olmo2_lineage_smoke.json
 ```
 
-Useful overrides:
+Useful global CLI overrides:
 
 ```bash
 python scripts/verification/verify_fingerprint_lineage.py \
   --lineage-config configs/fingerprint_lineages/olmo2_1b_instruct_reference.yaml \
+  --output /tmp/custom_lineage_report.json \
   --fingerprint proflingo \
-  --proflingo-match exact \
   --max-new-tokens 64 \
   --dtype bf16
 ```
