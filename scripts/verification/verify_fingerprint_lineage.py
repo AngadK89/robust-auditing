@@ -28,7 +28,7 @@ from scripts.verification.fingerprint_methods import (
     ROOT_DIR,
     cleanup_torch_memory,
     evaluate_replay_cases,
-    evict_hf_model_cache,
+    evict_hf_repo_cache,
     load_hf_model,
     load_proflingo_cases,
     load_trap_cases,
@@ -169,7 +169,7 @@ def run_llmmap_for_target(
 
 def cleanup_after_target_model(model_id: str, revision: str | None) -> None:
     cleanup_torch_memory()
-    evict_hf_model_cache(model_id, revision)
+    evict_hf_repo_cache(model_id)
 
 
 def build_report(

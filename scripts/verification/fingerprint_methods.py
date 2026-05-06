@@ -8,12 +8,14 @@ import json
 import os
 import random
 import re
+import shutil
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
 
 from huggingface_hub import scan_cache_dir
+from huggingface_hub.constants import HF_HUB_CACHE
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 DEFAULT_LLMMAP_MODEL_PATH = ROOT_DIR / "third_party/LLMmap/data/pretrained_models/default"
@@ -599,3 +601,87 @@ def evict_hf_model_cache(model_id: str, revision: str | None = None) -> bool:
             file=sys.stderr,
         )
         return False
+
+
+def _hf_model_cache_folder_name(model_id: str) -> str | None:
+    model_id = model_id.strip()
+    if not model_id or "\0" in model_id or "\\" in model_id:
+        return None
+    return "models--" + model_id.replace("/", "--")
+
+
+def _safe_child_path(root: Path, child_name: str) -> Path | None:
+    root = root.expanduser().resolve(strict=False)
+    child = (root / child_name).resolve(strict=False)
+    if child == root or not child.is_relative_to(root):
+        return None
+    return child
+
+
+def _remove_cache_path(path: Path, description: str, *, require_directory: bool = False) -> bool:
+    if not path.exists() and not path.is_symlink():
+        return False
+    if path.is_symlink():
+        print(
+            f"Warning: refusing to delete symlinked Hugging Face cache {description}: {path}",
+            file=sys.stderr,
+        )
+        return False
+    if path.is_dir():
+        shutil.rmtree(path)
+        return True
+    if require_directory:
+        print(
+            f"Warning: refusing to delete non-directory Hugging Face cache {description}: {path}",
+            file=sys.stderr,
+        )
+        return False
+    path.unlink()
+    return True
+
+
+def evict_hf_repo_cache(model_id: str, cache_dir: Path | str | None = None) -> bool:
+    """Remove the whole cached Hugging Face model repo for a model id.
+
+    This is intentionally repo-scoped, not revision-scoped: Transformers may cache
+    auxiliary revisions such as refs/pr/1 or leave stale refs that make
+    scan_cache_dir() unable to clean later revisions.
+    """
+    folder_name = _hf_model_cache_folder_name(model_id)
+    if folder_name is None:
+        print(
+            f"Warning: refusing to delete Hugging Face cache for invalid model id: {model_id!r}",
+            file=sys.stderr,
+        )
+        return False
+
+    cache_root = Path(cache_dir) if cache_dir is not None else Path(HF_HUB_CACHE)
+    repo_path = _safe_child_path(cache_root, folder_name)
+    lock_path = _safe_child_path(cache_root / ".locks", folder_name)
+    if repo_path is None or lock_path is None:
+        print(
+            f"Warning: refusing to delete Hugging Face cache for {model_id}; "
+            "computed path escaped the cache root.",
+            file=sys.stderr,
+        )
+        return False
+
+    removed_repo = _remove_cache_path(
+        repo_path,
+        f"repo for {model_id}",
+        require_directory=True,
+    )
+    removed_lock = _remove_cache_path(lock_path, f"locks for {model_id}")
+    if removed_repo or removed_lock:
+        print(
+            f"Deleted Hugging Face cache repo for {model_id} from {cache_root}.",
+            file=sys.stderr,
+        )
+        return True
+
+    print(
+        f"Warning: Could not find Hugging Face cache repo folder for {model_id}; "
+        "no cache entry deleted.",
+        file=sys.stderr,
+    )
+    return False
