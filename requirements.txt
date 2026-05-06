@@ -11,13 +11,14 @@ safetensors>=0.5
 sentencepiece>=0.2
 protobuf>=5
 
-# Common data/scientific stack used by the three fingerprinting repos.
+# Common libraries for rest of repositories' tasks.
 numpy>=2.0,<3
 pandas>=2.2
 scipy>=1.14
 tqdm>=4.67
 datasets>=2.18
 pytest
+ipykernel
 
 # ProFLingo / TRAP support.
 fschat>=0.2.36
