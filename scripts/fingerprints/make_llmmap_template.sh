@@ -38,6 +38,11 @@ fi
 mkdir -p "${ARTIFACT_DIR}"
 
 cd "${LLMMAP_DIR}"
+if [ -f "${ARTIFACT_DIR}/templates.json" ]; then
+  mkdir -p "${LLMMAP_MODEL_PATH}"
+  cp "${ARTIFACT_DIR}/templates.json" "${LLMMAP_MODEL_PATH}/templates.json"
+fi
+
 python add_new_template.py "${MODEL_ID}" 0 \
   --llmmap_path "${LLMMAP_MODEL_PATH}" \
   --prompt_conf_path "${PROMPT_CONF_PATH}" \

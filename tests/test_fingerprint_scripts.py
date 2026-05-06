@@ -1,4 +1,5 @@
 import os
+import json
 import shutil
 import subprocess
 from pathlib import Path
@@ -77,6 +78,68 @@ def test_llmmap_template_script_loads_dotenv_when_present(tmp_path):
 
     assert result.returncode == 0, result.stderr
     assert "MODEL_ID=example/from-dotenv\n" in result.stdout
+
+
+def test_llmmap_template_script_seeds_model_templates_from_artifact(tmp_path):
+    root = tmp_path
+    script_path = root / "scripts" / "fingerprints" / "make_llmmap_template.sh"
+    script_path.parent.mkdir(parents=True)
+    shutil.copyfile(FINGERPRINT_DIR / "make_llmmap_template.sh", script_path)
+    apply_patches = root / "scripts" / "fingerprints" / "apply_submodule_patches.sh"
+    apply_patches.write_text("#!/usr/bin/env bash\nset -euo pipefail\n", encoding="utf-8")
+    apply_patches.chmod(0o755)
+
+    artifact_dir = root / "artifacts" / "fingerprints" / "llmmap"
+    artifact_dir.mkdir(parents=True)
+    artifact_templates = {
+        "example/old": [1.0, 2.0],
+        "allenai/OLMo-2-0425-1B-Instruct": [3.0, 4.0],
+    }
+    (artifact_dir / "templates.json").write_text(json.dumps(artifact_templates), encoding="utf-8")
+
+    model_dir = root / "third_party" / "LLMmap" / "data" / "pretrained_models" / "default"
+    model_dir.mkdir(parents=True)
+    (model_dir / "templates.json").write_text(json.dumps({"example/old": [1.0, 2.0]}), encoding="utf-8")
+
+    add_template = root / "third_party" / "LLMmap" / "add_new_template.py"
+    add_template.write_text(
+        """
+import argparse
+import json
+from pathlib import Path
+
+parser = argparse.ArgumentParser()
+parser.add_argument("model_id")
+parser.add_argument("model_type")
+parser.add_argument("--llmmap_path", required=True)
+parser.add_argument("--prompt_conf_path")
+parser.add_argument("--num_prompt_confs")
+args = parser.parse_args()
+
+templates_path = Path(args.llmmap_path) / "templates.json"
+templates = json.loads(templates_path.read_text())
+assert "allenai/OLMo-2-0425-1B-Instruct" in templates, templates
+(templates_path.with_suffix(".json.previous")).write_text(json.dumps(templates))
+templates[args.model_id] = [5.0, 6.0]
+templates_path.write_text(json.dumps(templates))
+""".lstrip(),
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        ["bash", str(script_path), "allenai/OLMo-2-0425-1B-RLVR1"],
+        cwd=root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    updated = json.loads((artifact_dir / "templates.json").read_text())
+    previous = json.loads((artifact_dir / "templates.json.previous").read_text())
+    assert "allenai/OLMo-2-0425-1B-Instruct" in updated
+    assert "allenai/OLMo-2-0425-1B-Instruct" in previous
+    assert "allenai/OLMo-2-0425-1B-RLVR1" in updated
 
 
 def test_proflingo_script_loads_dotenv_when_present(tmp_path):
