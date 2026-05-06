@@ -17,6 +17,9 @@ pandas>=2.2
 scipy>=1.14
 tqdm>=4.67
 datasets>=2.18
+matplotlib
+plotly
+seaborn
 pytest
 ipykernel
 
