@@ -1,23 +1,52 @@
 diff --git a/attack.py b/attack.py
-index 10baa48..d78d45e 100644
+index 10baa48..9afb419 100644
 --- a/attack.py
 +++ b/attack.py
-@@ -80,7 +80,13 @@ def get_loss_from_ids(models, executor, system_ids, prompt_ids, prompt_replace_l
+@@ -80,7 +80,42 @@ def get_loss_from_ids(models, executor, system_ids, prompt_ids, prompt_replace_l
      return losses
  
  
 -def select_prompt(models, tokenizer, executor,system_ids_lst, prompt_ids, prompt_replace_lst, filter_word, previous_loss):  
 +def _roundtrip_ids(tokenizer, decoded_str, use_tokenizer_template=False):
-+    if use_tokenizer_template:
++    try:
 +        return tokenizer.encode(decoded_str, add_special_tokens=False)
-+    return tokenizer.encode(decoded_str)[2:]
++    except TypeError:
++        special_ids = tokenizer.encode("", add_special_tokens=True)
++        encoded_ids = tokenizer.encode(decoded_str)
++        if special_ids and encoded_ids[:len(special_ids)] == special_ids:
++            return encoded_ids[len(special_ids):]
++        return encoded_ids
++
++
++def _sample_roundtrip_prompt_ids(
++    tokenizer,
++    repl_ids,
++    token_nums,
++    filter_word,
++    device,
++    max_attempts=10000,
++    use_tokenizer_template=False,
++):
++    for _ in range(max_attempts):
++        prompt_ids = repl_ids[torch.randperm(len(repl_ids), device=device)[:token_nums]]
++        decoded_str = tokenizer.decode(prompt_ids)
++        if (
++            prompt_ids.tolist() == _roundtrip_ids(tokenizer, decoded_str, use_tokenizer_template)
++            and (not filter_word or filter_word not in decoded_str.lower())
++        ):
++            return prompt_ids
++
++    raise RuntimeError(
++        "Unable to sample a tokenizer round-trippable initial suffix after "
++        f"{max_attempts} attempts. The tokenizer may need a narrower replacement-token filter."
++    )
 +
 +
 +def select_prompt(models, tokenizer, executor,system_ids_lst, prompt_ids, prompt_replace_lst, filter_word, previous_loss, use_tokenizer_template=False):  
  
      filtered_lst = prompt_replace_lst.tolist().copy()
  
-@@ -89,7 +95,7 @@ def select_prompt(models, tokenizer, executor,system_ids_lst, prompt_ids, prompt
+@@ -89,7 +124,7 @@ def select_prompt(models, tokenizer, executor,system_ids_lst, prompt_ids, prompt
              cand_prompt_ids = prompt_ids.tolist()
              cand_prompt_ids[i] = repl_token
              decoded_str = tokenizer.decode(cand_prompt_ids)
@@ -26,7 +55,7 @@ index 10baa48..d78d45e 100644
                  filtered_lst[i].remove(repl_token)
  
      index_lst = [(i, j) for i, sublst in enumerate(filtered_lst) for j, _ in enumerate(sublst)]
-@@ -115,7 +121,7 @@ def select_prompt(models, tokenizer, executor,system_ids_lst, prompt_ids, prompt
+@@ -115,7 +150,7 @@ def select_prompt(models, tokenizer, executor,system_ids_lst, prompt_ids, prompt
              for system_ids in system_ids_lst:
                  loss += get_loss_from_ids(models, executor, system_ids, prompt_ids).item()
  
@@ -35,7 +64,7 @@ index 10baa48..d78d45e 100644
                  #print(f"{loss=} {tokenizer.decode(old_id)} -> {tokenizer.decode(prompt_ids[prompt_index])}")
                  new_prompt = prompt_ids.clone()
                  new_loss = loss
-@@ -158,7 +164,7 @@ def cal_replacable_ids(model, system_ids_lst, prompt_ids, repl_ids):
+@@ -158,7 +193,7 @@ def cal_replacable_ids(model, system_ids_lst, prompt_ids, repl_ids):
      
      grad = grad / grad.norm(dim=-1, keepdim=True)
      
@@ -44,65 +73,133 @@ index 10baa48..d78d45e 100644
      ref_grad[:, repl_ids] = -grad[:, repl_ids]
  
      prompt_replace_lst = ref_grad.topk(top_k, dim=1).indices[:,torch.randperm(top_k, device=model.device)[:select_b]]
-@@ -168,10 +174,35 @@ def cal_replacable_ids(model, system_ids_lst, prompt_ids, repl_ids):
+@@ -166,37 +201,72 @@ def cal_replacable_ids(model, system_ids_lst, prompt_ids, repl_ids):
+ 
+ 
  def assemble_ids(tokenizer, template, question, target):  
-     def find_ids(fst_ids, sed_ids):
-         length = len(sed_ids)
+-    def find_ids(fst_ids, sed_ids):
+-        length = len(sed_ids)
 -        for index in range(len(input_ids) - length + 1):
-+        for index in range(len(fst_ids) - length + 1):
-             if fst_ids[index:index+length] == sed_ids:
-                 return index
-         raise ValueError("Cannot find ids")
-+
+-            if fst_ids[index:index+length] == sed_ids:
+-                return index
+-        raise ValueError("Cannot find ids")
 +    def encode_no_special(text):
-+        return tokenizer.encode(text, add_special_tokens=False)
++        try:
++            return tokenizer.encode(text, add_special_tokens=False)
++        except TypeError:
++            special_ids = tokenizer.encode("", add_special_tokens=True)
++            encoded_ids = tokenizer.encode(text)
++            if special_ids and encoded_ids[:len(special_ids)] == special_ids:
++                return encoded_ids[len(special_ids):]
++            return encoded_ids
++
++    def unique_sentinel(base, *texts):
++        sentinel = base
++        sentinel_index = 0
++        while any(sentinel in text for text in texts):
++            sentinel_index += 1
++            sentinel = f"{base}_{sentinel_index}"
++        return sentinel
++
++    def split_prompt(full_prompt, suffix_sentinel, target_sentinel):
++        suffix_pos = full_prompt.find(suffix_sentinel)
++        target_pos = full_prompt.find(target_sentinel)
++        if (
++            suffix_pos == -1
++            or target_pos == -1
++            or full_prompt.find(suffix_sentinel, suffix_pos + len(suffix_sentinel)) != -1
++            or full_prompt.find(target_sentinel, target_pos + len(target_sentinel)) != -1
++            or target_pos < suffix_pos
++        ):
++            raise ValueError("Cannot uniquely locate ProFLingo prompt sentinels")
++
++        begin_text = full_prompt[:suffix_pos]
++        middle_text = full_prompt[suffix_pos + len(suffix_sentinel):target_pos]
++        return encode_no_special(begin_text), encode_no_special(middle_text), encode_no_special(target)
++
++    suffix_sentinel = unique_sentinel("<|proflingo_optimized_suffix_sentinel|>", question, target)
++    target_sentinel = unique_sentinel("<|proflingo_target_sentinel|>", question, target, suffix_sentinel)
 +
 +    if (template == None):
-+        sentinel_base = "<|proflingo_optimized_suffix_sentinel|>"
-+        sentinel = sentinel_base
-+        sentinel_index = 0
-+        while sentinel in question or sentinel in target:
-+            sentinel_index += 1
-+            sentinel = f"{sentinel_base}_{sentinel_index}"
-+
 +        full_prompt = tokenizer.apply_chat_template(
-+            [{"role": "user", "content": sentinel + question}],
++            [{"role": "user", "content": suffix_sentinel + question}],
 +            tokenize=False,
 +            add_generation_prompt=True,
 +        )
-+        sentinel_pos = full_prompt.find(sentinel)
-+        if (sentinel_pos == -1 or full_prompt.find(sentinel, sentinel_pos + len(sentinel)) != -1):
-+            raise ValueError("Cannot uniquely locate optimized suffix sentinel")
-+
-+        begin_ids = encode_no_special(full_prompt[:sentinel_pos])
-+        middle_ids = encode_no_special(full_prompt[sentinel_pos + len(sentinel):])
-+        target_ids = encode_no_special(target)
-+        return begin_ids, middle_ids, target_ids
++        suffix_pos = full_prompt.find(suffix_sentinel)
++        if (
++            suffix_pos == -1
++            or full_prompt.find(suffix_sentinel, suffix_pos + len(suffix_sentinel)) != -1
++        ):
++            raise ValueError("Cannot uniquely locate ProFLingo prompt sentinel")
++        return (
++            encode_no_special(full_prompt[:suffix_pos]),
++            encode_no_special(full_prompt[suffix_pos + len(suffix_sentinel):]),
++            encode_no_special(target),
++        )
      
      template.messages = []
+-
+-    template.append_message(template.roles[0], "<unk>")
+-    input_ids = tokenizer.encode(template.get_prompt())
+-    begin_ids = input_ids[0: input_ids.index(tokenizer.unk_token_id)]
+-
+-    if (template.sep_style == SeparatorStyle.CHATML):
+-        target_ids = tokenizer.encode("\n" + target)[3:]
+-    else:
+-        target_ids = tokenizer.encode(target)[1:]
+-
+-    template.update_last_message(question)
+-    template.append_message(template.roles[1], target)
+-    input_ids = tokenizer.encode(template.get_prompt())
+-    middle_ids = input_ids[len(begin_ids): find_ids(input_ids, target_ids)]
+-
+-    return begin_ids, middle_ids, target_ids
++    template.append_message(template.roles[0], suffix_sentinel + question)
++    template.append_message(template.roles[1], target_sentinel + target)
++    return split_prompt(template.get_prompt(), suffix_sentinel, target_sentinel)
  
-@@ -228,16 +259,17 @@ def generate_suffix(models, tokenizer, template_lst, question, target, num_epoch
+ 
+ def get_replacable_ids(tokenizer, filter_word, device):
+     repl_ids = []
+     repl_tokens = tokenizer.convert_ids_to_tokens(range(0, tokenizer.vocab_size))
+     for i, token in enumerate(repl_tokens):
+-        if token.isascii() and token.isalpha() and filter_word not in token.lower():
++        if token.isascii() and token.isalpha() and (not filter_word or filter_word not in token.lower()):
+             repl_ids.append(i)
+ 
+     return torch.tensor(repl_ids, device=device)
+@@ -228,16 +298,19 @@ def generate_suffix(models, tokenizer, template_lst, question, target, num_epoch
      torch.manual_seed(seed)
  
      repl_ids = get_replacable_ids(tokenizer, filter_word, device=model.device)
-+    use_tokenizer_template = any(template == None for template in template_lst)
- 
-     while True:
-         prompt_ids = repl_ids[torch.randperm(len(repl_ids), device=model.device)[:token_nums]]
-         decoded_str = tokenizer.decode(prompt_ids)
+-
+-    while True:
+-        prompt_ids = repl_ids[torch.randperm(len(repl_ids), device=model.device)[:token_nums]]
+-        decoded_str = tokenizer.decode(prompt_ids)
 -        if (prompt_ids.tolist() == tokenizer.encode(decoded_str)[2:] and 
-+        if (prompt_ids.tolist() == _roundtrip_ids(tokenizer, decoded_str, use_tokenizer_template) and 
-             filter_word not in decoded_str):
-             break
- 
+-            filter_word not in decoded_str):
+-            break
+-
 -    previous_loss = np.infty
 -    best_loss = np.infty
++    use_tokenizer_template = any(template == None for template in template_lst)
++
++    prompt_ids = _sample_roundtrip_prompt_ids(
++        tokenizer,
++        repl_ids,
++        token_nums,
++        filter_word,
++        model.device,
++        use_tokenizer_template=use_tokenizer_template,
++    )
++
 +    previous_loss = np.inf
 +    best_loss = np.inf
      best_prompt_id = prompt_ids.clone()
      system_ids_lst = []
      for template in template_lst:
-@@ -258,13 +290,13 @@ def generate_suffix(models, tokenizer, template_lst, question, target, num_epoch
+@@ -258,13 +331,13 @@ def generate_suffix(models, tokenizer, template_lst, question, target, num_epoch
  
          prompt_replace_lst = cal_replacable_ids(model, system_ids_lst, prompt_ids, repl_ids)
  
@@ -118,7 +215,7 @@ index 10baa48..d78d45e 100644
          previous_loss = loss
  
          for system_ids in system_ids_lst:
-@@ -272,7 +304,6 @@ def generate_suffix(models, tokenizer, template_lst, question, target, num_epoch
+@@ -272,7 +345,6 @@ def generate_suffix(models, tokenizer, template_lst, question, target, num_epoch
              user_ids = torch.tensor(user_ids_lst[0], device=model.device)
  
              gen_str = tokenizer.decode(generate_output(model, tokenizer, user_ids, 8))
