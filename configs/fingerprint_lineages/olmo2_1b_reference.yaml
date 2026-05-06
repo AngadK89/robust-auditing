@@ -1,0 +1,25 @@
+name: olmo2_1b_reference
+reference:
+  model_id: allenai/OLMo-2-0425-1B
+  artifact_root: artifacts/fingerprints
+  artifacts:
+    proflingo_fingerprint: proflingo/generated-allenai-OLMo-2-0425-1B.txt
+    llmmap_templates: llmmap/templates.json
+output: artifacts/verification/olmo2_base_llmmap_reference_trajectory.json
+targets:
+  - label: base
+    model_id: allenai/OLMo-2-0425-1B
+  - label: sft
+    model_id: allenai/OLMo-2-0425-1B-SFT
+  - label: dpo
+    model_id: allenai/OLMo-2-0425-1B-DPO
+  - label: rlvr1
+    model_id: allenai/OLMo-2-0425-1B-RLVR1
+    discover_revisions:
+      pattern: step_(\d+)
+      increment: 400
+  - label: instruct
+    model_id: allenai/OLMo-2-0425-1B-Instruct
+    discover_revisions:
+      pattern: step_(\d+)
+      increment: 400
