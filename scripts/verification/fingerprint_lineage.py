@@ -69,6 +69,7 @@ class LineageConfig:
     reference: FingerprintReference
     targets: list[TargetSpec]
     output: Path | None = None
+    fingerprints: dict[str, dict[str, Any]] = field(default_factory=dict)
     discovery_metadata: dict[str, dict[str, Any]] = field(default_factory=dict)
 
 
@@ -97,7 +98,14 @@ def load_lineage_config(path: Path | str) -> LineageConfig:
 
     targets = [_parse_target_spec(item, index) for index, item in enumerate(target_items)]
     output = Path(raw["output"]) if raw.get("output") else None
-    return LineageConfig(name=name, reference=reference, targets=targets, output=output)
+    fingerprints = _parse_fingerprint_options(raw.get("fingerprints", {}))
+    return LineageConfig(
+        name=name,
+        reference=reference,
+        targets=targets,
+        output=output,
+        fingerprints=fingerprints,
+    )
 
 
 def _parse_target_spec(raw: Any, index: int) -> TargetSpec:
@@ -132,6 +140,29 @@ def _parse_artifact_paths(raw: Any) -> dict[str, Path]:
             raise ValueError("reference.artifacts must map strings to non-empty paths")
         artifact_paths[key] = Path(value)
     return artifact_paths
+
+
+def _parse_fingerprint_options(raw: Any) -> dict[str, dict[str, Any]]:
+    if not isinstance(raw, dict):
+        raise ValueError("fingerprints must be a mapping")
+    path_keys = {
+        ("proflingo", "questions"),
+        ("llmmap", "model_path"),
+        ("llmmap", "prompt_conf_path"),
+    }
+    fingerprints: dict[str, dict[str, Any]] = {}
+    for fingerprint, options in raw.items():
+        if not isinstance(fingerprint, str) or not fingerprint.strip():
+            raise ValueError("fingerprints must map non-empty names to option mappings")
+        if not isinstance(options, dict):
+            raise ValueError(f"fingerprints.{fingerprint} must be a mapping")
+        parsed_options: dict[str, Any] = {}
+        for key, value in options.items():
+            if not isinstance(key, str) or not key.strip():
+                raise ValueError(f"fingerprints.{fingerprint} option names must be non-empty strings")
+            parsed_options[key] = Path(value) if (fingerprint, key) in path_keys else value
+        fingerprints[fingerprint] = parsed_options
+    return fingerprints
 
 
 def _parse_revisions(raw: Any, index: int) -> list[str | dict[str, Any]]:
