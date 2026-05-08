@@ -17,6 +17,7 @@ MODEL_ID="${1:-${MODEL_ID:-}}"
 NUM_PROMPT_CONFS="${NUM_PROMPT_CONFS:-100}"
 LLMMAP_MODEL_PATH="${LLMMAP_MODEL_PATH:-./data/pretrained_models/default}"
 PROMPT_CONF_PATH="${PROMPT_CONF_PATH:-./confs/prompt_configurations}"
+PYTHON_BIN="${PYTHON_BIN:-python3}"
 
 if [ -z "${MODEL_ID}" ]; then
   echo "Usage: scripts/fingerprints/make_llmmap_template.sh <model-id>" >&2
@@ -43,7 +44,7 @@ if [ -f "${ARTIFACT_DIR}/templates.json" ]; then
   cp "${ARTIFACT_DIR}/templates.json" "${LLMMAP_MODEL_PATH}/templates.json"
 fi
 
-python add_new_template.py "${MODEL_ID}" 0 \
+"${PYTHON_BIN}" add_new_template.py "${MODEL_ID}" 0 \
   --llmmap_path "${LLMMAP_MODEL_PATH}" \
   --prompt_conf_path "${PROMPT_CONF_PATH}" \
   --num_prompt_confs "${NUM_PROMPT_CONFS}"

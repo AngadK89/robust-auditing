@@ -5,7 +5,9 @@ matplotlib.use("Agg")
 
 from scripts.verification.plot_lineage_verification import (
     build_lineage_df,
+    normalize_report,
     normalize_llmmap_results,
+    normalize_replay_results,
     plot_llmmap_reference_distances,
 )
 
@@ -123,3 +125,83 @@ def test_llmmap_reference_distance_plot_uses_lineage_order():
     assert ax.lines[0].get_xdata().tolist() == [0, 1, 2]
     assert ax.lines[0].get_ydata().tolist() == [0.2, 0.5, 0.1]
     fig.clear()
+
+
+def test_replay_normalization_accepts_summary_only_proflingo_results():
+    report = _report()
+    report["fingerprint"] = ["proflingo", "llmmap"]
+    report["proflingo"] = {
+        "instruct@main": {
+            "technique": "proflingo",
+            "model": "instruct@main",
+            "matched": 4,
+            "total": 5,
+            "match_rate": 0.8,
+            "verification_mode": "proflingo_copyright_test",
+        },
+        "instruct@step-200": {
+            "technique": "proflingo",
+            "model": "instruct@step-200",
+            "matched": 5,
+            "total": 5,
+            "match_rate": 1.0,
+            "verification_mode": "proflingo_copyright_test",
+        },
+    }
+    lineage_df = build_lineage_df(report)
+
+    replay_df = normalize_replay_results(report, lineage_df)
+
+    assert replay_df["target_key"].tolist() == ["instruct@step-200", "instruct@main"]
+    row = replay_df.set_index("target_key").loc["instruct@main"]
+    assert row["technique"] == "proflingo"
+    assert row["matched"] == 4
+    assert row["total"] == 5
+    assert row["match_rate"] == 0.8
+    assert row["verification_mode"] == "proflingo_copyright_test"
+
+
+def test_normalize_report_allows_proflingo_only_reports():
+    report = _report()
+    report["fingerprint"] = ["proflingo"]
+    report.pop("llmmap")
+    report["proflingo"] = {
+        "instruct@main": {
+            "technique": "proflingo",
+            "model": "instruct@main",
+            "matched": 1,
+            "total": 1,
+            "match_rate": 1.0,
+            "verification_mode": "proflingo_copyright_test",
+        },
+        "instruct@step-200": {
+            "technique": "proflingo",
+            "model": "instruct@step-200",
+            "matched": 1,
+            "total": 1,
+            "match_rate": 1.0,
+            "verification_mode": "proflingo_copyright_test",
+        },
+        "base@main": {
+            "technique": "proflingo",
+            "model": "base@main",
+            "matched": 0,
+            "total": 1,
+            "match_rate": 0.0,
+            "verification_mode": "proflingo_copyright_test",
+        },
+    }
+
+    lineage_df, replay_df, llmmap_df = normalize_report(report)
+
+    assert lineage_df["target_key"].tolist() == [
+        "instruct@step-200",
+        "instruct@main",
+        "base@main",
+    ]
+    assert replay_df["target_key"].tolist() == [
+        "instruct@step-200",
+        "instruct@main",
+        "base@main",
+    ]
+    assert llmmap_df.empty

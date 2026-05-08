@@ -73,7 +73,6 @@ reference:
 fingerprints:
   proflingo:
     questions: custom/questions.csv
-    match: exact
   llmmap:
     model_path: custom/llmmap/model
     top_k: 3
@@ -88,7 +87,6 @@ targets:
     assert config.fingerprints == {
         "proflingo": {
             "questions": Path("custom/questions.csv"),
-            "match": "exact",
         },
         "llmmap": {
             "model_path": Path("custom/llmmap/model"),
@@ -263,6 +261,11 @@ targets:
         calls.append(("load", model_id, revision))
         return f"model:{model_id}:{revision}", f"tokenizer:{model_id}:{revision}"
 
+    def fake_load_tokenizer(model_id, **kwargs):
+        revision = kwargs.get("revision")
+        calls.append(("load_slow_tokenizer", model_id, revision, kwargs.get("use_fast")))
+        return f"slow-tokenizer:{model_id}:{revision}"
+
     def fake_proflingo(*, target, **_kwargs):
         calls.append(("proflingo", target.key))
         return {"match_rate": 1.0, "target": target.to_report_dict()}
@@ -283,7 +286,7 @@ targets:
         path.write_text(json.dumps(data, indent=2))
 
     monkeypatch.setattr(verify_fingerprint_lineage, "load_hf_model", fake_load)
-    monkeypatch.setattr(verify_fingerprint_lineage, "load_proflingo_cases", lambda *_args, **_kwargs: ["case"])
+    monkeypatch.setattr(verify_fingerprint_lineage, "load_hf_tokenizer", fake_load_tokenizer)
     monkeypatch.setattr(verify_fingerprint_lineage, "run_proflingo_for_target", fake_proflingo)
     monkeypatch.setattr(verify_fingerprint_lineage, "run_llmmap_for_target", fake_llmmap)
     monkeypatch.setattr(verify_fingerprint_lineage, "cleanup_after_target_model", fake_cleanup)
@@ -307,14 +310,17 @@ targets:
 
     assert calls == [
         ("load", "org/base", "main"),
+        ("load_slow_tokenizer", "org/base", "main", False),
         ("proflingo", "base@main"),
         ("llmmap", "base@main"),
         ("cleanup", "org/base", "main"),
         ("load", "org/rl", "main"),
+        ("load_slow_tokenizer", "org/rl", "main", False),
         ("proflingo", "rl@main"),
         ("llmmap", "rl@main"),
         ("cleanup", "org/rl", "main"),
         ("load", "org/rl", "step_200"),
+        ("load_slow_tokenizer", "org/rl", "step_200", False),
         ("proflingo", "rl@step_200"),
         ("llmmap", "rl@step_200"),
         ("cleanup", "org/rl", "step_200"),
@@ -347,13 +353,13 @@ targets:
     )
     captured = {}
 
-    def fake_load_cases(path, *_args, **_kwargs):
+    def fake_load_trap_cases(path, *_args, **_kwargs):
         captured.setdefault("case_paths", []).append(path)
         return []
 
-    monkeypatch.setattr(verify_fingerprint_lineage, "load_proflingo_cases", fake_load_cases)
-    monkeypatch.setattr(verify_fingerprint_lineage, "load_trap_cases", fake_load_cases)
+    monkeypatch.setattr(verify_fingerprint_lineage, "load_trap_cases", fake_load_trap_cases)
     monkeypatch.setattr(verify_fingerprint_lineage, "load_hf_model", lambda *_args, **_kwargs: (object(), object()))
+    monkeypatch.setattr(verify_fingerprint_lineage, "load_hf_tokenizer", lambda *_args, **_kwargs: object())
     monkeypatch.setattr(verify_fingerprint_lineage, "run_proflingo_for_target", lambda **_kwargs: {})
     monkeypatch.setattr(verify_fingerprint_lineage, "run_trap_for_target", lambda **_kwargs: {})
     monkeypatch.setattr(verify_fingerprint_lineage, "cleanup_after_target_model", lambda *_args: None)
@@ -375,7 +381,6 @@ targets:
     assert verify_fingerprint_lineage.main() == 0
     assert captured == {
         "case_paths": [
-            artifact_root / "proflingo/generated_reference.txt",
             artifact_root / "trap/custom_suffixes.csv",
         ]
     }
@@ -399,7 +404,6 @@ reference:
 fingerprints:
   proflingo:
     questions: {questions_path}
-    match: exact
 targets:
   - label: base
     model_id: org/base
@@ -407,18 +411,14 @@ targets:
     )
     captured = {}
 
-    def fake_load_cases(fingerprint_path, questions_path_arg, *, limit=None):
-        captured["fingerprint_path"] = fingerprint_path
-        captured["questions_path"] = questions_path_arg
-        captured["limit"] = limit
-        return ["case"]
-
     def fake_run_proflingo(**kwargs):
-        captured["proflingo_match"] = kwargs["proflingo_match"]
+        captured["fingerprint_path"] = kwargs["fingerprint_path"]
+        captured["questions_path"] = kwargs["questions_path"]
+        captured["limit"] = kwargs["limit"]
         return {}
 
     monkeypatch.setattr(verify_fingerprint_lineage, "load_hf_model", lambda *_args, **_kwargs: (object(), object()))
-    monkeypatch.setattr(verify_fingerprint_lineage, "load_proflingo_cases", fake_load_cases)
+    monkeypatch.setattr(verify_fingerprint_lineage, "load_hf_tokenizer", lambda *_args, **_kwargs: object())
     monkeypatch.setattr(verify_fingerprint_lineage, "run_proflingo_for_target", fake_run_proflingo)
     monkeypatch.setattr(verify_fingerprint_lineage, "cleanup_after_target_model", lambda *_args: None)
     monkeypatch.setattr(verify_fingerprint_lineage, "write_json", lambda _path, _data: None)
@@ -440,7 +440,6 @@ targets:
         "fingerprint_path": artifact_root / "proflingo/generated.txt",
         "questions_path": questions_path,
         "limit": 7,
-        "proflingo_match": "exact",
     }
 
 
@@ -466,7 +465,7 @@ targets:
     )
 
     monkeypatch.setattr(verify_fingerprint_lineage, "load_hf_model", lambda *_args, **_kwargs: (object(), object()))
-    monkeypatch.setattr(verify_fingerprint_lineage, "load_proflingo_cases", lambda *_args, **_kwargs: ["p"])
+    monkeypatch.setattr(verify_fingerprint_lineage, "load_hf_tokenizer", lambda *_args, **_kwargs: object())
     monkeypatch.setattr(verify_fingerprint_lineage, "run_proflingo_for_target", lambda **_kwargs: {})
     monkeypatch.setattr(verify_fingerprint_lineage, "cleanup_after_target_model", lambda *_args: None)
 
@@ -511,7 +510,7 @@ targets:
 
     calls = []
     monkeypatch.setattr(verify_fingerprint_lineage, "load_hf_model", lambda *_args, **_kwargs: (object(), object()))
-    monkeypatch.setattr(verify_fingerprint_lineage, "load_proflingo_cases", lambda *_args, **_kwargs: ["p"])
+    monkeypatch.setattr(verify_fingerprint_lineage, "load_hf_tokenizer", lambda *_args, **_kwargs: object())
     monkeypatch.setattr(verify_fingerprint_lineage, "run_proflingo_for_target", lambda **_kwargs: calls.append("proflingo") or {})
     monkeypatch.setattr(verify_fingerprint_lineage, "run_llmmap_for_target", lambda **_kwargs: calls.append("llmmap") or {})
     monkeypatch.setattr(verify_fingerprint_lineage, "cleanup_after_target_model", lambda *_args: None)
@@ -652,7 +651,7 @@ targets:
     def run_with_fingerprints(fingerprints: list[str]) -> list[str]:
         calls = []
         monkeypatch.setattr(verify_fingerprint_lineage, "load_hf_model", lambda *_args, **_kwargs: (object(), object()))
-        monkeypatch.setattr(verify_fingerprint_lineage, "load_proflingo_cases", lambda *_args, **_kwargs: ["p"])
+        monkeypatch.setattr(verify_fingerprint_lineage, "load_hf_tokenizer", lambda *_args, **_kwargs: object())
         monkeypatch.setattr(verify_fingerprint_lineage, "load_trap_cases", lambda *_args, **_kwargs: ["t"])
         monkeypatch.setattr(verify_fingerprint_lineage, "run_proflingo_for_target", lambda **_kwargs: calls.append("proflingo") or {})
         monkeypatch.setattr(verify_fingerprint_lineage, "run_trap_for_target", lambda **_kwargs: calls.append("trap") or {})
@@ -706,7 +705,7 @@ targets:
     calls = []
 
     monkeypatch.setattr(verify_fingerprint_lineage, "load_hf_model", lambda *_args, **_kwargs: ("model", "tokenizer"))
-    monkeypatch.setattr(verify_fingerprint_lineage, "load_proflingo_cases", lambda *_args, **_kwargs: ["case"])
+    monkeypatch.setattr(verify_fingerprint_lineage, "load_hf_tokenizer", lambda *_args, **_kwargs: "slow-tokenizer")
 
     def raise_from_proflingo(**_kwargs):
         calls.append("proflingo")
@@ -757,20 +756,54 @@ def test_cleanup_after_target_model_evicts_entire_repo_cache(monkeypatch):
     assert calls == ["cleanup_torch_memory", ("evict_repo", "org/model")]
 
 
-def test_run_proflingo_for_target_passes_revision_metadata_and_model():
+def test_run_proflingo_for_target_passes_revision_metadata_and_model(monkeypatch, tmp_path):
     target = ModelTarget(label="rl", model_id="org/rl", revision="checkpoint-200", step=200)
+    fingerprint_path = tmp_path / "generated.txt"
+    questions_path = tmp_path / "questions.csv"
+    fingerprint_path.write_text("0,suffix\n", encoding="utf-8")
+    questions_path.write_text("question,answer,keyword\nq,a,a\n", encoding="utf-8")
+    calls = {}
+
+    def fake_default_templates(tokenizer):
+        calls["template_tokenizer"] = tokenizer
+        return ["template-a", "template-b"]
+
+    def fake_copyright_test(**kwargs):
+        calls.update(kwargs)
+        return 5, 3
+
+    monkeypatch.setattr(verify_fingerprint_lineage, "get_proflingo_default_templates", fake_default_templates)
+    monkeypatch.setattr(verify_fingerprint_lineage, "run_proflingo_copyright_test", fake_copyright_test)
+
     result = verify_fingerprint_lineage.run_proflingo_for_target(
         target=target,
-        cases=[],
-        model=object(),
-        tokenizer=object(),
+        fingerprint_path=fingerprint_path,
+        questions_path=questions_path,
+        model="loaded-model",
+        tokenizer="slow-tokenizer",
         max_new_tokens=8,
-        proflingo_match="prefix",
+        limit=11,
     )
 
     assert result["model"] == "rl@checkpoint-200"
+    assert result["technique"] == "proflingo"
+    assert result["total"] == 5
+    assert result["matched"] == 3
+    assert result["match_rate"] == 0.6
+    assert result["verification_mode"] == "proflingo_copyright_test"
     assert result["target"]["model_id"] == "org/rl"
     assert result["target"]["step"] == 200
+    assert calls["model"] == "loaded-model"
+    assert calls["tokenizer"] == "slow-tokenizer"
+    assert calls["dataset_path"] == questions_path
+    assert calls["advsamples_path"] == fingerprint_path
+    assert calls["manual_check"] is False
+    assert calls["model_path"] == "org/rl"
+    assert calls["template"] == ["template-a", "template-b"]
+    assert calls["verbose"] is False
+    assert calls["max_token"] == 8
+    assert calls["limit"] == 11
+    assert calls["backend"] == "local"
 
 
 def test_llmmap_for_target_uses_yaml_options_stable_key_revision_and_metadata(monkeypatch):
@@ -856,6 +889,21 @@ def test_llmmap_options_accepts_only_model_path_and_top_k():
         model_path=Path("custom/llmmap/model"),
         top_k=3,
     )
+
+
+def test_proflingo_options_rejects_stale_match_key():
+    config = LineageConfig(
+        name="family",
+        reference=FingerprintReference(
+            model_id="org/reference",
+            artifact_root=Path("artifacts/fingerprints/reference"),
+        ),
+        targets=[],
+        fingerprints={"proflingo": {"questions": "questions.csv", "match": "exact"}},
+    )
+
+    with pytest.raises(ValueError, match="match"):
+        verify_fingerprint_lineage.proflingo_options(config)
 
 
 @pytest.mark.parametrize("stale_key", ["prompt_conf_path", "num_prompt_confs"])

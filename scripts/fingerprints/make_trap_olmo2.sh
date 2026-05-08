@@ -22,6 +22,7 @@ N_GOALS="${N_GOALS:-100}"
 N_TRAIN_DATA="${N_TRAIN_DATA:-10}"
 N_STEPS="${N_STEPS:-1500}"
 OFFSETS="${OFFSETS:-0 10 20 30 40 50 60 70 80 90}"
+PYTHON_BIN="${PYTHON_BIN:-python3}"
 
 if [ "${FINGERPRINT_DRY_RUN:-0}" = "1" ]; then
   printf 'MODEL=%s\n' "${MODEL}"
@@ -42,8 +43,8 @@ fi
 mkdir -p "${ARTIFACT_DIR}"
 
 cd "${TRAP_DIR}"
-python data/filter_tokens/generate_filter_token_number_olmo2.py --allow-download
-python generate_csv.py \
+"${PYTHON_BIN}" data/filter_tokens/generate_filter_token_number_olmo2.py --allow-download
+"${PYTHON_BIN}" generate_csv.py \
   --n-goals "${N_GOALS}" \
   --method "${METHOD}" \
   --string-type "${STRING}" \

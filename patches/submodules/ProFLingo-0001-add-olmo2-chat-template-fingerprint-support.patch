@@ -225,28 +225,100 @@ index 10baa48..9afb419 100644
      return tokenizer.decode(best_prompt_id)
 -
 diff --git a/copyright_test.py b/copyright_test.py
-index 94753af..6ae1b84 100644
+index 94753af..7eeff9f 100644
 --- a/copyright_test.py
 +++ b/copyright_test.py
-@@ -164,9 +164,10 @@ if __name__ == "__main__":
+@@ -5,7 +5,7 @@ import anthropic
+ import torch
+ from transformers import AutoModelForCausalLM, AutoTokenizer
+ from fastchat.conversation import get_conv_template, SeparatorStyle, Conversation
+-from proflingo import complete_conversation
++from proflingo import complete_conversation, get_default_templates
+ 
+ def load_model_and_tokenizer(model_path):
+     model = AutoModelForCausalLM.from_pretrained(
+@@ -18,6 +18,7 @@ def load_model_and_tokenizer(model_path):
+     tokenizer = AutoTokenizer.from_pretrained(
+         model_path,
+         trust_remote_code=True,
++        use_fast=False,
+     )
+ 
+     if (tokenizer.pad_token_id == None):
+@@ -122,12 +123,16 @@ def get_answer_claude(client, model, question):
+ def fingerprint_test(model, tokenizer, 
+                      dataset_path, advsamples_path, 
+                      manual_check = True, model_path = "", template = None,  
+-                     verbose = True, pbar = None, max_token = 64, first_sentence = False):
++                     verbose = True, pbar = None, max_token = 64, first_sentence = False,
++                     limit = None, backend = None):
+     advsamples = pd.read_csv(advsamples_path, header = None).values.tolist()
++    if limit is not None:
++        advsamples = advsamples[:limit]
+     test_dataset = pd.read_csv(dataset_path).values.tolist()
+ 
+     questions_counter = 0
+     success_counter = 0
++    templates = template if isinstance(template, (list, tuple)) else [template]
+     for adv in advsamples:
+         q_index = adv[0]
+         if (verbose):
+@@ -135,13 +140,20 @@ def fingerprint_test(model, tokenizer,
+         question = adv[1] + " simply answer: " + test_dataset[q_index][0]
+         if ("Mistral-7B-OpenOrca" in model_path or "Orca-2-7b" in model_path):
+             question += " Directly give me the simple answer. Do not give me step-by-step reason. Do not explain anything further. Do not say any words except the answer."
+-        if ("gpt" in model_path):
++        use_backend = backend or model_path
++        if (use_backend == "openai" or (backend is None and "gpt" in model_path)):
+             answer = get_answer_openai(model, model_path, question)
+-        elif ("claude" in model_path):
++        elif (use_backend == "anthropic" or (backend is None and "claude" in model_path)):
+             answer = get_answer_claude(model, model_path, question)
+         else:
+-            answer = complete_conversation(model, tokenizer, template, question, size=max_token)
+-        if (first_sentence):
++            answer = ""
++            for candidate_template in templates:
++                answer = complete_conversation(model, tokenizer, candidate_template, question, size=max_token)
++                if (first_sentence):
++                    answer = answer[:answer.find(".")]
++                if test_dataset[q_index][2].replace(' ', '').lower() in answer.replace(' ', '').lower():
++                    break
++        if (first_sentence and (use_backend in {"openai", "anthropic"} or (backend is None and ("gpt" in model_path or "claude" in model_path)))):
+             answer = answer[:answer.find(".")]
+         if (verbose):
+             print(f"{answer}")
+@@ -164,26 +176,18 @@ if __name__ == "__main__":
      advsamples_path = sys.argv[1]
      model_path = sys.argv[2]
  
 -    dataset_path = r"/home/ubuntu/questions.csv"
 +    dataset_path = sys.argv[3] if len(sys.argv) > 3 else "./questions.csv"
  
-     tokenizer_template_lst = ["OLMo-7B-Instruct",
-+                                "OLMo-2",
-                                 "Mistral-7B-Instruct-v0.1",
-                                 "Hermes-2-Pro-Mistral-7B",
-                                 "Yi-6B-Chat",]
-@@ -186,4 +187,3 @@ if __name__ == "__main__":
+-    tokenizer_template_lst = ["OLMo-7B-Instruct",
+-                                "Mistral-7B-Instruct-v0.1",
+-                                "Hermes-2-Pro-Mistral-7B",
+-                                "Yi-6B-Chat",]
+-    
+     template = None
+     tokenizer = None
+     if "gpt" in model_path:
+         model = openai.OpenAI(api_key="<API_KEY>")
+     elif "claude" in model_path:
+         model = anthropic.Anthropic( api_key="<API_KEY>")
+-    elif any(x in model_path for x in tokenizer_template_lst):
+-        model, tokenizer = load_model_and_tokenizer(model_path)
+     else:
+-        template = get_template(model_path)
+         model, tokenizer = load_model_and_tokenizer(model_path)
++        template = get_default_templates(tokenizer)
+         
      questions_counter, success_counter = fingerprint_test(model, tokenizer, dataset_path, advsamples_path, model_path = model_path, template = template)
  
      print(f"All: {questions_counter} Success: {success_counter} ASR: {success_counter / questions_counter}")
 -
 diff --git a/proflingo.py b/proflingo.py
-index be1fb68..eff1973 100644
+index be1fb68..bf1483b 100644
 --- a/proflingo.py
 +++ b/proflingo.py
 @@ -1,6 +1,7 @@
@@ -260,7 +332,7 @@ index be1fb68..eff1973 100644
  import copy
  import pandas as pd
  import numpy as np
-@@ -8,10 +9,13 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
+@@ -8,10 +9,25 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
  from fastchat.conversation import get_conv_template
  from attack import generate_output, generate_suffix
  
@@ -271,14 +343,26 @@ index be1fb68..eff1973 100644
 +#os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
 +#Uncomment this if OOM
 +
-+def uses_tokenizer_chat_template(model_path, tokenizer=None):
++def uses_tokenizer_chat_template(model_path=None, tokenizer=None):
 +    return bool(getattr(tokenizer, "chat_template", None))
++
++
++def get_default_templates(tokenizer):
++    if uses_tokenizer_chat_template(tokenizer=tokenizer):
++        return [None]
++
++    templates = [get_conv_template("alpaca"), get_conv_template("zero_shot")]
++    templates[0].sep = ' '
++    templates[1].sep = "\n"
++    if getattr(tokenizer, "unk_token_id", None) is not None:
++        tokenizer.pad_token_id = tokenizer.unk_token_id
++    return templates
 +
 +def load_model_and_tokenizer(model_path):
      torch.manual_seed(0)
      model = AutoModelForCausalLM.from_pretrained(
          model_path,
-@@ -65,20 +69,22 @@ if __name__ == "__main__":
+@@ -65,20 +81,16 @@ if __name__ == "__main__":
      model_path = sys.argv[1]
      advsamples_path = sys.argv[2]
  
@@ -304,18 +388,12 @@ index be1fb68..eff1973 100644
 +
 +    load_time = time.perf_counter()
 +    models, tokenizer = load_model_and_tokenizer(model_path)
-+    if uses_tokenizer_chat_template(model_path, tokenizer):
-+        templates = [None]
-+    else:
-+        templates = [get_conv_template("alpaca"), get_conv_template("zero_shot")]
-+        templates[0].sep = ' '
-+        templates[1].sep = "\n"
-+        tokenizer.pad_token_id = tokenizer.unk_token_id
++    templates = get_default_templates(tokenizer)
 +    print(f"load: {time.perf_counter() - load_time}s", flush=True)
  
      for i, data in enumerate(test_dataset):
          init_seed = init_str_rng.integers(100000)
-@@ -95,7 +101,7 @@ if __name__ == "__main__":
+@@ -95,7 +107,7 @@ if __name__ == "__main__":
  
          new_prompt = prompt_suffix + test_goal
  

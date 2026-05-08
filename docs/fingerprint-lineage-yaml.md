@@ -39,7 +39,6 @@ output: artifacts/verification/custom_family.json
 fingerprints:
   proflingo:
     questions: third_party/ProFLingo/questions.csv
-    match: prefix
   llmmap:
     model_path: third_party/LLMmap/data/pretrained_models/default
     top_k: 5
@@ -170,11 +169,11 @@ mappings.
 | Field | Required | Type | Default | Notes |
 | --- | --- | --- | --- | --- |
 | `questions` | no | path string | `third_party/ProFLingo/questions.csv` | Questions/answers CSV used to pair generated suffixes with targets. |
-| `match` | no | string | `prefix` | Must be `exact`, `prefix`, or `contains`. |
 
-`questions` is parsed as a path. Unsupported ProFLingo option keys are not
-currently rejected by the config loader, but only `questions` and `match` are
-used by the verifier.
+`questions` is parsed as a path. Unsupported ProFLingo option keys are rejected
+by the verifier. ProFLingo verification delegates to the authors'
+`copyright_test.py` keyword-ASR logic rather than repo-local exact/prefix
+matching modes.
 
 ### `fingerprints.llmmap`
 
@@ -215,7 +214,7 @@ The loader and verifier reject:
 - non-mapping `fingerprints`
 - blank fingerprint names or non-mapping fingerprint option blocks
 - blank fingerprint option names
-- `fingerprints.proflingo.match` values other than `exact`, `prefix`, or `contains`
+- unsupported `fingerprints.proflingo` keys
 - `fingerprints.llmmap.top_k < 1`
 - unsupported `fingerprints.llmmap` keys
 - requested fingerprint techniques missing their required artifact keys

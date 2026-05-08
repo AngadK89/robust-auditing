@@ -17,6 +17,7 @@ MODEL_ID="${1:-${MODEL_ID:-}}"
 MODEL_FILENAME="${MODEL_ID//\//-}"
 OUTPUT_PATH="${OUTPUT_PATH:-${ARTIFACT_DIR}/generated-${MODEL_FILENAME}.txt}"
 QUESTIONS_PATH="${QUESTIONS_PATH:-${PROFLINGO_DIR}/questions.csv}"
+PYTHON_BIN="${PYTHON_BIN:-python3}"
 
 if [ -z "${MODEL_ID}" ]; then
   echo "Usage: scripts/fingerprints/make_proflingo.sh <model-id>" >&2
@@ -38,4 +39,4 @@ mkdir -p "${ARTIFACT_DIR}"
 rm -f "${OUTPUT_PATH}"
 
 cd "${PROFLINGO_DIR}"
-QUESTIONS_PATH="${QUESTIONS_PATH}" python proflingo.py "${MODEL_ID}" "${OUTPUT_PATH}" "${QUESTIONS_PATH}"
+QUESTIONS_PATH="${QUESTIONS_PATH}" "${PYTHON_BIN}" proflingo.py "${MODEL_ID}" "${OUTPUT_PATH}" "${QUESTIONS_PATH}"

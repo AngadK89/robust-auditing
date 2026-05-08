@@ -154,9 +154,9 @@ key, for example `proflingo["base@main"]` or `llmmap["rlvr1@step_400"]`.
 
 ## Technique Behavior
 
-`proflingo` loads the configured generated-output fingerprint and questions CSV,
-replays each suffix-plus-question prompt, and reports match rates. The supported
-match modes are configured in YAML.
+`proflingo` delegates verification to ProFLingo's `copyright_test.py`, using the
+configured generated-output fingerprint and questions CSV. It reports summary
+keyword-ASR counts and match rates for each target model.
 
 `trap` loads a suffix CSV or directory of copied JSON suffix logs, replays each
 goal-plus-control prompt, extracts the first digit string of the expected width,

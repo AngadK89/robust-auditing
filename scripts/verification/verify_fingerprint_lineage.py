@@ -29,15 +29,15 @@ from scripts.verification.fingerprint_methods import (
     evaluate_replay_cases,
     evict_hf_repo_cache,
     load_hf_model,
-    load_proflingo_cases,
+    load_hf_tokenizer,
     load_trap_cases,
+    require_path,
     resolved_hf_revision,
     run_llmmap_verification_for_loaded_model,
     write_json,
 )
 
 
-DEFAULT_PROFLINGO_MATCH = "prefix"
 DEFAULT_LLMMAP_TOP_K = 5
 
 
@@ -64,7 +64,6 @@ def build_parser() -> argparse.ArgumentParser:
 @dataclass(frozen=True)
 class ProflingoOptions:
     questions: Path = DEFAULT_PROFLINGO_QUESTIONS_PATH
-    match: str = DEFAULT_PROFLINGO_MATCH
 
 
 @dataclass(frozen=True)
@@ -114,12 +113,15 @@ def artifact_paths(config: LineageConfig, fingerprints: list[str]) -> dict[str, 
 
 def proflingo_options(config: LineageConfig) -> ProflingoOptions:
     options = config.fingerprints.get("proflingo", {})
-    match = str(options.get("match", DEFAULT_PROFLINGO_MATCH))
-    if match not in {"exact", "prefix", "contains"}:
-        raise ValueError("fingerprints.proflingo.match must be one of: exact, prefix, contains")
+    allowed_keys = {"questions"}
+    unknown_keys = sorted(set(options) - allowed_keys)
+    if unknown_keys:
+        raise ValueError(
+            "fingerprints.proflingo contains unsupported option(s): "
+            + ", ".join(unknown_keys)
+        )
     return ProflingoOptions(
         questions=Path(options.get("questions", DEFAULT_PROFLINGO_QUESTIONS_PATH)),
-        match=match,
     )
 
 
@@ -148,25 +150,57 @@ def default_output_path(config: LineageConfig) -> Path:
 def run_proflingo_for_target(
     *,
     target: ModelTarget,
-    cases,
+    fingerprint_path: Path,
+    questions_path: Path,
     model,
     tokenizer,
     max_new_tokens: int,
-    proflingo_match: str,
+    limit: int | None,
 ) -> dict[str, Any]:
-    result = asdict(
-        evaluate_replay_cases(
-            "proflingo",
-            target.key,
-            cases,
-            model,
-            tokenizer,
-            max_new_tokens,
-            proflingo_match,
-        )
+    require_path(fingerprint_path, "ProFLingo fingerprint file")
+    require_path(questions_path, "ProFLingo questions CSV")
+    total, matched = run_proflingo_copyright_test(
+        model=model,
+        tokenizer=tokenizer,
+        dataset_path=questions_path,
+        advsamples_path=fingerprint_path,
+        manual_check=False,
+        model_path=target.model_id,
+        template=get_proflingo_default_templates(tokenizer),
+        verbose=False,
+        max_token=max_new_tokens,
+        limit=limit,
+        backend="local",
     )
-    result["target"] = target.to_report_dict()
-    return result
+    return {
+        "technique": "proflingo",
+        "model": target.key,
+        "total": total,
+        "matched": matched,
+        "match_rate": (matched / total) if total else 0.0,
+        "target": target.to_report_dict(),
+        "verification_mode": "proflingo_copyright_test",
+    }
+
+
+def _load_proflingo_modules():
+    proflingo_dir = ROOT_DIR / "third_party/ProFLingo"
+    if str(proflingo_dir) not in sys.path:
+        sys.path.insert(0, str(proflingo_dir))
+    import copyright_test
+    import proflingo
+
+    return copyright_test, proflingo
+
+
+def get_proflingo_default_templates(tokenizer):
+    _copyright_test, proflingo = _load_proflingo_modules()
+    return proflingo.get_default_templates(tokenizer)
+
+
+def run_proflingo_copyright_test(**kwargs):
+    copyright_test, _proflingo = _load_proflingo_modules()
+    return copyright_test.fingerprint_test(**kwargs)
 
 
 def run_trap_for_target(
@@ -251,11 +285,6 @@ def main() -> int:
     requested = set(args.fingerprint)
     proflingo_config = proflingo_options(config) if "proflingo" in requested else None
     llmmap_config = llmmap_options(config) if "llmmap" in requested else None
-    proflingo_cases = (
-        load_proflingo_cases(args.proflingo_fingerprint, proflingo_config.questions, limit=args.limit)
-        if "proflingo" in requested
-        else []
-    )
     trap_cases = (
         load_trap_cases(args.trap_suffixes, limit=args.limit)
         if "trap" in requested
@@ -269,6 +298,7 @@ def main() -> int:
     for target in targets:
         model = None
         tokenizer = None
+        proflingo_tokenizer = None
         cleanup_revision = target.revision
         try:
             model, tokenizer = load_hf_model(
@@ -279,13 +309,19 @@ def main() -> int:
             )
             cleanup_revision = resolved_hf_revision(model, tokenizer, target.revision)
             if "proflingo" in requested:
+                proflingo_tokenizer = load_hf_tokenizer(
+                    target.model_id,
+                    revision=target.revision,
+                    use_fast=False,
+                )
                 report["proflingo"][target.key] = run_proflingo_for_target(
                     target=target,
-                    cases=proflingo_cases,
+                    fingerprint_path=args.proflingo_fingerprint,
+                    questions_path=proflingo_config.questions,
                     model=model,
-                    tokenizer=tokenizer,
+                    tokenizer=proflingo_tokenizer,
                     max_new_tokens=args.max_new_tokens,
-                    proflingo_match=proflingo_config.match,
+                    limit=args.limit,
                 )
             if "trap" in requested:
                 report["trap"][target.key] = run_trap_for_target(
@@ -307,6 +343,7 @@ def main() -> int:
         finally:
             del model
             del tokenizer
+            del proflingo_tokenizer
             cleanup_after_target_model(target.model_id, cleanup_revision)
 
     write_json(output, report)

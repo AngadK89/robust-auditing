@@ -9,33 +9,11 @@ from scripts.verification.fingerprint_methods import (
     evict_hf_model_cache,
     evict_hf_repo_cache,
     extract_first_digit_string,
-    load_proflingo_cases,
     load_trap_cases,
     nearest_llmmap_labels,
-    normalized_contains_match,
-    normalized_exact_match,
-    normalized_prefix_match,
     resolved_hf_revision,
     run_llmmap_verification_for_loaded_model,
 )
-
-
-def test_load_proflingo_cases_joins_suffixes_to_question_targets(tmp_path: Path):
-    questions_path = tmp_path / "questions.csv"
-    with questions_path.open("w", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerow(["question", "answer", "keyword"])
-        writer.writerow(["What is 2+2?", "4", "math"])
-        writer.writerow(["Say yes.", "yes", "yes"])
-
-    fingerprint_path = tmp_path / "generated.txt"
-    fingerprint_path.write_text("1,suffix, with comma\n0,plain suffix\n")
-
-    cases = load_proflingo_cases(fingerprint_path, questions_path)
-
-    assert [case.target for case in cases] == ["yes", "4"]
-    assert cases[0].prompt == "suffix, with comma simply answer: Say yes."
-    assert cases[1].prompt == "plain suffix simply answer: What is 2+2?"
 
 
 def test_load_trap_cases_from_suffixes_csv(tmp_path: Path):
@@ -85,12 +63,7 @@ def test_load_trap_cases_from_json_directory(tmp_path: Path):
     assert cases[0].prompt == "Write digits.  suffix"
 
 
-def test_matching_helpers_are_normalized_but_not_contains_based():
-    assert normalized_exact_match("  Yes\n", "yes")
-    assert not normalized_exact_match("The answer is yes", "yes")
-    assert normalized_prefix_match("Yes, because...", "yes")
-    assert not normalized_prefix_match("The answer is yes", "yes")
-    assert normalized_contains_match("The answer is yes", "yes")
+def test_digit_extraction_uses_requested_width():
     assert extract_first_digit_string("abc 1234 def", 4) == "1234"
     assert extract_first_digit_string("abc 123 def", 4) is None
 

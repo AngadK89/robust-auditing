@@ -155,7 +155,6 @@ options also live in the lineage YAML:
 fingerprints:
   proflingo:
     questions: third_party/ProFLingo/questions.csv
-    match: exact
   llmmap:
     model_path: third_party/LLMmap/data/pretrained_models/default
     top_k: 5
@@ -171,12 +170,10 @@ python scripts/verification/verify_fingerprint_lineage.py \
 This does not construct new fingerprints. It checks the configured reference
 fingerprint artifacts as follows:
 
-- ProFLingo: loads the optimized suffixes, joins them back to
-  `third_party/ProFLingo/questions.csv`, sends each fingerprint prompt to each
-  model of interest, and reports target-at-first-place match rates. The default
-  automated proxy is a normalized prefix match; each row also records exact,
-  prefix, and contains-match diagnostics. Set `fingerprints.proflingo.match:
-  exact` in YAML for a stricter check.
+- ProFLingo: delegates verification to the ProFLingo authors'
+  `copyright_test.py` logic, using the configured optimized suffixes and
+  questions CSV. It reports summary keyword-ASR counts and match rates for each
+  target model.
 - TRAP: loads `suffixes.csv` or the copied JSON suffix logs, sends each
   adversarial prompt to the model of interest, extracts the targeted digit
   string from each response, and reports retrieval rates.
