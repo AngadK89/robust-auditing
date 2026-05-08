@@ -6,7 +6,6 @@ import csv
 import gc
 import json
 import os
-import random
 import re
 import shutil
 import sys
@@ -19,7 +18,6 @@ from huggingface_hub.constants import HF_HUB_CACHE
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 DEFAULT_LLMMAP_MODEL_PATH = ROOT_DIR / "third_party/LLMmap/data/pretrained_models/default"
-DEFAULT_LLMMAP_PROMPT_CONF_PATH = ROOT_DIR / "third_party/LLMmap/confs/prompt_configurations"
 DEFAULT_PROFLINGO_QUESTIONS_PATH = ROOT_DIR / "third_party/ProFLingo/questions.csv"
 ALL_FINGERPRINTS = ("proflingo", "trap", "llmmap")
 
@@ -323,11 +321,8 @@ def run_llmmap_verification(
     reference_model: str,
     llmmap_model_path: Path,
     llmmap_templates_path: Path,
-    prompt_conf_path: Path,
-    num_prompt_confs: int,
     top_k: int,
     max_new_tokens: int,
-    seed: int,
     dtype: str,
     device_map: str,
     revision: str | None = None,
@@ -347,11 +342,8 @@ def run_llmmap_verification(
             reference_model,
             llmmap_model_path,
             llmmap_templates_path,
-            prompt_conf_path,
-            num_prompt_confs,
             top_k,
             max_new_tokens,
-            seed,
             model,
             tokenizer,
             result_key=key,
@@ -370,58 +362,49 @@ def run_llmmap_verification_for_loaded_model(
     reference_model: str,
     llmmap_model_path: Path,
     llmmap_templates_path: Path,
-    prompt_conf_path: Path,
-    num_prompt_confs: int,
     top_k: int,
     max_new_tokens: int,
-    seed: int,
     model,
     tokenizer,
     result_key: str | None = None,
     target_metadata: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     sys.path.insert(0, str(ROOT_DIR / "third_party/LLMmap"))
-    from LLMmap.dataset_maker import make_dataset_entries_for_new_llm
     from LLMmap.inference import load_LLMmap
-    from LLMmap.prompt_configuration import PromptConfFactory, TRAIN
 
     require_path(llmmap_model_path, "LLMmap pretrained model directory")
-    require_path(prompt_conf_path, "LLMmap prompt configuration directory")
+    require_path(llmmap_templates_path, "LLMmap template artifact")
 
     _conf, llmmap = load_LLMmap(str(llmmap_model_path), device="cpu", verbose=False)
-    if llmmap_templates_path.exists():
-        _load_llmmap_templates_into_model(llmmap, llmmap_templates_path)
+    _load_llmmap_templates_into_model(llmmap, llmmap_templates_path)
     if reference_model not in llmmap.templates_map:
         raise ValueError(
             f"Reference model {reference_model!r} is not in LLMmap templates. "
             "Build or provide an LLMmap template artifact for the reference model first."
         )
 
-    random.seed(seed)
-    prompt_confs = PromptConfFactory(prompt_conf_path).sample(num_prompt_confs, pool=TRAIN)
     key = result_key or model_id
     llm = LocalHFLLM(key, model, tokenizer, max_new_tokens=max_new_tokens)
-    old_max_new_tokens = _set_llmmap_max_new_tokens(max_new_tokens)
-    try:
-        entries = make_dataset_entries_for_new_llm(
-            llm,
-            llmmap.queries,
-            prompt_confs,
-            pool=TRAIN,
-        )
-    finally:
-        _set_llmmap_max_new_tokens(old_max_new_tokens)
-    candidate_template = llmmap.compute_template(entries)
-    distances = llmmap.distance_fn and _llmmap_distances(
-        candidate_template,
-        llmmap.DB,
-        llmmap.distance_fn,
-    )
+    queries = list(llmmap.queries)
+    answers: list[str] = []
+    traces: list[dict[str, str]] = []
+    for query in queries:
+        prompt = llm.make_prompt(None, query)
+        response = llm.generate(prompt, {})[0]
+        answers.append(response)
+        traces.append({"query": query, "response": response})
+
+    distances = llmmap(answers)
     nearest = nearest_llmmap_labels(distances, llmmap.label_map, top_k)
     result = {
         "matched_reference_top1": nearest[0][0] == reference_model,
         "reference_model": reference_model,
         "top_k": [{"label": label, "distance": distance} for label, distance in nearest],
+        "verification_mode": "direct_queries",
+        "query_count": len(queries),
+        "template_count": len(llmmap.templates_map),
+        "distance_fn": llmmap.distance_fn,
+        "traces": traces,
     }
     if target_metadata is not None:
         result["target"] = target_metadata
@@ -437,6 +420,7 @@ def _load_llmmap_templates_into_model(llmmap, templates_path: Path) -> None:
     llmmap.llms_supported = sorted(templates.keys())
     llmmap.label_map = {i: llm for i, llm in enumerate(llmmap.llms_supported)}
     llmmap.DB = np.concatenate([templates[llm][np.newaxis, :] for llm in llmmap.llms_supported])
+    llmmap.distance_fn = getattr(llmmap, "conf", {}).get("distance_fn", "euclidean")
     llmmap.ready = True
 
 
@@ -487,21 +471,6 @@ class LocalHFLLM:
             output_ids[i, inputs.input_ids[i].shape[0] :] for i in range(output_ids.shape[0])
         ]
         return self.tokenizer.batch_decode(generated, skip_special_tokens=True)
-
-
-def _set_llmmap_max_new_tokens(value: int) -> int:
-    import LLMmap.llm as llm_module
-
-    old_value = llm_module.max_new_tokens
-    llm_module.max_new_tokens = value
-    return old_value
-
-
-def _llmmap_distances(candidate_template, db, distance_fn: str):
-    import numpy as np
-    from scipy.spatial.distance import cdist
-
-    return cdist(candidate_template[np.newaxis, :], db, metric=distance_fn)[0]
 
 
 def write_json(path: Path, data: Any) -> None:

@@ -23,7 +23,6 @@ from scripts.verification.fingerprint_lineage import (
 from scripts.verification.fingerprint_methods import (
     ALL_FINGERPRINTS,
     DEFAULT_LLMMAP_MODEL_PATH,
-    DEFAULT_LLMMAP_PROMPT_CONF_PATH,
     DEFAULT_PROFLINGO_QUESTIONS_PATH,
     ROOT_DIR,
     cleanup_torch_memory,
@@ -39,7 +38,6 @@ from scripts.verification.fingerprint_methods import (
 
 
 DEFAULT_PROFLINGO_MATCH = "prefix"
-DEFAULT_LLMMAP_NUM_PROMPT_CONFS = 10
 DEFAULT_LLMMAP_TOP_K = 5
 
 
@@ -60,7 +58,6 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-new-tokens", type=int, default=64)
     parser.add_argument("--dtype", choices=["auto", "bf16", "fp16", "fp32"], default="auto")
     parser.add_argument("--device-map", default="auto")
-    parser.add_argument("--seed", type=int, default=41)
     return parser
 
 
@@ -73,8 +70,6 @@ class ProflingoOptions:
 @dataclass(frozen=True)
 class LLMmapOptions:
     model_path: Path = DEFAULT_LLMMAP_MODEL_PATH
-    prompt_conf_path: Path = DEFAULT_LLMMAP_PROMPT_CONF_PATH
-    num_prompt_confs: int = DEFAULT_LLMMAP_NUM_PROMPT_CONFS
     top_k: int = DEFAULT_LLMMAP_TOP_K
 
 
@@ -130,16 +125,18 @@ def proflingo_options(config: LineageConfig) -> ProflingoOptions:
 
 def llmmap_options(config: LineageConfig) -> LLMmapOptions:
     options = config.fingerprints.get("llmmap", {})
-    num_prompt_confs = int(options.get("num_prompt_confs", DEFAULT_LLMMAP_NUM_PROMPT_CONFS))
+    allowed_keys = {"model_path", "top_k"}
+    unknown_keys = sorted(set(options) - allowed_keys)
+    if unknown_keys:
+        raise ValueError(
+            "fingerprints.llmmap contains unsupported option(s): "
+            + ", ".join(unknown_keys)
+        )
     top_k = int(options.get("top_k", DEFAULT_LLMMAP_TOP_K))
-    if num_prompt_confs < 1:
-        raise ValueError("fingerprints.llmmap.num_prompt_confs must be >= 1")
     if top_k < 1:
         raise ValueError("fingerprints.llmmap.top_k must be >= 1")
     return LLMmapOptions(
         model_path=Path(options.get("model_path", DEFAULT_LLMMAP_MODEL_PATH)),
-        prompt_conf_path=Path(options.get("prompt_conf_path", DEFAULT_LLMMAP_PROMPT_CONF_PATH)),
-        num_prompt_confs=num_prompt_confs,
         top_k=top_k,
     )
 
@@ -209,11 +206,8 @@ def run_llmmap_for_target(
         config.reference.model_id,
         options.model_path,
         args.llmmap_templates,
-        options.prompt_conf_path,
-        options.num_prompt_confs,
         options.top_k,
         args.max_new_tokens,
-        args.seed,
         model,
         tokenizer,
         result_key=target.key,

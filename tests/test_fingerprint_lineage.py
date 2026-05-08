@@ -76,8 +76,6 @@ fingerprints:
     match: exact
   llmmap:
     model_path: custom/llmmap/model
-    prompt_conf_path: custom/llmmap/prompts
-    num_prompt_confs: 100
     top_k: 3
 targets:
   - label: base
@@ -94,8 +92,6 @@ targets:
         },
         "llmmap": {
             "model_path": Path("custom/llmmap/model"),
-            "prompt_conf_path": Path("custom/llmmap/prompts"),
-            "num_prompt_confs": 100,
             "top_k": 3,
         },
     }
@@ -549,8 +545,6 @@ reference:
 fingerprints:
   llmmap:
     model_path: custom/llmmap/model
-    prompt_conf_path: custom/llmmap/prompts
-    num_prompt_confs: 100
     top_k: 3
 targets:
   - label: base
@@ -564,7 +558,14 @@ targets:
         captured.update(kwargs)
         return {"target": kwargs["target_metadata"]}
 
-    monkeypatch.setattr(verify_fingerprint_lineage, "load_hf_model", lambda *_args, **_kwargs: (object(), object()))
+    loaded_model = object()
+    loaded_tokenizer = object()
+
+    monkeypatch.setattr(
+        verify_fingerprint_lineage,
+        "load_hf_model",
+        lambda *_args, **_kwargs: (loaded_model, loaded_tokenizer),
+    )
     monkeypatch.setattr(verify_fingerprint_lineage, "run_llmmap_verification_for_loaded_model", fake_run_llmmap)
     monkeypatch.setattr(verify_fingerprint_lineage, "cleanup_after_target_model", lambda *_args: None)
     monkeypatch.setattr(verify_fingerprint_lineage, "write_json", lambda _path, _data: None)
@@ -580,12 +581,15 @@ targets:
     )
 
     assert verify_fingerprint_lineage.main() == 0
-    assert captured["positional"][2:7] == (
+    assert captured["positional"] == (
+        "org/base",
+        "org/reference",
         Path("custom/llmmap/model"),
         artifact_root / "llmmap/templates.json",
-        Path("custom/llmmap/prompts"),
-        100,
         3,
+        64,
+        loaded_model,
+        loaded_tokenizer,
     )
 
 
@@ -780,8 +784,6 @@ def test_llmmap_for_target_uses_yaml_options_stable_key_revision_and_metadata(mo
         fingerprints={
             "llmmap": {
                 "model_path": Path("llmmap/model"),
-                "prompt_conf_path": Path("llmmap/prompts"),
-                "num_prompt_confs": 2,
                 "top_k": 5,
             }
         },
@@ -793,7 +795,6 @@ def test_llmmap_for_target_uses_yaml_options_stable_key_revision_and_metadata(mo
         {
             "llmmap_templates": Path("llmmap/templates.json"),
             "max_new_tokens": 8,
-            "seed": 41,
             "dtype": "bf16",
             "device_map": "cpu",
         },
@@ -807,24 +808,76 @@ def test_llmmap_for_target_uses_yaml_options_stable_key_revision_and_metadata(mo
 
     monkeypatch.setattr(verify_fingerprint_lineage, "run_llmmap_verification_for_loaded_model", fake_run_llmmap)
 
+    loaded_model = object()
+    loaded_tokenizer = object()
+
     result = verify_fingerprint_lineage.run_llmmap_for_target(
         args=args,
         config=config,
         target=target,
-        model=object(),
-        tokenizer=object(),
+        model=loaded_model,
+        tokenizer=loaded_tokenizer,
     )
 
-    assert captured["_positional"][2:7] == (
+    assert captured["_positional"] == (
+        "org/rl",
+        "org/reference",
         Path("llmmap/model"),
         Path("llmmap/templates.json"),
-        Path("llmmap/prompts"),
-        2,
         5,
+        8,
+        loaded_model,
+        loaded_tokenizer,
     )
     assert captured["result_key"] == "rl@checkpoint-200"
     assert captured["target_metadata"]["model_id"] == "org/rl"
     assert result["target"]["step"] == 200
+
+
+def test_llmmap_options_accepts_only_model_path_and_top_k():
+    config = LineageConfig(
+        name="family",
+        reference=FingerprintReference(
+            model_id="org/reference",
+            artifact_root=Path("artifacts/fingerprints/reference"),
+        ),
+        targets=[],
+        fingerprints={
+            "llmmap": {
+                "model_path": "custom/llmmap/model",
+                "top_k": 3,
+            }
+        },
+    )
+
+    options = verify_fingerprint_lineage.llmmap_options(config)
+
+    assert options == verify_fingerprint_lineage.LLMmapOptions(
+        model_path=Path("custom/llmmap/model"),
+        top_k=3,
+    )
+
+
+@pytest.mark.parametrize("stale_key", ["prompt_conf_path", "num_prompt_confs"])
+def test_llmmap_options_rejects_stale_yaml_keys(stale_key):
+    config = LineageConfig(
+        name="family",
+        reference=FingerprintReference(
+            model_id="org/reference",
+            artifact_root=Path("artifacts/fingerprints/reference"),
+        ),
+        targets=[],
+        fingerprints={
+            "llmmap": {
+                "model_path": "custom/llmmap/model",
+                "top_k": 3,
+                stale_key: "stale",
+            }
+        },
+    )
+
+    with pytest.raises(ValueError, match=stale_key):
+        verify_fingerprint_lineage.llmmap_options(config)
 
 
 @pytest.mark.parametrize(
@@ -836,9 +889,10 @@ def test_llmmap_for_target_uses_yaml_options_stable_key_revision_and_metadata(mo
         ("--llmmap-prompt-conf-path", "llmmap/prompts"),
         ("--llmmap-num-prompt-confs", "2"),
         ("--llmmap-top-k", "5"),
+        ("--seed", "41"),
     ],
 )
-def test_fingerprint_specific_cli_flags_are_removed(flag, value):
+def test_removed_cli_flags_are_rejected(flag, value):
     parser = verify_fingerprint_lineage.build_parser()
 
     with pytest.raises(SystemExit):

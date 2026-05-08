@@ -158,8 +158,6 @@ fingerprints:
     match: exact
   llmmap:
     model_path: third_party/LLMmap/data/pretrained_models/default
-    prompt_conf_path: third_party/LLMmap/confs/prompt_configurations
-    num_prompt_confs: 100
     top_k: 5
 ```
 
@@ -182,11 +180,13 @@ fingerprint artifacts as follows:
 - TRAP: loads `suffixes.csv` or the copied JSON suffix logs, sends each
   adversarial prompt to the model of interest, extracts the targeted digit
   string from each response, and reports retrieval rates.
-- LLMmap: sends the LLMmap query set to the model of interest, computes the
-  candidate template/classification vector, and compares it to the template
-  database. A match means the nearest top-1 template is the configured reference
-  model; the report also includes the nearest `top_k` labels and distances as
-  general similarity diagnostics.
+- LLMmap: loads the pretrained open-set inference model, sends its 8 configured
+  queries directly to the model of interest, and compares the resulting trace
+  vector to the configured template database artifact. A match means the nearest
+  top-1 template is the configured reference model; the report also includes the
+  nearest `top_k` labels, distances, and query/response traces as general
+  similarity diagnostics. Prompt configurations are used when adding templates
+  to the database, not during verification.
 
 For a quick smoke test, use a small replay limit:
 

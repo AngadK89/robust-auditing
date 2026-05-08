@@ -148,7 +148,6 @@ def _parse_fingerprint_options(raw: Any) -> dict[str, dict[str, Any]]:
     path_keys = {
         ("proflingo", "questions"),
         ("llmmap", "model_path"),
-        ("llmmap", "prompt_conf_path"),
     }
     fingerprints: dict[str, dict[str, Any]] = {}
     for fingerprint, options in raw.items():

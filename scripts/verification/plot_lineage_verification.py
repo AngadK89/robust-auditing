@@ -157,6 +157,11 @@ def normalize_llmmap_results(report: dict, lineage_df: pd.DataFrame) -> pd.DataF
                 "reference_rank_plot": reference_rank_plot,
                 "reference_rank_label": reference_rank_label,
                 "reference_distance": reference_distance,
+                "verification_mode": result.get("verification_mode"),
+                "query_count": result.get("query_count", np.nan),
+                "template_count": result.get("template_count", np.nan),
+                "distance_fn": result.get("distance_fn"),
+                "traces": result.get("traces") or [],
             }
         )
     return pd.DataFrame(rows)
