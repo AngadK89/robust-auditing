@@ -5,7 +5,7 @@ reference:
   artifacts:
     proflingo_fingerprint: proflingo/generated-allenai-OLMo-2-0425-1B-DPO.txt
     llmmap_templates: llmmap/templates.json
-output: artifacts/verification/olmo2_dpo_llmmap_reference_trajectory.json
+output: artifacts/verification/olmo2_dpo_proflingo_reference_trajectory.json
 targets:
   - label: base
     model_id: allenai/OLMo-2-0425-1B
