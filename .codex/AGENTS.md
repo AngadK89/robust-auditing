@@ -11,3 +11,5 @@ The project also evaluates whether black-box fingerprinting methods such as **LL
 ## Guiding Principle
 
 Keep audit, non-audit, capability, and fingerprinting evaluations clearly separated so the experiment can measure whether fixed audits and model fingerprints miss meaningful behavioural changes.
+
+Always check wiki/ before answering questions about this project's architecture, patterns, or decisions.
