@@ -148,34 +148,42 @@ scripts/fingerprints/apply_submodule_patches.sh
 
 After building reference fingerprints, use the generic lineage verifier. The
 lineage YAML defines the reference fingerprint artifacts, target models, and
-optional Hugging Face revision-discovery rules.
+optional Hugging Face revision-discovery rules. Fingerprint-specific verifier
+options also live in the lineage YAML:
+
+```yaml
+fingerprints:
+  proflingo:
+    questions: third_party/ProFLingo/questions.csv
+  llmmap:
+    model_path: third_party/LLMmap/data/pretrained_models/default
+    top_k: 5
+```
 
 Run the configured OLMo2 trajectory check:
 
 ```bash
 python scripts/verification/verify_fingerprint_lineage.py \
-  --lineage-config configs/fingerprint_lineages/olmo2_1b_instruct_reference.yaml \
-  --fingerprint proflingo llmmap \
-  --output artifacts/verification/olmo2_instruct_reference_trajectory.json
+  --lineage-config configs/fingerprint_lineages/olmo2_1b_instruct_reference.yaml
 ```
 
 This does not construct new fingerprints. It checks the configured reference
 fingerprint artifacts as follows:
 
-- ProFLingo: loads the optimized suffixes, joins them back to
-  `third_party/ProFLingo/questions.csv`, sends each fingerprint prompt to each
-  model of interest, and reports target-at-first-place match rates. The default
-  automated proxy is a normalized prefix match; each row also records exact,
-  prefix, and contains-match diagnostics. Use `--proflingo-match exact` for a
-  stricter check.
+- ProFLingo: delegates verification to the ProFLingo authors'
+  `copyright_test.py` logic, using the configured optimized suffixes and
+  questions CSV. It reports summary keyword-ASR counts and match rates for each
+  target model.
 - TRAP: loads `suffixes.csv` or the copied JSON suffix logs, sends each
   adversarial prompt to the model of interest, extracts the targeted digit
   string from each response, and reports retrieval rates.
-- LLMmap: sends the LLMmap query set to the model of interest, computes the
-  candidate template/classification vector, and compares it to the template
-  database. A match means the nearest top-1 template is the configured reference
-  model; the report also includes the nearest `top_k` labels and distances as
-  general similarity diagnostics.
+- LLMmap: loads the pretrained open-set inference model, sends its 8 configured
+  queries directly to the model of interest, and compares the resulting trace
+  vector to the configured template database artifact. A match means the nearest
+  top-1 template is the configured reference model; the report also includes the
+  nearest `top_k` labels, distances, and query/response traces as general
+  similarity diagnostics. Prompt configurations are used when adding templates
+  to the database, not during verification.
 
 For a quick smoke test, use a small replay limit:
 
@@ -187,13 +195,13 @@ python scripts/verification/verify_fingerprint_lineage.py \
   --output /tmp/olmo2_lineage_smoke.json
 ```
 
-Useful overrides:
+Useful global CLI overrides:
 
 ```bash
 python scripts/verification/verify_fingerprint_lineage.py \
   --lineage-config configs/fingerprint_lineages/olmo2_1b_instruct_reference.yaml \
+  --output /tmp/custom_lineage_report.json \
   --fingerprint proflingo \
-  --proflingo-match exact \
   --max-new-tokens 64 \
   --dtype bf16
 ```

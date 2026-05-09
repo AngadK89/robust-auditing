@@ -111,6 +111,7 @@ def normalize_replay_results(report: dict, lineage_df: pd.DataFrame) -> pd.DataF
                     "matched": result.get("matched"),
                     "total": result.get("total"),
                     "match_rate": result.get("match_rate"),
+                    "verification_mode": result.get("verification_mode"),
                 }
             )
     return pd.DataFrame(rows)
@@ -157,6 +158,11 @@ def normalize_llmmap_results(report: dict, lineage_df: pd.DataFrame) -> pd.DataF
                 "reference_rank_plot": reference_rank_plot,
                 "reference_rank_label": reference_rank_label,
                 "reference_distance": reference_distance,
+                "verification_mode": result.get("verification_mode"),
+                "query_count": result.get("query_count", np.nan),
+                "template_count": result.get("template_count", np.nan),
+                "distance_fn": result.get("distance_fn"),
+                "traces": result.get("traces") or [],
             }
         )
     return pd.DataFrame(rows)
@@ -166,7 +172,11 @@ def normalize_report(report: dict) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataF
     validate_new_lineage_report(report)
     lineage_df = build_lineage_df(report)
     replay_df = normalize_replay_results(report, lineage_df)
-    llmmap_df = normalize_llmmap_results(report, lineage_df)
+    llmmap_df = (
+        normalize_llmmap_results(report, lineage_df)
+        if "llmmap" in report.get("fingerprint", [])
+        else pd.DataFrame()
+    )
     return lineage_df, replay_df, llmmap_df
 
 

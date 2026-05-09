@@ -1,0 +1,455 @@
+{
+  "lineage": "olmo2_1b_dpo_reference",
+  "reference": {
+    "model_id": "allenai/OLMo-2-0425-1B-DPO",
+    "artifact_root": "artifacts/fingerprints",
+    "artifacts": {
+      "llmmap_templates": "llmmap/templates.json",
+      "proflingo_fingerprint": "proflingo/generated-allenai-OLMo-2-0425-1B-DPO.txt"
+    }
+  },
+  "reference_model": "allenai/OLMo-2-0425-1B-DPO",
+  "artifact_root": "artifacts/fingerprints",
+  "fingerprint": [
+    "proflingo"
+  ],
+  "targets": [
+    "base@main",
+    "sft@main",
+    "dpo@main",
+    "rlvr1@main",
+    "rlvr1@step_400",
+    "rlvr1@step_800",
+    "rlvr1@step_1200",
+    "rlvr1@step_1600",
+    "rlvr1@step_2000",
+    "rlvr1@step_2400",
+    "instruct@main",
+    "instruct@step_400",
+    "instruct@step_800",
+    "instruct@step_1200",
+    "instruct@step_1600",
+    "instruct@step_2000",
+    "instruct@step_2400"
+  ],
+  "target_metadata": {
+    "base@main": {
+      "label": "base",
+      "model_id": "allenai/OLMo-2-0425-1B",
+      "revision": "main",
+      "step": null
+    },
+    "sft@main": {
+      "label": "sft",
+      "model_id": "allenai/OLMo-2-0425-1B-SFT",
+      "revision": "main",
+      "step": null
+    },
+    "dpo@main": {
+      "label": "dpo",
+      "model_id": "allenai/OLMo-2-0425-1B-DPO",
+      "revision": "main",
+      "step": null
+    },
+    "rlvr1@main": {
+      "label": "rlvr1",
+      "model_id": "allenai/OLMo-2-0425-1B-RLVR1",
+      "revision": "main",
+      "step": null
+    },
+    "rlvr1@step_400": {
+      "label": "rlvr1",
+      "model_id": "allenai/OLMo-2-0425-1B-RLVR1",
+      "revision": "step_400",
+      "step": 400
+    },
+    "rlvr1@step_800": {
+      "label": "rlvr1",
+      "model_id": "allenai/OLMo-2-0425-1B-RLVR1",
+      "revision": "step_800",
+      "step": 800
+    },
+    "rlvr1@step_1200": {
+      "label": "rlvr1",
+      "model_id": "allenai/OLMo-2-0425-1B-RLVR1",
+      "revision": "step_1200",
+      "step": 1200
+    },
+    "rlvr1@step_1600": {
+      "label": "rlvr1",
+      "model_id": "allenai/OLMo-2-0425-1B-RLVR1",
+      "revision": "step_1600",
+      "step": 1600
+    },
+    "rlvr1@step_2000": {
+      "label": "rlvr1",
+      "model_id": "allenai/OLMo-2-0425-1B-RLVR1",
+      "revision": "step_2000",
+      "step": 2000
+    },
+    "rlvr1@step_2400": {
+      "label": "rlvr1",
+      "model_id": "allenai/OLMo-2-0425-1B-RLVR1",
+      "revision": "step_2400",
+      "step": 2400
+    },
+    "instruct@main": {
+      "label": "instruct",
+      "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+      "revision": "main",
+      "step": null
+    },
+    "instruct@step_400": {
+      "label": "instruct",
+      "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+      "revision": "step_400",
+      "step": 400
+    },
+    "instruct@step_800": {
+      "label": "instruct",
+      "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+      "revision": "step_800",
+      "step": 800
+    },
+    "instruct@step_1200": {
+      "label": "instruct",
+      "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+      "revision": "step_1200",
+      "step": 1200
+    },
+    "instruct@step_1600": {
+      "label": "instruct",
+      "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+      "revision": "step_1600",
+      "step": 1600
+    },
+    "instruct@step_2000": {
+      "label": "instruct",
+      "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+      "revision": "step_2000",
+      "step": 2000
+    },
+    "instruct@step_2400": {
+      "label": "instruct",
+      "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+      "revision": "step_2400",
+      "step": 2400
+    }
+  },
+  "discovery": {
+    "rlvr1": {
+      "pattern": "step_(\\d+)",
+      "increment": 400,
+      "available_revisions": [
+        "main",
+        "step_2600",
+        "step_2400",
+        "step_2200",
+        "step_2000",
+        "step_1800",
+        "step_1600",
+        "step_1400",
+        "step_1200",
+        "step_1000",
+        "step_800",
+        "step_600",
+        "step_400",
+        "step_200"
+      ],
+      "matched_revisions": [
+        "step_400",
+        "step_800",
+        "step_1200",
+        "step_1600",
+        "step_2000",
+        "step_2400"
+      ],
+      "skipped_revisions": [
+        "step_2600",
+        "step_2200",
+        "step_1800",
+        "step_1400",
+        "step_1000",
+        "step_600",
+        "step_200"
+      ]
+    },
+    "instruct": {
+      "pattern": "step_(\\d+)",
+      "increment": 400,
+      "available_revisions": [
+        "main",
+        "step_2600",
+        "step_2400",
+        "step_2200",
+        "step_1800",
+        "step_1600",
+        "step_1400",
+        "step_1200",
+        "step_1000",
+        "step_800",
+        "step_600",
+        "step_400",
+        "step_200",
+        "step_2000"
+      ],
+      "matched_revisions": [
+        "step_400",
+        "step_800",
+        "step_1200",
+        "step_1600",
+        "step_2000",
+        "step_2400"
+      ],
+      "skipped_revisions": [
+        "step_2600",
+        "step_2200",
+        "step_1800",
+        "step_1400",
+        "step_1000",
+        "step_600",
+        "step_200"
+      ]
+    }
+  },
+  "proflingo": {
+    "base@main": {
+      "technique": "proflingo",
+      "model": "base@main",
+      "total": 50,
+      "matched": 10,
+      "match_rate": 0.2,
+      "target": {
+        "label": "base",
+        "model_id": "allenai/OLMo-2-0425-1B",
+        "revision": "main",
+        "step": null
+      },
+      "verification_mode": "proflingo_copyright_test"
+    },
+    "sft@main": {
+      "technique": "proflingo",
+      "model": "sft@main",
+      "total": 50,
+      "matched": 48,
+      "match_rate": 0.96,
+      "target": {
+        "label": "sft",
+        "model_id": "allenai/OLMo-2-0425-1B-SFT",
+        "revision": "main",
+        "step": null
+      },
+      "verification_mode": "proflingo_copyright_test"
+    },
+    "dpo@main": {
+      "technique": "proflingo",
+      "model": "dpo@main",
+      "total": 50,
+      "matched": 50,
+      "match_rate": 1.0,
+      "target": {
+        "label": "dpo",
+        "model_id": "allenai/OLMo-2-0425-1B-DPO",
+        "revision": "main",
+        "step": null
+      },
+      "verification_mode": "proflingo_copyright_test"
+    },
+    "rlvr1@main": {
+      "technique": "proflingo",
+      "model": "rlvr1@main",
+      "total": 50,
+      "matched": 50,
+      "match_rate": 1.0,
+      "target": {
+        "label": "rlvr1",
+        "model_id": "allenai/OLMo-2-0425-1B-RLVR1",
+        "revision": "main",
+        "step": null
+      },
+      "verification_mode": "proflingo_copyright_test"
+    },
+    "rlvr1@step_400": {
+      "technique": "proflingo",
+      "model": "rlvr1@step_400",
+      "total": 50,
+      "matched": 50,
+      "match_rate": 1.0,
+      "target": {
+        "label": "rlvr1",
+        "model_id": "allenai/OLMo-2-0425-1B-RLVR1",
+        "revision": "step_400",
+        "step": 400
+      },
+      "verification_mode": "proflingo_copyright_test"
+    },
+    "rlvr1@step_800": {
+      "technique": "proflingo",
+      "model": "rlvr1@step_800",
+      "total": 50,
+      "matched": 49,
+      "match_rate": 0.98,
+      "target": {
+        "label": "rlvr1",
+        "model_id": "allenai/OLMo-2-0425-1B-RLVR1",
+        "revision": "step_800",
+        "step": 800
+      },
+      "verification_mode": "proflingo_copyright_test"
+    },
+    "rlvr1@step_1200": {
+      "technique": "proflingo",
+      "model": "rlvr1@step_1200",
+      "total": 50,
+      "matched": 49,
+      "match_rate": 0.98,
+      "target": {
+        "label": "rlvr1",
+        "model_id": "allenai/OLMo-2-0425-1B-RLVR1",
+        "revision": "step_1200",
+        "step": 1200
+      },
+      "verification_mode": "proflingo_copyright_test"
+    },
+    "rlvr1@step_1600": {
+      "technique": "proflingo",
+      "model": "rlvr1@step_1600",
+      "total": 50,
+      "matched": 50,
+      "match_rate": 1.0,
+      "target": {
+        "label": "rlvr1",
+        "model_id": "allenai/OLMo-2-0425-1B-RLVR1",
+        "revision": "step_1600",
+        "step": 1600
+      },
+      "verification_mode": "proflingo_copyright_test"
+    },
+    "rlvr1@step_2000": {
+      "technique": "proflingo",
+      "model": "rlvr1@step_2000",
+      "total": 50,
+      "matched": 50,
+      "match_rate": 1.0,
+      "target": {
+        "label": "rlvr1",
+        "model_id": "allenai/OLMo-2-0425-1B-RLVR1",
+        "revision": "step_2000",
+        "step": 2000
+      },
+      "verification_mode": "proflingo_copyright_test"
+    },
+    "rlvr1@step_2400": {
+      "technique": "proflingo",
+      "model": "rlvr1@step_2400",
+      "total": 50,
+      "matched": 49,
+      "match_rate": 0.98,
+      "target": {
+        "label": "rlvr1",
+        "model_id": "allenai/OLMo-2-0425-1B-RLVR1",
+        "revision": "step_2400",
+        "step": 2400
+      },
+      "verification_mode": "proflingo_copyright_test"
+    },
+    "instruct@main": {
+      "technique": "proflingo",
+      "model": "instruct@main",
+      "total": 50,
+      "matched": 50,
+      "match_rate": 1.0,
+      "target": {
+        "label": "instruct",
+        "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+        "revision": "main",
+        "step": null
+      },
+      "verification_mode": "proflingo_copyright_test"
+    },
+    "instruct@step_400": {
+      "technique": "proflingo",
+      "model": "instruct@step_400",
+      "total": 50,
+      "matched": 50,
+      "match_rate": 1.0,
+      "target": {
+        "label": "instruct",
+        "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+        "revision": "step_400",
+        "step": 400
+      },
+      "verification_mode": "proflingo_copyright_test"
+    },
+    "instruct@step_800": {
+      "technique": "proflingo",
+      "model": "instruct@step_800",
+      "total": 50,
+      "matched": 50,
+      "match_rate": 1.0,
+      "target": {
+        "label": "instruct",
+        "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+        "revision": "step_800",
+        "step": 800
+      },
+      "verification_mode": "proflingo_copyright_test"
+    },
+    "instruct@step_1200": {
+      "technique": "proflingo",
+      "model": "instruct@step_1200",
+      "total": 50,
+      "matched": 50,
+      "match_rate": 1.0,
+      "target": {
+        "label": "instruct",
+        "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+        "revision": "step_1200",
+        "step": 1200
+      },
+      "verification_mode": "proflingo_copyright_test"
+    },
+    "instruct@step_1600": {
+      "technique": "proflingo",
+      "model": "instruct@step_1600",
+      "total": 50,
+      "matched": 50,
+      "match_rate": 1.0,
+      "target": {
+        "label": "instruct",
+        "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+        "revision": "step_1600",
+        "step": 1600
+      },
+      "verification_mode": "proflingo_copyright_test"
+    },
+    "instruct@step_2000": {
+      "technique": "proflingo",
+      "model": "instruct@step_2000",
+      "total": 50,
+      "matched": 50,
+      "match_rate": 1.0,
+      "target": {
+        "label": "instruct",
+        "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+        "revision": "step_2000",
+        "step": 2000
+      },
+      "verification_mode": "proflingo_copyright_test"
+    },
+    "instruct@step_2400": {
+      "technique": "proflingo",
+      "model": "instruct@step_2400",
+      "total": 50,
+      "matched": 50,
+      "match_rate": 1.0,
+      "target": {
+        "label": "instruct",
+        "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+        "revision": "step_2400",
+        "step": 2400
+      },
+      "verification_mode": "proflingo_copyright_test"
+    }
+  }
+}
