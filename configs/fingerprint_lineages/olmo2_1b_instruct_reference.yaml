@@ -5,7 +5,7 @@ reference:
   artifacts:
     proflingo_fingerprint: proflingo/generated-allenai-OLMo-2-0425-1B-Instruct.txt
     llmmap_templates: llmmap/templates.json
-output: artifacts/verification/olmo2_instruct_reference_trajectory.json
+output: artifacts/verification/olmo2_instruct_proflingo_reference_trajectory.json
 targets:
   - label: base
     model_id: allenai/OLMo-2-0425-1B
@@ -17,9 +17,9 @@ targets:
     model_id: allenai/OLMo-2-0425-1B-RLVR1
     discover_revisions:
       pattern: step_(\d+)
-      increment: 200
+      increment: 400
   - label: instruct
     model_id: allenai/OLMo-2-0425-1B-Instruct
     discover_revisions:
       pattern: step_(\d+)
-      increment: 200
+      increment: 400
