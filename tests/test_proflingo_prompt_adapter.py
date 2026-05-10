@@ -36,8 +36,12 @@ def test_default_templates_use_fallbacks_for_plain_tokenizers():
     assert templates[1].sep == "\n"
 
 
-def test_default_templates_use_tokenizer_template_when_available():
-    assert proflingo.get_default_templates(ChatTokenizer()) == [None]
+def test_default_templates_use_base_fingerprint_templates_for_chat_tokenizers():
+    templates = proflingo.get_default_templates(ChatTokenizer())
+
+    assert [template.name for template in templates] == ["alpaca", "zero_shot"]
+    assert templates[0].sep == " "
+    assert templates[1].sep == "\n"
 
 
 def test_copyright_fingerprint_test_accepts_template_list_and_limit(monkeypatch, tmp_path):

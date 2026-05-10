@@ -332,7 +332,7 @@ index be1fb68..bf1483b 100644
  import copy
  import pandas as pd
  import numpy as np
-@@ -8,10 +9,25 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
+@@ -8,10 +9,24 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
  from fastchat.conversation import get_conv_template
  from attack import generate_output, generate_suffix
  
@@ -348,9 +348,8 @@ index be1fb68..bf1483b 100644
 +
 +
 +def get_default_templates(tokenizer):
-+    if uses_tokenizer_chat_template(tokenizer=tokenizer):
-+        return [None]
-+
++    # Force the same templates used for base fingerprints across all models so
++    # verification does not mix prompt formats with model changes.
 +    templates = [get_conv_template("alpaca"), get_conv_template("zero_shot")]
 +    templates[0].sep = ' '
 +    templates[1].sep = "\n"
@@ -362,7 +361,7 @@ index be1fb68..bf1483b 100644
      torch.manual_seed(0)
      model = AutoModelForCausalLM.from_pretrained(
          model_path,
-@@ -65,20 +81,16 @@ if __name__ == "__main__":
+@@ -65,20 +80,16 @@ if __name__ == "__main__":
      model_path = sys.argv[1]
      advsamples_path = sys.argv[2]
  
