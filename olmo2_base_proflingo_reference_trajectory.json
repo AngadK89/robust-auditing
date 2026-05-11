@@ -1,0 +1,86 @@
+{
+  "lineage": "olmo2_1b_base_reference",
+  "reference": {
+    "model_id": "allenai/OLMo-2-0425-1B",
+    "artifact_root": "artifacts/fingerprints",
+    "artifacts": {
+      "llmmap_templates": "llmmap/templates.json",
+      "proflingo_fingerprint": "proflingo/generated-allenai-OLMo-2-0425-1B.txt"
+    }
+  },
+  "reference_model": "allenai/OLMo-2-0425-1B",
+  "artifact_root": "artifacts/fingerprints",
+  "fingerprint": [
+    "proflingo"
+  ],
+  "targets": [
+    "base@main",
+    "sft@main",
+    "instruct@main"
+  ],
+  "target_metadata": {
+    "base@main": {
+      "label": "base",
+      "model_id": "allenai/OLMo-2-0425-1B",
+      "revision": "main",
+      "step": null
+    },
+    "sft@main": {
+      "label": "sft",
+      "model_id": "allenai/OLMo-2-0425-1B-SFT",
+      "revision": "main",
+      "step": null
+    },
+    "instruct@main": {
+      "label": "instruct",
+      "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+      "revision": "main",
+      "step": null
+    }
+  },
+  "discovery": {},
+  "proflingo": {
+    "base@main": {
+      "technique": "proflingo",
+      "model": "base@main",
+      "total": 50,
+      "matched": 50,
+      "match_rate": 1.0,
+      "target": {
+        "label": "base",
+        "model_id": "allenai/OLMo-2-0425-1B",
+        "revision": "main",
+        "step": null
+      },
+      "verification_mode": "proflingo_copyright_test"
+    },
+    "sft@main": {
+      "technique": "proflingo",
+      "model": "sft@main",
+      "total": 50,
+      "matched": 1,
+      "match_rate": 0.02,
+      "target": {
+        "label": "sft",
+        "model_id": "allenai/OLMo-2-0425-1B-SFT",
+        "revision": "main",
+        "step": null
+      },
+      "verification_mode": "proflingo_copyright_test"
+    },
+    "instruct@main": {
+      "technique": "proflingo",
+      "model": "instruct@main",
+      "total": 50,
+      "matched": 1,
+      "match_rate": 0.02,
+      "target": {
+        "label": "instruct",
+        "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+        "revision": "main",
+        "step": null
+      },
+      "verification_mode": "proflingo_copyright_test"
+    }
+  }
+}
