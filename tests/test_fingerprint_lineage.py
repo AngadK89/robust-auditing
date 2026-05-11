@@ -764,12 +764,13 @@ def test_run_proflingo_for_target_passes_revision_metadata_and_model(monkeypatch
     questions_path.write_text("question,answer,keyword\nq,a,a\n", encoding="utf-8")
     calls = {}
 
-    def fake_default_templates(tokenizer):
-        calls["template_tokenizer"] = tokenizer
-        return ["template-a", "template-b"]
+    def fake_default_templates(model_id):
+        calls["template_model_id"] = model_id
+        return "template-a"
 
     def fake_copyright_test(**kwargs):
         calls.update(kwargs)
+        calls["advsamples_text"] = Path(kwargs["advsamples_path"]).read_text(encoding="utf-8")
         return 5, 3
 
     monkeypatch.setattr(verify_fingerprint_lineage, "get_proflingo_default_templates", fake_default_templates)
@@ -796,14 +797,22 @@ def test_run_proflingo_for_target_passes_revision_metadata_and_model(monkeypatch
     assert calls["model"] == "loaded-model"
     assert calls["tokenizer"] == "slow-tokenizer"
     assert calls["dataset_path"] == questions_path
-    assert calls["advsamples_path"] == fingerprint_path
+    assert calls["advsamples_text"] == "0,suffix\n"
     assert calls["manual_check"] is False
     assert calls["model_path"] == "org/rl"
-    assert calls["template"] == ["template-a", "template-b"]
+    assert calls["template"] == "template-a"
     assert calls["verbose"] is False
     assert calls["max_token"] == 8
-    assert calls["limit"] == 11
-    assert calls["backend"] == "local"
+    assert calls["template_model_id"] == "org/rl"
+
+
+def test_get_proflingo_default_templates_uses_olmo_chat_template_sentinel():
+    assert (
+        verify_fingerprint_lineage.get_proflingo_default_templates(
+            "allenai/OLMo-2-0425-1B-Instruct"
+        )
+        is None
+    )
 
 
 def test_llmmap_for_target_uses_yaml_options_stable_key_revision_and_metadata(monkeypatch):

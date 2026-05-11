@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import tempfile
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -159,19 +160,18 @@ def run_proflingo_for_target(
 ) -> dict[str, Any]:
     require_path(fingerprint_path, "ProFLingo fingerprint file")
     require_path(questions_path, "ProFLingo questions CSV")
-    total, matched = run_proflingo_copyright_test(
-        model=model,
-        tokenizer=tokenizer,
-        dataset_path=questions_path,
-        advsamples_path=fingerprint_path,
-        manual_check=False,
-        model_path=target.model_id,
-        template=get_proflingo_default_templates(tokenizer),
-        verbose=False,
-        max_token=max_new_tokens,
-        limit=limit,
-        backend="local",
-    )
+    with _limited_proflingo_fingerprint(fingerprint_path, limit) as advsamples_path:
+        total, matched = run_proflingo_copyright_test(
+            model=model,
+            tokenizer=tokenizer,
+            dataset_path=questions_path,
+            advsamples_path=advsamples_path,
+            manual_check=False,
+            model_path=target.model_id,
+            template=get_proflingo_default_templates(target.model_id),
+            verbose=False,
+            max_token=max_new_tokens,
+        )
     return {
         "technique": "proflingo",
         "model": target.key,
@@ -193,14 +193,48 @@ def _load_proflingo_modules():
     return copyright_test, proflingo
 
 
-def get_proflingo_default_templates(tokenizer):
+def get_proflingo_default_templates(model_id: str):
     _copyright_test, proflingo = _load_proflingo_modules()
-    return proflingo.get_default_templates(tokenizer)
+    try:
+        return _copyright_test.get_template(model_id)
+    except ValueError:
+        template = proflingo.get_conv_template("zero_shot")
+        template.sep = "\n"
+        return template
 
 
 def run_proflingo_copyright_test(**kwargs):
     copyright_test, _proflingo = _load_proflingo_modules()
     return copyright_test.fingerprint_test(**kwargs)
+
+
+class _limited_proflingo_fingerprint:
+    def __init__(self, fingerprint_path: Path, limit: int | None):
+        self.fingerprint_path = fingerprint_path
+        self.limit = limit
+        self._temporary_file = None
+
+    def __enter__(self) -> Path:
+        if self.limit is None:
+            return self.fingerprint_path
+        self._temporary_file = tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            newline="",
+            suffix=".txt",
+            delete=False,
+        )
+        with self.fingerprint_path.open(encoding="utf-8") as source:
+            for index, line in enumerate(source):
+                if index >= self.limit:
+                    break
+                self._temporary_file.write(line)
+        self._temporary_file.close()
+        return Path(self._temporary_file.name)
+
+    def __exit__(self, _exc_type, _exc, _traceback) -> None:
+        if self._temporary_file is not None:
+            Path(self._temporary_file.name).unlink(missing_ok=True)
 
 
 def run_trap_for_target(
