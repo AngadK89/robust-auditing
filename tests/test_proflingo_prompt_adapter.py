@@ -6,119 +6,68 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 PROFLINGO_DIR = ROOT_DIR / "third_party" / "ProFLingo"
 sys.path.insert(0, str(PROFLINGO_DIR))
 
-import proflingo
+import attack
 import copyright_test
 
 
-class PlainTokenizer:
-    chat_template = None
+class TokenizerWithoutUnk:
+    unk_token_id = None
+    unk_token = None
 
-    def apply_chat_template(self, *_args, **_kwargs):
-        raise AssertionError("plain tokenizers should not use chat templates")
-
-
-class ChatTokenizer:
-    chat_template = "{{ messages }}"
+    def encode(self, text, add_special_tokens=True):
+        ids = [ord(character) for character in text]
+        return [0] + ids if add_special_tokens else ids
 
 
-def test_proflingo_uses_tokenizer_chat_template_capability():
-    assert proflingo.uses_tokenizer_chat_template("allenai/OLMo-2-0425-1B", PlainTokenizer()) is False
-    assert proflingo.uses_tokenizer_chat_template("plain-model", ChatTokenizer()) is True
+class SimpleTemplate:
+    roles = ("User", "Assistant")
+    sep_style = None
+
+    def __init__(self):
+        self.messages = []
+
+    def append_message(self, role, content):
+        self.messages.append([role, content])
+
+    def update_last_message(self, content):
+        self.messages[-1][1] = content
+
+    def get_prompt(self):
+        return "".join(content or "" for _role, content in self.messages)
 
 
-def test_default_templates_use_fallbacks_for_plain_tokenizers():
-    tokenizer = PlainTokenizer()
-
-    templates = proflingo.get_default_templates(tokenizer)
-
-    assert [template.name for template in templates] == ["alpaca", "zero_shot"]
-    assert templates[0].sep == " "
-    assert templates[1].sep == "\n"
+def decode(ids):
+    return "".join(chr(token_id) for token_id in ids)
 
 
-def test_default_templates_use_tokenizer_template_when_available():
-    assert proflingo.get_default_templates(ChatTokenizer()) == [None]
-
-
-def test_copyright_fingerprint_test_accepts_template_list_and_limit(monkeypatch, tmp_path):
-    questions_path = tmp_path / "questions.csv"
-    questions_path.write_text(
-        "question,answer,keyword\n"
-        "Where does the sun rise?,east,east\n"
-        "What color is grass?,green,green\n",
-        encoding="utf-8",
-    )
-    advsamples_path = tmp_path / "generated.txt"
-    advsamples_path.write_text("0,prefix A\n1,prefix B\n", encoding="utf-8")
-    calls = []
-
-    def fake_complete_conversation(model, tokenizer, template, question, size):
-        calls.append((template, question, size))
-        return "wrong" if template == "bad-template" else "The answer is east."
-
-    monkeypatch.setattr(copyright_test, "complete_conversation", fake_complete_conversation)
-
-    total, matched = copyright_test.fingerprint_test(
-        model=object(),
-        tokenizer=object(),
-        dataset_path=questions_path,
-        advsamples_path=advsamples_path,
-        manual_check=False,
-        model_path="org/plain-model",
-        template=["bad-template", "good-template"],
-        verbose=False,
-        max_token=9,
-        limit=1,
+def test_assemble_ids_supports_tokenizers_without_unk_token():
+    begin_ids, middle_ids, target_ids = attack.assemble_ids(
+        TokenizerWithoutUnk(),
+        SimpleTemplate(),
+        question="Question?",
+        target="Answer",
     )
 
-    assert (total, matched) == (1, 1)
-    assert calls == [
-        ("bad-template", "prefix A simply answer: Where does the sun rise?", 9),
-        ("good-template", "prefix A simply answer: Where does the sun rise?", 9),
+    assert begin_ids == [0]
+    assert decode(middle_ids) == "Question?"
+    assert decode(target_ids) == "Answer"
+
+
+def test_olmo2_base_uses_zero_shot_template():
+    template = copyright_test.get_template("allenai/OLMo-2-0425-1B")
+
+    assert template.name == "zero_shot"
+    assert template.sep == "\n"
+
+
+def test_olmo2_chat_models_use_tokenizer_default_chat_template():
+    chat_model_ids = [
+        "allenai/OLMo-2-0425-1B-SFT",
+        "allenai/OLMo-2-0425-1B-DPO",
+        "allenai/OLMo-2-0425-1B-RLVR1",
+        "allenai/OLMo-2-0425-1B-Instruct",
+        "allenai/OLMo-7B-Instruct",
     ]
 
-
-def test_copyright_fingerprint_test_can_force_local_backend_for_gpt_named_hf_models(
-    monkeypatch, tmp_path
-):
-    questions_path = tmp_path / "questions.csv"
-    questions_path.write_text(
-        "question,answer,keyword\nWhere does the sun rise?,east,east\n",
-        encoding="utf-8",
-    )
-    advsamples_path = tmp_path / "generated.txt"
-    advsamples_path.write_text("0,prefix\n", encoding="utf-8")
-    calls = []
-
-    def fake_complete_conversation(model, tokenizer, template, question, size):
-        calls.append((model, tokenizer, template, question, size))
-        return "east"
-
-    def forbidden_openai(*_args, **_kwargs):
-        raise AssertionError("local HF model ids containing gpt must not call OpenAI")
-
-    monkeypatch.setattr(copyright_test, "complete_conversation", fake_complete_conversation)
-    monkeypatch.setattr(copyright_test, "get_answer_openai", forbidden_openai)
-
-    total, matched = copyright_test.fingerprint_test(
-        model="hf-model",
-        tokenizer="hf-tokenizer",
-        dataset_path=questions_path,
-        advsamples_path=advsamples_path,
-        manual_check=False,
-        model_path="openai-community/gpt2",
-        template=["template"],
-        verbose=False,
-        backend="local",
-    )
-
-    assert (total, matched) == (1, 1)
-    assert calls == [
-        (
-            "hf-model",
-            "hf-tokenizer",
-            "template",
-            "prefix simply answer: Where does the sun rise?",
-            64,
-        )
-    ]
+    for model_id in chat_model_ids:
+        assert copyright_test.get_template(model_id) is None
