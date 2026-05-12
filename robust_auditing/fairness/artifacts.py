@@ -33,13 +33,24 @@ class FairnessArtifactPaths:
     output_root: Path
     audit: str
     model_id: str
+    subset_id: str | None = None
 
     @property
     def audit_dir(self) -> Path:
+        if self.subset_id is not None:
+            return self.subset_dir / model_slug(self.model_id)
         return self.output_root / self.audit / model_slug(self.model_id)
 
     @property
+    def subset_dir(self) -> Path:
+        if self.subset_id is None:
+            return self.output_root / self.audit
+        return self.output_root / self.audit / self.subset_id
+
+    @property
     def normalized_prompts(self) -> Path:
+        if self.subset_id is not None:
+            return self.subset_dir / "normalized_prompts.jsonl"
         return self.audit_dir / "normalized_prompts.jsonl"
 
     @property

@@ -4,7 +4,7 @@ title: Wiki Index
 
 # Wiki Index
 
-*This index is automatically maintained. Last updated: 2026-05-09T17:05:00Z*
+*This index is automatically maintained. Last updated: 2026-05-12T19:19:31Z*
 
 ## Concepts
 
@@ -23,6 +23,7 @@ title: Wiki Index
 
 ## Skills
 - [[projects/robust-auditing/skills/build-fingerprints]] - Build LLMmap, ProFLingo, and TRAP fingerprints for OLMo2 models. ( #fingerprinting #scripts #olmo2 #workflow)
+- [[projects/robust-auditing/skills/run-fairness-baseline-audits]] - Sample HolisticBias/BOLD subsets, generate model responses, and score registered fairness metrics. ( #fairness #auditing #datasets #workflow)
 - [[projects/robust-auditing/skills/verify-fingerprint-lineage]] - Verify reference fingerprints across configured OLMo2 lineage targets. ( #fingerprinting #verification #lineage #workflow)
 
 ## References
@@ -44,3 +45,4 @@ title: Wiki Index
 - [[projects/robust-auditing/concepts/combined-robustness-thesis]] - How fingerprint radius constrains fairwashing-oriented targeted fine-tuning. ( #thesis #fingerprinting #auditing #fine-tuning)
 - [[projects/robust-auditing/concepts/repository-architecture]] - How the repo structure maps to fingerprint robustness and audit robustness goals. ( #repository #architecture #fingerprinting #auditing)
 - [[projects/robust-auditing/concepts/repo-implementation-state]] - Current implemented, documented, missing, and ambiguous functionality. ( #repository #implementation #caveats #roadmap)
+- [[projects/robust-auditing/concepts/targeted-fine-tuning-architecture]] - Targeted fine-tuning design for mixing audit anchors, preference data, and off-audit objectives. ( #fine-tuning #alignment #fairness #architecture)

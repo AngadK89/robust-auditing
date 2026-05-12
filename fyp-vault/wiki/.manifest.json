@@ -1,8 +1,8 @@
 {
   "version": 1,
   "stats": {
-    "total_sources_ingested": 12,
-    "total_pages": 24
+    "total_sources_ingested": 13,
+    "total_pages": 29
   },
   "sources": {
     "/Users/angadkalra/Desktop/robust-auditing/fyp-vault/sources/raw_sources/2509.26598v1.pdf": {
@@ -210,19 +210,39 @@
         "hot.md",
         "log.md"
       ]
+    },
+    "/Users/angadkalra/Desktop/robust-auditing/docs/FAIRNESS_CLI_WORKFLOW.md": {
+      "ingested_at": "2026-05-12T19:19:31Z",
+      "size_bytes": 0,
+      "modified_at": "2026-05-12T19:19:31Z",
+      "content_hash": "git:dfdb707+working-tree",
+      "source_type": "document",
+      "project": "robust-auditing",
+      "pages_created": [],
+      "pages_updated": [
+        "projects/robust-auditing/skills/run-fairness-baseline-audits.md",
+        "concepts/fairness-audit-sets.md",
+        "projects/robust-auditing/robust-auditing.md",
+        "projects/robust-auditing/concepts/repo-implementation-state.md",
+        "index.md",
+        "hot.md",
+        "log.md"
+      ]
     }
   },
   "projects": {
     "robust-auditing": {
       "source_cwd": "/Users/angadkalra/Desktop/robust-auditing",
-      "last_synced": "2026-05-09T18:21:43Z",
-      "last_commit_synced": "1b46a06",
+      "last_synced": "2026-05-12T19:19:31Z",
+      "last_commit_synced": "dfdb707",
       "pages_in_vault": [
         "projects/robust-auditing/robust-auditing.md",
         "projects/robust-auditing/concepts/repository-architecture.md",
         "projects/robust-auditing/concepts/repo-implementation-state.md",
         "projects/robust-auditing/concepts/combined-robustness-thesis.md",
+        "projects/robust-auditing/concepts/targeted-fine-tuning-architecture.md",
         "projects/robust-auditing/skills/build-fingerprints.md",
+        "projects/robust-auditing/skills/run-fairness-baseline-audits.md",
         "projects/robust-auditing/skills/verify-fingerprint-lineage.md",
         "projects/robust-auditing/references/current-olmo2-fingerprint-results.md",
         "projects/robust-auditing/references/proflingo-upstream-and-patches.md",
