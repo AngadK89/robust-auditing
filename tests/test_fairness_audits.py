@@ -1,3 +1,4 @@
+import json
 import math
 from pathlib import Path
 
@@ -8,6 +9,8 @@ import torch
 from robust_auditing.fairness import (
     BoldAdapter,
     FairnessMetric,
+    FairnessArtifactPaths,
+    FairnessExample,
     GenerationConfig,
     HolisticBiasAdapter,
     LikelihoodBiasMetric,
@@ -19,7 +22,9 @@ from robust_auditing.fairness import (
     default_output_dir,
     generate_responses_for_audit,
     metric_folder_name,
+    proportional_descriptor_sample,
     read_jsonl,
+    sample_audit_subset,
     records_to_frame,
     score_audit,
     write_jsonl,
@@ -431,3 +436,147 @@ def test_cli_accepts_single_audit_selection_and_output_root():
     assert config.audits == ("bold",)
     assert config.output_root == Path("out")
     assert config.paths_for("bold").audit_dir == Path("out/bold/olmo2_1b_instruct")
+
+
+def test_subset_paths_keep_full_run_paths_unchanged():
+    full_paths = FairnessArtifactPaths(Path("out"), "bold", "example/model")
+    subset_paths = FairnessArtifactPaths(Path("out"), "bold", "example/model", subset_id="proportional_10k_seed0")
+
+    assert full_paths.audit_dir == Path("out/bold/model")
+    assert full_paths.normalized_prompts == Path("out/bold/model/normalized_prompts.jsonl")
+    assert subset_paths.subset_dir == Path("out/bold/proportional_10k_seed0")
+    assert subset_paths.audit_dir == Path("out/bold/proportional_10k_seed0/model")
+    assert subset_paths.normalized_prompts == Path("out/bold/proportional_10k_seed0/normalized_prompts.jsonl")
+    assert subset_paths.model_responses == Path("out/bold/proportional_10k_seed0/model/model_responses.jsonl")
+
+
+def test_proportional_descriptor_sample_is_seeded_and_capped():
+    examples = [
+        FairnessExample(text=f"a-{index}", axis="axis", bucket="bucket", descriptor="a")
+        for index in range(8)
+    ] + [
+        FairnessExample(text=f"b-{index}", axis="axis", bucket="bucket", descriptor="b")
+        for index in range(2)
+    ]
+
+    sampled = proportional_descriptor_sample(examples, max_examples=5, seed=7)
+    repeated = proportional_descriptor_sample(examples, max_examples=5, seed=7)
+
+    assert [example.text for example in sampled] == [example.text for example in repeated]
+    assert len(sampled) == 5
+    assert sum(example.descriptor == "a" for example in sampled) == 4
+    assert sum(example.descriptor == "b" for example in sampled) == 1
+
+
+def test_sample_audit_subset_writes_subset_prompts_and_metadata(tmp_path):
+    frame = pd.DataFrame(
+        [
+            {"text": f"a-{index}", "axis": "axis", "bucket": "bucket", "descriptor": "a"}
+            for index in range(4)
+        ]
+        + [
+            {"text": "b-0", "axis": "axis", "bucket": "bucket", "descriptor": "b"},
+        ]
+    )
+
+    subset_dir = sample_audit_subset(
+        "holistic_bias",
+        subset_id="tiny",
+        output_root=tmp_path,
+        max_examples=3,
+        seed=11,
+        dataset=frame,
+    )
+
+    rows = read_jsonl(subset_dir / "normalized_prompts.jsonl")
+    metadata = json.loads((subset_dir / "metadata.json").read_text(encoding="utf-8"))
+    assert subset_dir == tmp_path / "holistic_bias" / "tiny"
+    assert len(rows) == 3
+    assert sum(row["descriptor"] == "a" for row in rows) == 2
+    assert sum(row["descriptor"] == "b" for row in rows) == 1
+    assert metadata["source_count"] == 5
+    assert metadata["sampled_count"] == 3
+
+
+def test_generation_with_subset_reads_stored_prompts(tmp_path):
+    subset_dir = tmp_path / "holistic_bias" / "tiny"
+    write_jsonl(
+        subset_dir / "normalized_prompts.jsonl",
+        [
+            {
+                "text": "A stored prompt.",
+                "axis": "axis",
+                "bucket": "bucket",
+                "descriptor": "descriptor",
+                "metadata": {"source_index": 12},
+            }
+        ],
+    )
+    config = GenerationConfig(
+        audits=("holistic_bias",),
+        output_root=tmp_path,
+        model_id="example/model",
+        subset_id="tiny",
+        min_new_tokens=1,
+        max_new_tokens=2,
+    )
+
+    output_dir = generate_responses_for_audit(
+        "holistic_bias",
+        config,
+        model=FakeGenerateModel(),
+        tokenizer=FakeTokenizer(),
+    )
+
+    assert output_dir == tmp_path / "holistic_bias" / "tiny" / "model"
+    rows = read_jsonl(output_dir / "model_responses.jsonl")
+    assert rows[0]["text"] == "A stored prompt."
+    assert not (output_dir / "normalized_prompts.jsonl").exists()
+
+
+class ResponseCountMetric(FairnessMetric):
+    name = "response_count"
+    required_artifacts = ("model_responses",)
+
+    def score(self, context):
+        return [
+            MetricResult(
+                text=response["text"],
+                axis=response["axis"],
+                bucket=response["bucket"],
+                descriptor=response["descriptor"],
+                metric_name=self.name,
+                scores={"response_length": len(response["generated_response"])},
+                metadata=dict(response.get("metadata", {})),
+            )
+            for response in context.load_responses()
+        ]
+
+
+def test_score_audit_supports_response_based_metrics(tmp_path):
+    config = ScoringConfig(
+        audits=("holistic_bias",),
+        output_root=tmp_path,
+        model_id="example/model",
+        subset_id="tiny",
+        metric="response_count",
+    )
+    paths = config.paths_for("holistic_bias")
+    write_jsonl(
+        paths.model_responses,
+        [
+            {
+                "text": "Prompt",
+                "axis": "axis",
+                "bucket": "bucket",
+                "descriptor": "descriptor",
+                "metadata": {"source_index": 0},
+                "generated_response": "answer",
+            }
+        ],
+    )
+
+    metric_dir = score_audit("holistic_bias", config, metric=ResponseCountMetric())
+
+    rows = read_jsonl(metric_dir / "per_example.jsonl")
+    assert rows[0]["scores"]["response_length"] == 6

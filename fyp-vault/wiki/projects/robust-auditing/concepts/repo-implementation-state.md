@@ -2,22 +2,22 @@
 title: Robust Auditing Repo Implementation State
 category: concepts
 tags: [repository, implementation, caveats, roadmap]
-sources: ["/Users/angadkalra/Desktop/robust-auditing/README.md", "/Users/angadkalra/Desktop/robust-auditing/fyp-vault/Configuration.md", "/Users/angadkalra/Desktop/robust-auditing/tests", "user-clarification:2026-05-09T16:37:58Z"]
+sources: ["/Users/angadkalra/Desktop/robust-auditing/README.md", "/Users/angadkalra/Desktop/robust-auditing/fyp-vault/Configuration.md", "/Users/angadkalra/Desktop/robust-auditing/docs/FAIRNESS_CLI_WORKFLOW.md", "/Users/angadkalra/Desktop/robust-auditing/robust_auditing/fairness", "/Users/angadkalra/Desktop/robust-auditing/tests", "user-clarification:2026-05-09T16:37:58Z"]
 summary: Captures what is currently implemented, what is only documented, and what looks missing or in-progress in the repo.
 provenance:
-  extracted: 0.55
+  extracted: 0.65
   inferred: 0.25
-  ambiguous: 0.2
-base_confidence: 0.58
+  ambiguous: 0.1
+base_confidence: 0.66
 lifecycle: draft
 lifecycle_changed: 2026-05-09
 created: 2026-05-09T16:17:44Z
-updated: 2026-05-09T16:37:58Z
+updated: 2026-05-12T19:19:31Z
 ---
 
 # Robust Auditing Repo Implementation State
 
-The current repository is strongest on fingerprint construction and verification. The fairness audit and targeted fine-tuning side is described in project configuration, but the tracked source package does not currently expose those modules.
+The current repository is strongest on fingerprint construction and verification, and now also has a tracked fairness audit CLI layer for sampling HolisticBias/BOLD subsets, generating model responses, and scoring registered metrics. Targeted fine-tuning remains less concrete in the active checkout.
 
 ## Implemented Or Visible
 
@@ -28,18 +28,20 @@ The current repository is strongest on fingerprint construction and verification
 - OLMo2 lineage YAML configs for base, SFT, DPO, RLVR1, and Instruct references.
 - Verification reports under `artifacts/verification/`.
 - Tests covering script dry-runs, lineage parsing, matching helpers, cache cleanup, and OLMo2 prompt adapters.
+- `robust_auditing/fairness` source modules for dataset adapters, artifact paths, subset sampling, deterministic response generation, metric scoring, and the `likelihood_bias` metric.
+- Fairness CLI wrappers under `scripts/fairness/` for subset sampling, response generation, metric scoring, and the older combined baseline runner.
+- Tests covering HolisticBias/BOLD normalization, proportional descriptor sampling, subset-aware artifact paths, response generation, and response-based metric consumption.
 
 ## Missing Or Ambiguous
 
-- `robust_auditing/fairness` and `robust_auditing/targeted_ft` have no tracked `.py` files in the current checkout, though pyc caches and older tests indicate modules such as adapters, loaders, losses, objectives, runner, sweeps, trainer, and metrics existed or were expected. ^[ambiguous]
-- Tests for fairness and targeted fine-tuning are present only as pyc caches, not source tests, in the current checkout. ^[ambiguous]
+- `robust_auditing/targeted_ft` has no tracked `.py` files in the current checkout, though pyc caches and branch notes indicate modules such as adapters, loaders, losses, objectives, runner, sweeps, and trainer existed or were expected. ^[ambiguous]
 - `artifacts/fingerprints/` is referenced by the README and configs, but visible checked-in artifacts are verification reports rather than raw fingerprint artifacts.
-- The missing fairness and targeted fine-tuning source files are expected to be restored and extended from other branches after fingerprinting work is complete.
+- The targeted fine-tuning source files are expected to be restored and extended from other branches after fingerprinting work is complete.
 - The exact Anthropic HH harmless-base dataset wiring will become visible once those branches are merged.
 
 ## Practical Implication
 
-The repo can currently be understood as a fingerprint-lineage analysis harness. Treat the audit-robustness training loop as a design goal unless the missing package source is restored or generated. ^[inferred]
+The repo can currently be understood as a fingerprint-lineage analysis harness plus a fairness-audit inference/scoring harness. Treat the audit-robustness training loop as a design goal unless the targeted fine-tuning package source is restored or generated. ^[inferred]
 
 ## Clarifications Needed
 

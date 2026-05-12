@@ -3,10 +3,18 @@
 Use this guide to run the likelihood-based fairness baselines for
 `allenai/OLMo-2-0425-1B-Instruct`.
 
+For a tool-by-tool CLI reference that covers subset sampling, response
+generation, metric scoring, and artifact schemas, see
+[Fairness CLI Workflow](FAIRNESS_CLI_WORKFLOW.md).
+
 The baseline workflow has two separate stages. First, materialize normalized
 dataset prompts and optionally generate model responses. Then, run fairness
 metrics against the stored artifacts. This lets metrics be recomputed without
 rerunning generation.
+
+For lineage experiments where the full audit sets are too large, first
+materialize a deterministic sampled subset, then run generation and scoring
+against that subset id for every model.
 
 ## Audits
 
@@ -65,6 +73,45 @@ python3 scripts/fairness/score_fairness_metrics.py \
 
 This is useful for checking dataset loading, artifact creation, and metric
 scoring before running the full baseline.
+
+## Sampled Subset Run
+
+Create a proportional descriptor sample capped at 10k examples per audit:
+
+```bash
+python3 scripts/fairness/sample_fairness_subsets.py \
+  --audits holistic_bias,bold \
+  --subset-id proportional_10k_seed0 \
+  --max-examples 10000 \
+  --seed 0
+```
+
+The sampler normalizes each audit first. HolisticBias is sampled by its
+`descriptor` column. BOLD is sampled after each source row's `prompts` list is
+exploded, using the normalized BOLD descriptor, which is the source `category`.
+
+Run inference for any model on the stored subset:
+
+```bash
+python3 scripts/fairness/generate_fairness_responses.py \
+  --audits holistic_bias,bold \
+  --subset-id proportional_10k_seed0 \
+  --model-id allenai/OLMo-2-0425-1B \
+  --batch-size 16 \
+  --dtype bf16
+```
+
+Score a metric on that model's subset artifacts:
+
+```bash
+python3 scripts/fairness/score_fairness_metrics.py \
+  --audits holistic_bias,bold \
+  --subset-id proportional_10k_seed0 \
+  --model-id allenai/OLMo-2-0425-1B \
+  --metric likelihood_bias \
+  --batch-size 8 \
+  --dtype bf16
+```
 
 ## Full Baseline Run
 
@@ -155,6 +202,24 @@ BOLD outputs are written to:
 artifacts/fairness/bold/olmo2_1b_instruct/
 ```
 
+Sampled subset prompts are written once per audit:
+
+```text
+artifacts/fairness/holistic_bias/proportional_10k_seed0/
+artifacts/fairness/bold/proportional_10k_seed0/
+```
+
+Model-specific subset responses and metrics are written below the subset id:
+
+```text
+artifacts/fairness/holistic_bias/proportional_10k_seed0/olmo_2_0425_1b/
+artifacts/fairness/bold/proportional_10k_seed0/olmo_2_0425_1b/
+```
+
+For subset runs, `normalized_prompts.jsonl` stays at the subset directory and
+is shared by all model runs for that subset. `model_responses.jsonl`, model
+generation metadata, and `metrics/` are model-specific.
+
 Each audit directory contains:
 
 ```text
@@ -217,6 +282,7 @@ Generation options:
 --max-new-tokens 64
 --no-repeat-ngram-size 3
 --prompts-only
+--subset-id proportional_10k_seed0
 ```
 
 Scoring options:
@@ -230,6 +296,17 @@ Scoring options:
 --output-root artifacts/fairness
 --dtype auto|bf16|fp16|fp32
 --device-map auto|cpu
+--subset-id proportional_10k_seed0
+```
+
+Subset sampling options:
+
+```text
+--audits holistic_bias,bold
+--subset-id proportional_10k_seed0
+--max-examples 10000
+--output-root artifacts/fairness
+--seed 0
 ```
 
 Examples:
@@ -343,6 +420,17 @@ class ConstantProbeMetric(FairnessMetric):
 The base `FairnessMetric.group_summary()` automatically summarizes numeric score
 columns by the configured grouping. Override it when a metric needs a custom
 report, such as thresholded classification rates or calibration diagnostics.
+
+For response-based metrics such as sentiment or toxicity classifiers, set:
+
+```python
+required_artifacts = ("model_responses",)
+```
+
+Then call `context.load_responses()` inside `score(context)` and iterate over
+the stored response rows. Each row includes the normalized prompt fields plus
+`generated_response`, so the metric can score the generated text and aggregate
+by `axis`, `bucket`, or `descriptor`.
 
 ## Troubleshooting
 
