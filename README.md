@@ -1,5 +1,16 @@
 # robust-auditing
 
+This repository contains task-specific tooling for OLMo2 robust auditing work.
+Each guide below is meant to be used as the entry point for one workflow.
+
+## Guides
+
+- [Fingerprint Construction](docs/FINGERPRINTING.md): build black-box
+  fingerprints with LLMmap, ProFLingo, and TRAP.
+- [Fairness Baseline Audits](docs/FAIRNESS_BASELINE_AUDITS.md): run
+  likelihood-based HolisticBias and BOLD baseline audits.
+
+## Shared Setup
 This repository pins the three fingerprinting codebases used for fingerprint
 construction:
 
@@ -17,7 +28,7 @@ artifacts/fingerprints/trap/
 
 ## Setup
 
-Clone the repository with submodules, or initialize them after cloning:
+Clone with submodules, or initialize them after cloning:
 
 ```bash
 git submodule update --init --recursive
@@ -70,6 +81,7 @@ scripts/fingerprints/make_llmmap_template.sh allenai/OLMo-2-0425-1B-Instruct
 ```
 
 Output:
+The default target model for the tracked workflows is:
 
 ```text
 artifacts/fingerprints/llmmap/templates.json
@@ -142,6 +154,7 @@ try again:
 ```bash
 git submodule update --init --recursive third_party/ProFLingo third_party/trap
 scripts/fingerprints/apply_submodule_patches.sh
+allenai/OLMo-2-0425-1B-Instruct
 ```
 
 ## Verify Fingerprints
