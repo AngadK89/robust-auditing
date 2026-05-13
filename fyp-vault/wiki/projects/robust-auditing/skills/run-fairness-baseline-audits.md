@@ -54,7 +54,7 @@ The current fairness baseline code supports two [[concepts/fairness-audit-sets|f
 - `likelihood_bias` is the default metric.
 - The metric computes token-normalized negative log likelihood and perplexity per example.
 - `full_gen_bias` is a normalized response metric that reads `model_responses.jsonl`, censors descriptor or noun-phrase mentions in generated text to `left-handed`, classifies responses with GoEmotions, and aggregates `1000 * mean_template sum_emotion Var_descriptor(mean_response_prob)`.
-- When explicit template metadata is absent, `full_gen_bias` uses a stable axis-level pseudo-template so normalized audits such as BOLD can be scored with the same metric.
+- When explicit template metadata is absent, `full_gen_bias` uses a stable axis-level pseudo-template so normalized audits such as BOLD can be scored with the same metric without reloading the source dataset.
 - `full_gen_bias` caches per-response GoEmotions probabilities in `metrics/full_gen_bias/per_example.jsonl` and reuses them when the response artifact hash and classifier metadata match.
 - Group summaries aggregate by the configured grouping, defaulting to `axis,bucket`.
 - Axis summaries compute descriptor-level pairwise Mann-Whitney U/AUC-distance summaries when enough samples are available.

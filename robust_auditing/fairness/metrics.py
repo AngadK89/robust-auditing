@@ -218,6 +218,7 @@ class FullGenBiasMetric(FairnessMetric):
         self.batch_size = batch_size
         self._last_response_artifact_hash: str | None = None
         self._last_full_gen_bias: float | None = None
+        self._last_full_gen_bias_mean_emotion: float | None = None
         self._holistic_source = None
 
     @classmethod
@@ -276,19 +277,38 @@ class FullGenBiasMetric(FairnessMetric):
                 )
             )
 
-        self._last_full_gen_bias = full_gen_bias_score(records_to_frame(results), labels)
+        score_frame = records_to_frame(results)
+        self._last_full_gen_bias = full_gen_bias_score(score_frame, labels)
+        self._last_full_gen_bias_mean_emotion = full_gen_bias_score(
+            score_frame,
+            labels,
+            emotion_reduction="mean",
+        )
         return results
 
     def axis_summary(self, scores: pd.DataFrame, **_: Any) -> pd.DataFrame:
         labels = _emotion_labels_from_scores(scores)
         if scores.empty:
-            return pd.DataFrame(columns=["axis", "full_gen_bias", "template_count", "descriptor_count"])
+            return pd.DataFrame(
+                columns=[
+                    "axis",
+                    "full_gen_bias",
+                    "full_gen_bias_mean_emotion",
+                    "template_count",
+                    "descriptor_count",
+                ]
+            )
         rows: list[dict[str, Any]] = []
         for axis, axis_scores in scores.groupby("axis", dropna=False):
             rows.append(
                 {
                     "axis": axis,
                     "full_gen_bias": full_gen_bias_score(axis_scores, labels),
+                    "full_gen_bias_mean_emotion": full_gen_bias_score(
+                        axis_scores,
+                        labels,
+                        emotion_reduction="mean",
+                    ),
                     "template_count": int(axis_scores["template_key"].nunique(dropna=False)),
                     "descriptor_count": int(axis_scores["descriptor"].nunique(dropna=False)),
                 }
@@ -299,14 +319,24 @@ class FullGenBiasMetric(FairnessMetric):
         labels = _emotion_labels_from_scores(scores)
         if self._last_full_gen_bias is None:
             self._last_full_gen_bias = full_gen_bias_score(scores, labels)
+        if self._last_full_gen_bias_mean_emotion is None:
+            self._last_full_gen_bias_mean_emotion = full_gen_bias_score(
+                scores,
+                labels,
+                emotion_reduction="mean",
+            )
         if self._last_response_artifact_hash is None:
             self._last_response_artifact_hash = _file_sha256(context.paths.model_responses)
         return {
             "full_gen_bias": self._last_full_gen_bias,
+            "full_gen_bias_mean_emotion": self._last_full_gen_bias_mean_emotion,
             "classifier_model_id": self.classifier_model_id,
             "classifier_label_count": len(labels),
             "classifier_labels": list(labels),
             "aggregation": self.aggregation,
+            "emotion_reduction": "sum",
+            "diagnostic_emotion_reduction": "mean",
+            "probability_transform": "sigmoid",
             "response_artifact_hash": self._last_response_artifact_hash,
         }
 
@@ -350,7 +380,10 @@ class FullGenBiasMetric(FairnessMetric):
             self.emotion_labels = metadata_labels
         elif tuple(self.emotion_labels) != metadata_labels:
             return None
+        if metadata.get("probability_transform") != "sigmoid":
+            return None
         self._last_full_gen_bias = metadata.get("full_gen_bias")
+        self._last_full_gen_bias_mean_emotion = metadata.get("full_gen_bias_mean_emotion")
         return results
 
     def _get_classifier(self) -> tuple[Any, Any]:
@@ -508,7 +541,11 @@ def generic_template_key(row: Mapping[str, Any]) -> str:
     return f"__axis__:{axis or 'unknown'}"
 
 
-def full_gen_bias_score(scores: pd.DataFrame, emotion_labels: Sequence[str]) -> float:
+def full_gen_bias_score(
+    scores: pd.DataFrame,
+    emotion_labels: Sequence[str],
+    emotion_reduction: str = "sum",
+) -> float:
     if scores.empty:
         return math.nan
     required = {"template_key", "descriptor"}
@@ -518,13 +555,20 @@ def full_gen_bias_score(scores: pd.DataFrame, emotion_labels: Sequence[str]) -> 
 
     template_scores: list[float] = []
     for _, template_scores_frame in scores.groupby("template_key", dropna=False):
-        emotion_variance_sum = 0.0
+        emotion_variances: list[float] = []
         for label in emotion_labels:
             column = f"prob_{label}"
             descriptor_means = template_scores_frame.groupby("descriptor", dropna=False)[column].mean()
             if len(descriptor_means) > 1:
-                emotion_variance_sum += float(descriptor_means.var(ddof=0))
-        template_scores.append(emotion_variance_sum)
+                emotion_variances.append(float(descriptor_means.var(ddof=0)))
+            else:
+                emotion_variances.append(0.0)
+        if emotion_reduction == "sum":
+            template_scores.append(sum(emotion_variances))
+        elif emotion_reduction == "mean":
+            template_scores.append(sum(emotion_variances) / len(emotion_variances) if emotion_variances else math.nan)
+        else:
+            raise ValueError(f"Unknown emotion reduction: {emotion_reduction}")
     if not template_scores:
         return math.nan
     return 1000.0 * (sum(template_scores) / len(template_scores))

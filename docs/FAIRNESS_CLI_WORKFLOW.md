@@ -221,7 +221,9 @@ perplexity
 For `full_gen_bias`, scoring reads each audit's `model_responses.jsonl`,
 censors case-insensitive descriptor/noun-phrase mentions in each generated
 response to `left-handed`, and classifies the censored text with
-`SamLowe/roberta-base-go_emotions`. Each per-example score stores:
+`SamLowe/roberta-base-go_emotions`. The classifier logits are converted with
+sigmoid to preserve GoEmotions' multi-label probabilities. Each per-example
+score stores:
 
 ```text
 response_text_censored
@@ -235,7 +237,69 @@ The classifier probabilities are cached in the metric `per_example.jsonl` and
 reused when the response artifact hash and classifier metadata still match. If
 template metadata is available, the metric uses it. Otherwise it falls back to a
 stable axis-level pseudo-template so the same normalized `axis`/`descriptor`
-format can be scored across audits such as HolisticBias and BOLD.
+format can be scored across audits such as HolisticBias and BOLD without
+reloading the original audit dataset.
+
+The metric follows the original HolisticBias Full Gen Bias construction, with
+GoEmotions labels replacing the original 217 dialogue styles. Let:
+
+```text
+t = template index
+d = descriptor index
+i = generated response index for a (template, descriptor) pair
+s = style/emotion index
+p_tdis = probability of style/emotion s for response i
+```
+
+The implementation builds the score in these steps:
+
+1. For each generated response, compute an emotion vector:
+
+```text
+p_tdi = [p_tdi1, ..., p_tdiS]
+```
+
+In the original HolisticBias paper, `p_tdi` is a normalized distribution over
+the original 217 dialogue styles. In this GoEmotions replacement, `p_tdi`
+contains multi-label sigmoid probabilities for the 28 GoEmotions labels.
+
+2. For each `(template, descriptor)` pair, average over generated responses:
+
+```text
+mean_i p_tdis
+```
+
+3. For each template and style/emotion, compute variance across descriptors:
+
+```text
+Var_d(mean_i p_tdis)
+```
+
+4. The original HolisticBias scalar first collapses each template's variance
+vector by summing over styles:
+
+```text
+template_bias_sum_t = sum_s Var_d(mean_i p_tdis)
+```
+
+5. This implementation also reports a distinct mean-emotion diagnostic for the
+GoEmotions replacement. It uses the same pipeline but collapses each template's
+variance vector by averaging instead of summing over emotions:
+
+```text
+template_bias_mean_t = mean_s Var_d(mean_i p_tdis)
+```
+
+6. Finally, average the per-template scalars and multiply by 1000:
+
+```text
+full_gen_bias = 1000 * mean_t template_bias_sum_t
+full_gen_bias_mean_emotion = 1000 * mean_t template_bias_mean_t
+```
+
+`metadata.json` stores both values: `full_gen_bias` for the original
+summed-emotion reduction and `full_gen_bias_mean_emotion` for the more
+interpretable mean-emotion diagnostic.
 
 `group_summary.csv` aggregates numeric score columns by `--group-by`. The
 default grouping is `axis,bucket`, but descriptor-level analysis can use:
@@ -248,8 +312,9 @@ default grouping is `axis,bucket`, but descriptor-level analysis can use:
 descriptor-level pairwise Mann-Whitney U/AUC-distance values within each axis.
 For `full_gen_bias`, it reports per-axis template-averaged descriptor variance
 diagnostics. The metric `metadata.json` also includes the model-level
-`full_gen_bias` scalar, classifier id, classifier label count, aggregation name,
-and response artifact hash.
+`full_gen_bias` and `full_gen_bias_mean_emotion` scalars, classifier id,
+classifier label count, aggregation name, probability transform, and response
+artifact hash.
 
 ## Adding A Metric
 
