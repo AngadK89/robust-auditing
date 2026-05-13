@@ -9,6 +9,7 @@ from typing import Any, Sequence
 from robust_auditing.fairness.artifacts import (
     FairnessArtifactPaths,
     read_examples,
+    read_jsonl,
     write_json,
     write_jsonl,
 )
@@ -35,6 +36,7 @@ class ScoringConfig:
     dtype: str = "auto"
     device_map: str = "auto"
     metric: str = "likelihood_bias"
+    subset_id: str | None = None
 
     @classmethod
     def from_args(cls, args: argparse.Namespace) -> "ScoringConfig":
@@ -53,10 +55,11 @@ class ScoringConfig:
             dtype=args.dtype,
             device_map=args.device_map,
             metric=args.metric,
+            subset_id=args.subset_id,
         )
 
     def paths_for(self, audit: str) -> FairnessArtifactPaths:
-        return FairnessArtifactPaths(self.output_root, audit, self.model_id)
+        return FairnessArtifactPaths(self.output_root, audit, self.model_id, subset_id=self.subset_id)
 
 
 @dataclass
@@ -67,6 +70,7 @@ class MetricContext:
     model: Any = None
     tokenizer: Any = None
     _examples: Any = field(default=None, init=False, repr=False)
+    _responses: Any = field(default=None, init=False, repr=False)
 
     def load_examples(self):
         if self._examples is None:
@@ -74,6 +78,13 @@ class MetricContext:
             self._examples = read_examples(self.paths.normalized_prompts)
             LOGGER.info("Loaded %d normalized prompts for audit '%s'", len(self._examples), self.audit)
         return self._examples
+
+    def load_responses(self):
+        if self._responses is None:
+            LOGGER.info("Loading model responses for audit '%s' from %s", self.audit, self.paths.model_responses)
+            self._responses = read_jsonl(self.paths.model_responses)
+            LOGGER.info("Loaded %d model responses for audit '%s'", len(self._responses), self.audit)
+        return self._responses
 
     def get_model_and_tokenizer(self) -> tuple[Any, Any]:
         if self.model is None or self.tokenizer is None:
@@ -96,6 +107,7 @@ def build_scoring_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output-root", default="artifacts/fairness")
     parser.add_argument("--dtype", choices=("auto", "bf16", "fp16", "fp32"), default="auto")
     parser.add_argument("--device-map", choices=("auto", "cpu"), default="auto")
+    parser.add_argument("--subset-id", default=None, help="Score artifacts for a stored sampled subset by id.")
     return parser
 
 
@@ -139,19 +151,19 @@ def score_audit(
     LOGGER.info("Wrote group summary to %s", paths.metric_group_summary(metric))
     metric.axis_summary(scores).to_csv(paths.metric_axis_summary(metric), index=False)
     LOGGER.info("Wrote axis summary to %s", paths.metric_axis_summary(metric))
-    write_json(
-        paths.metric_metadata(metric),
-        {
-            "audit": audit,
-            "model_id": config.model_id,
-            "metric": metric.name,
-            "metric_class": metric.__class__.__name__,
-            "required_artifacts": list(metric.required_artifacts),
-            "batch_size": config.batch_size,
-            "group_by": list(config.group_by),
-            "scored_count": len(results),
-        },
-    )
+    metadata = {
+        "audit": audit,
+        "model_id": config.model_id,
+        "metric": metric.name,
+        "metric_class": metric.__class__.__name__,
+        "required_artifacts": list(metric.required_artifacts),
+        "batch_size": config.batch_size,
+        "group_by": list(config.group_by),
+        "subset_id": config.subset_id,
+        "scored_count": len(results),
+    }
+    metadata.update(metric.metadata(scores, context))
+    write_json(paths.metric_metadata(metric), metadata)
     LOGGER.info("Wrote metric metadata to %s", paths.metric_metadata(metric))
     return metric_dir
 

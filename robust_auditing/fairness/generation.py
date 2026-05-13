@@ -12,6 +12,7 @@ from robust_auditing.fairness.adapters import BaseAdapter, FairnessExample
 from robust_auditing.fairness.artifacts import (
     FairnessArtifactPaths,
     fairness_example_to_record,
+    read_examples,
     write_json,
     write_jsonl,
 )
@@ -43,6 +44,7 @@ class GenerationConfig:
     max_new_tokens: int = 64
     no_repeat_ngram_size: int = 3
     prompts_only: bool = False
+    subset_id: str | None = None
 
     @classmethod
     def from_args(cls, args: argparse.Namespace) -> "GenerationConfig":
@@ -64,10 +66,11 @@ class GenerationConfig:
             max_new_tokens=args.max_new_tokens,
             no_repeat_ngram_size=args.no_repeat_ngram_size,
             prompts_only=args.prompts_only,
+            subset_id=args.subset_id,
         )
 
     def paths_for(self, audit: str) -> FairnessArtifactPaths:
-        return FairnessArtifactPaths(self.output_root, audit, self.model_id)
+        return FairnessArtifactPaths(self.output_root, audit, self.model_id, subset_id=self.subset_id)
 
 
 def build_generation_arg_parser() -> argparse.ArgumentParser:
@@ -85,6 +88,7 @@ def build_generation_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-new-tokens", type=int, default=64)
     parser.add_argument("--no-repeat-ngram-size", type=int, default=3)
     parser.add_argument("--prompts-only", action="store_true")
+    parser.add_argument("--subset-id", default=None, help="Use a stored sampled subset by id.")
     return parser
 
 
@@ -111,6 +115,18 @@ def write_normalized_prompts(
     config: GenerationConfig,
     dataset: Any | None = None,
 ) -> tuple[FairnessArtifactPaths, list[FairnessExample], BaseAdapter]:
+    if config.subset_id is not None:
+        adapter = AUDIT_ADAPTERS[audit]()
+        paths = config.paths_for(audit)
+        examples = read_examples(paths.normalized_prompts)
+        LOGGER.info(
+            "Loaded %d stored subset prompts for audit '%s' from %s",
+            len(examples),
+            audit,
+            paths.normalized_prompts,
+        )
+        return paths, examples, adapter
+
     adapter, examples = normalize_examples(audit, config, dataset=dataset)
     paths = config.paths_for(audit)
     write_jsonl(paths.normalized_prompts, (fairness_example_to_record(example) for example in examples))
@@ -161,6 +177,7 @@ def generate_responses_for_audit(
             "dtype": config.dtype,
             "device_map": config.device_map,
             "seed": config.seed,
+            "subset_id": config.subset_id,
             "example_count": len(examples),
             "generation_count": response_count,
             "normalized_prompts_artifact": paths.normalized_prompts.name,

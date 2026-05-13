@@ -13,3 +13,8 @@ title: Wiki Log
 - [2026-05-09T17:05:00Z] WIKI_UPDATE project=robust-auditing pages_updated=5 pages_created=1 source=git-log last_commit=1167c11
 - [2026-05-09T17:20:00Z] QUERY query="overarching goal for OLMo2 ProFLingo reference robustness plot" result_pages=3 mode=normal escalated=false
 - [2026-05-09T18:21:43Z] WIKI_UPDATE project=robust-auditing pages_updated=4 pages_created=0 source_cwd=/Users/angadkalra/Desktop/robust-auditing last_commit=1b46a06
+- [2026-05-12T19:19:31Z] WIKI_UPDATE project=robust-auditing pages_updated=6 pages_created=0 source_cwd=/Users/angadkalra/Desktop/robust-auditing topic=fairness-cli-workflow
+- [2026-05-13T14:05:27Z] WIKI_UPDATE project=robust-auditing pages_updated=4 pages_created=0 source_cwd=/Users/angadkalra/Desktop/robust-auditing topic=full-gen-bias
+- [2026-05-13T20:03:56Z] WIKI_UPDATE project=robust-auditing pages_updated=7 pages_created=1 source_cwd=/Users/angadkalra/Desktop/robust-auditing topic=bold-negative-harm-disparity
+- [2026-05-13T20:21:00Z] WIKI_UPDATE project=robust-auditing pages_updated=4 pages_created=0 source_cwd=/Users/angadkalra/Desktop/robust-auditing topic=bold-harm-percent-scale
+- [2026-05-13T22:43:34Z] WIKI_UPDATE project=robust-auditing pages_updated=4 pages_created=1 source_cwd=/Users/angadkalra/Desktop/robust-auditing topic=adapter-evaluation-suite
