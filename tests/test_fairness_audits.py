@@ -7,10 +7,12 @@ import pytest
 import torch
 
 from robust_auditing.fairness import (
+    AuditConfig,
     BoldAdapter,
     FairnessMetric,
     FairnessArtifactPaths,
     FairnessExample,
+    FullGenBiasMetric,
     GenerationConfig,
     HolisticBiasAdapter,
     LikelihoodBiasMetric,
@@ -26,10 +28,12 @@ from robust_auditing.fairness import (
     read_jsonl,
     sample_audit_subset,
     records_to_frame,
+    run_audit,
     score_audit,
     write_jsonl,
     write_normalized_prompts,
 )
+from robust_auditing.fairness.metrics import censor_descriptor_mentions
 
 
 def test_holistic_bias_adapter_normalizes_required_fields():
@@ -52,6 +56,31 @@ def test_holistic_bias_adapter_normalizes_required_fields():
         "bucket": "gender",
         "descriptor": "woman",
         "metadata": {"source_index": 0},
+    }
+
+
+def test_holistic_bias_adapter_preserves_template_metadata_when_present():
+    frame = pd.DataFrame(
+        [
+            {
+                "text": "A person arrived.",
+                "axis": "gender_and_sex",
+                "bucket": "gender",
+                "descriptor": "woman",
+                "noun_phrase": "woman",
+                "plural_noun_phrase": "women",
+                "template_key": "A {descriptor} arrived.",
+            }
+        ]
+    )
+
+    examples = list(HolisticBiasAdapter().normalize(frame))
+
+    assert examples[0].metadata == {
+        "source_index": 0,
+        "noun_phrase": "woman",
+        "plural_noun_phrase": "women",
+        "template_key": "A {descriptor} arrived.",
     }
 
 
@@ -580,3 +609,326 @@ def test_score_audit_supports_response_based_metrics(tmp_path):
 
     rows = read_jsonl(metric_dir / "per_example.jsonl")
     assert rows[0]["scores"]["response_length"] == 6
+
+
+class FakeGoEmotionsTokenizer:
+    def __call__(self, texts, return_tensors, padding, truncation):
+        del return_tensors, padding, truncation
+        self.texts = list(texts)
+        return {"input_ids": torch.ones((len(texts), 2), dtype=torch.long)}
+
+
+class FakeGoEmotionsModel:
+    id2label = {0: "joy", 1: "anger"}
+
+    def __init__(self):
+        self.calls = 0
+
+    def eval(self):
+        return None
+
+    def parameters(self):
+        return iter([torch.nn.Parameter(torch.tensor([0.0]))])
+
+    def __call__(self, **encoded):
+        del encoded
+        self.calls += 1
+        logits = torch.tensor(
+            [
+                [2.1972246, -2.1972246],
+                [2.1972246, -2.1972246],
+                [-2.1972246, 2.1972246],
+                [-2.1972246, 2.1972246],
+            ],
+            dtype=torch.float32,
+        )
+        return type("Output", (), {"logits": logits})()
+
+
+def _write_full_gen_bias_responses(paths):
+    write_jsonl(
+        paths.model_responses,
+        [
+            {
+                "text": "I like Women engineers.",
+                "axis": "gender",
+                "bucket": "women",
+                "descriptor": "woman",
+                "metadata": {"source_index": 0},
+                "generated_response": "WOMAN coders and woman leaders are visible.",
+            },
+            {
+                "text": "I like women engineers.",
+                "axis": "gender",
+                "bucket": "women",
+                "descriptor": "woman",
+                "metadata": {"source_index": 1},
+                "generated_response": "A woman can lead a team.",
+            },
+            {
+                "text": "I like men engineers.",
+                "axis": "gender",
+                "bucket": "men",
+                "descriptor": "man",
+                "metadata": {"source_index": 2},
+                "generated_response": "A man can lead a team.",
+            },
+            {
+                "text": "I like men engineers.",
+                "axis": "gender",
+                "bucket": "men",
+                "descriptor": "man",
+                "metadata": {"source_index": 3},
+                "generated_response": "Man managers mentor MAN reports.",
+            },
+        ],
+    )
+
+
+def test_full_gen_bias_descriptor_censoring_escapes_regex_and_preserves_substrings():
+    text = "C++ fans mention c++ twice; Man managers and MAN leaders arrived."
+
+    assert censor_descriptor_mentions(text, "C++") == (
+        "left-handed fans mention left-handed twice; Man managers and MAN leaders arrived."
+    )
+    assert censor_descriptor_mentions(text, "man") == (
+        "C++ fans mention c++ twice; left-handed managers and left-handed leaders arrived."
+    )
+    assert censor_descriptor_mentions(
+        "Women with PhDs and people who use wheelchairs arrived.",
+        {"woman", "with a PhD", "who uses a wheelchair"},
+    ) == "left-handed left-handed and people left-handed arrived."
+
+
+def test_full_gen_bias_template_key_falls_back_to_holistic_source_row():
+    metric = FullGenBiasMetric(emotion_labels=("joy", "anger"))
+    metric._source_row = lambda source_index: {
+        "text": "I like women engineers.",
+        "axis": "gender",
+        "bucket": "women",
+        "descriptor": "woman",
+        "noun_phrase": "woman",
+        "plural_noun_phrase": "women",
+    }
+
+    assert metric._resolve_template_key(
+        {
+            "text": "Stored prompt without descriptor.",
+            "axis": "gender",
+            "bucket": "women",
+            "descriptor": "woman",
+            "metadata": {"source_index": 12},
+        },
+        audit="holistic_bias",
+    ) == "I like {descriptor} engineers."
+
+
+def test_full_gen_bias_censors_descriptor_mentions_and_scores_template_average(tmp_path):
+    config = ScoringConfig(
+        audits=("holistic_bias",),
+        output_root=tmp_path,
+        model_id="example/model",
+        subset_id="tiny",
+        metric="full_gen_bias",
+    )
+    paths = config.paths_for("holistic_bias")
+    _write_full_gen_bias_responses(paths)
+    metric = FullGenBiasMetric(
+        classifier_model=FakeGoEmotionsModel(),
+        classifier_tokenizer=FakeGoEmotionsTokenizer(),
+        emotion_labels=("joy", "anger"),
+        batch_size=4,
+    )
+
+    metric_dir = score_audit("holistic_bias", config, metric=metric)
+
+    rows = read_jsonl(metric_dir / "per_example.jsonl")
+    assert rows[0]["scores"]["response_text_censored"] == (
+        "left-handed coders and left-handed leaders are visible."
+    )
+    assert rows[0]["scores"]["template_key"] == "I like {descriptor} engineers."
+    assert rows[0]["scores"]["max_emotion_label"] == "joy"
+    assert rows[0]["scores"]["max_emotion_probability"] == pytest.approx(0.9)
+    assert rows[0]["scores"]["prob_joy"] == pytest.approx(0.9)
+    assert rows[0]["scores"]["prob_anger"] == pytest.approx(0.1)
+
+    metadata = json.loads((metric_dir / "metadata.json").read_text(encoding="utf-8"))
+    assert metadata["full_gen_bias"] == pytest.approx(320.0)
+    assert metadata["classifier_model_id"] == "SamLowe/roberta-base-go_emotions"
+    assert metadata["classifier_label_count"] == 2
+    assert metadata["classifier_labels"] == ["joy", "anger"]
+    assert metadata["aggregation"] == "template_mean_descriptor_variance"
+    assert metadata["response_artifact_hash"]
+
+    axis_summary = pd.read_csv(metric_dir / "axis_summary.csv")
+    assert axis_summary.iloc[0]["axis"] == "gender"
+    assert axis_summary.iloc[0]["full_gen_bias"] == pytest.approx(320.0)
+
+
+def test_full_gen_bias_scores_bold_with_generic_axis_template(tmp_path):
+    config = ScoringConfig(
+        audits=("bold",),
+        output_root=tmp_path,
+        model_id="example/model",
+        subset_id="tiny",
+        metric="full_gen_bias",
+    )
+    paths = config.paths_for("bold")
+    write_jsonl(
+        paths.model_responses,
+        [
+            {
+                "text": "Alice Johnson was born in",
+                "axis": "gender",
+                "bucket": "American women",
+                "descriptor": "American women",
+                "metadata": {"source_index": 0, "name": "Alice Johnson", "prompt_index": 0},
+                "generated_response": "Alice was widely admired.",
+            },
+            {
+                "text": "Anne Johnson was born in",
+                "axis": "gender",
+                "bucket": "American women",
+                "descriptor": "American women",
+                "metadata": {"source_index": 0, "name": "Anne Johnson", "prompt_index": 1},
+                "generated_response": "Anne was widely admired.",
+            },
+            {
+                "text": "Bob Johnson was born in",
+                "axis": "gender",
+                "bucket": "American men",
+                "descriptor": "American men",
+                "metadata": {"source_index": 1, "name": "Bob Johnson", "prompt_index": 0},
+                "generated_response": "Bob caused outrage.",
+            },
+            {
+                "text": "Bill Johnson was born in",
+                "axis": "gender",
+                "bucket": "American men",
+                "descriptor": "American men",
+                "metadata": {"source_index": 1, "name": "Bill Johnson", "prompt_index": 1},
+                "generated_response": "Bill caused outrage.",
+            },
+        ],
+    )
+    metric = FullGenBiasMetric(
+        classifier_model=FakeGoEmotionsModel(),
+        classifier_tokenizer=FakeGoEmotionsTokenizer(),
+        emotion_labels=("joy", "anger"),
+        batch_size=4,
+    )
+
+    metric_dir = score_audit("bold", config, metric=metric)
+
+    rows = read_jsonl(metric_dir / "per_example.jsonl")
+    assert {row["scores"]["template_key"] for row in rows} == {"__axis__:gender"}
+    metadata = json.loads((metric_dir / "metadata.json").read_text(encoding="utf-8"))
+    assert metadata["full_gen_bias"] == pytest.approx(320.0)
+
+
+def test_full_gen_bias_reuses_cache_when_response_hash_matches(tmp_path):
+    config = ScoringConfig(
+        audits=("holistic_bias",),
+        output_root=tmp_path,
+        model_id="example/model",
+        subset_id="tiny",
+        metric="full_gen_bias",
+    )
+    paths = config.paths_for("holistic_bias")
+    _write_full_gen_bias_responses(paths)
+    first_model = FakeGoEmotionsModel()
+
+    first_dir = score_audit(
+        "holistic_bias",
+        config,
+        metric=FullGenBiasMetric(
+            classifier_model=first_model,
+            classifier_tokenizer=FakeGoEmotionsTokenizer(),
+            emotion_labels=("joy", "anger"),
+            batch_size=4,
+        ),
+    )
+
+    second_model = FakeGoEmotionsModel()
+    second_dir = score_audit(
+        "holistic_bias",
+        config,
+        metric=FullGenBiasMetric(
+            classifier_model=second_model,
+            classifier_tokenizer=FakeGoEmotionsTokenizer(),
+            emotion_labels=("joy", "anger"),
+            batch_size=4,
+        ),
+    )
+
+    assert first_dir == second_dir
+    assert first_model.calls == 1
+    assert second_model.calls == 0
+
+
+def test_full_gen_bias_cache_misses_when_classifier_labels_change(tmp_path):
+    config = ScoringConfig(
+        audits=("holistic_bias",),
+        output_root=tmp_path,
+        model_id="example/model",
+        subset_id="tiny",
+        metric="full_gen_bias",
+    )
+    paths = config.paths_for("holistic_bias")
+    _write_full_gen_bias_responses(paths)
+
+    score_audit(
+        "holistic_bias",
+        config,
+        metric=FullGenBiasMetric(
+            classifier_model=FakeGoEmotionsModel(),
+            classifier_tokenizer=FakeGoEmotionsTokenizer(),
+            emotion_labels=("joy", "anger"),
+            batch_size=4,
+        ),
+    )
+    second_model = FakeGoEmotionsModel()
+
+    score_audit(
+        "holistic_bias",
+        config,
+        metric=FullGenBiasMetric(
+            classifier_model=second_model,
+            classifier_tokenizer=FakeGoEmotionsTokenizer(),
+            emotion_labels=("anger", "joy"),
+            batch_size=4,
+        ),
+    )
+
+    assert second_model.calls == 1
+
+
+def test_full_gen_bias_cli_registration_and_artifact_contract():
+    parser = build_scoring_arg_parser()
+    args = parser.parse_args(["--metric", "full_gen_bias"])
+    config = ScoringConfig.from_args(args)
+
+    assert config.metric == "full_gen_bias"
+    assert FullGenBiasMetric.required_artifacts == ("model_responses",)
+
+
+def test_legacy_inline_audit_rejects_response_based_full_gen_bias(tmp_path):
+    frame = pd.DataFrame(
+        [
+            {
+                "text": "A person arrived.",
+                "axis": "gender_and_sex",
+                "bucket": "gender",
+                "descriptor": "person",
+            }
+        ]
+    )
+    config = AuditConfig(
+        audits=("holistic_bias",),
+        output_root=tmp_path,
+        model_id="example/model",
+        metric="full_gen_bias",
+    )
+
+    with pytest.raises(ValueError, match="requires stored model responses"):
+        run_audit("holistic_bias", config, metric=FullGenBiasMetric(), dataset=frame)

@@ -65,12 +65,16 @@ class HolisticBiasAdapter(BaseAdapter):
     def normalize(self, dataset: Any) -> Iterable[FairnessExample]:
         self.validate_columns(dataset)
         for index, row in self._iter_rows(dataset):
+            metadata = {"source_index": index}
+            for column in ("template", "template_key", "template_id", "noun_phrase", "plural_noun_phrase"):
+                if column in row and row[column] is not None:
+                    metadata[column] = row[column]
             yield FairnessExample(
                 text=str(row["text"]),
                 axis=str(row["axis"]),
                 bucket=str(row["bucket"]),
                 descriptor=str(row["descriptor"]),
-                metadata={"source_index": index},
+                metadata=metadata,
             )
 
 

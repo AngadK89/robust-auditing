@@ -151,20 +151,19 @@ def score_audit(
     LOGGER.info("Wrote group summary to %s", paths.metric_group_summary(metric))
     metric.axis_summary(scores).to_csv(paths.metric_axis_summary(metric), index=False)
     LOGGER.info("Wrote axis summary to %s", paths.metric_axis_summary(metric))
-    write_json(
-        paths.metric_metadata(metric),
-        {
-            "audit": audit,
-            "model_id": config.model_id,
-            "metric": metric.name,
-            "metric_class": metric.__class__.__name__,
-            "required_artifacts": list(metric.required_artifacts),
-            "batch_size": config.batch_size,
-            "group_by": list(config.group_by),
-            "subset_id": config.subset_id,
-            "scored_count": len(results),
-        },
-    )
+    metadata = {
+        "audit": audit,
+        "model_id": config.model_id,
+        "metric": metric.name,
+        "metric_class": metric.__class__.__name__,
+        "required_artifacts": list(metric.required_artifacts),
+        "batch_size": config.batch_size,
+        "group_by": list(config.group_by),
+        "subset_id": config.subset_id,
+        "scored_count": len(results),
+    }
+    metadata.update(metric.metadata(scores, context))
+    write_json(paths.metric_metadata(metric), metadata)
     LOGGER.info("Wrote metric metadata to %s", paths.metric_metadata(metric))
     return metric_dir
 
