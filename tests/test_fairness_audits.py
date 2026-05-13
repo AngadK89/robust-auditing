@@ -645,6 +645,25 @@ class FakeGoEmotionsModel:
         return type("Output", (), {"logits": logits})()
 
 
+def test_full_gen_bias_classifier_outputs_multilabel_sigmoid_probabilities():
+    metric = FullGenBiasMetric(
+        classifier_model=FakeGoEmotionsModel(),
+        classifier_tokenizer=FakeGoEmotionsTokenizer(),
+        emotion_labels=("joy", "anger"),
+        batch_size=4,
+    )
+
+    probabilities = metric._classify_responses(
+        ["one", "two"],
+        metric.classifier_model,
+        metric.classifier_tokenizer,
+        metric.emotion_labels,
+        device_map="cpu",
+    )
+
+    assert probabilities[0] == pytest.approx([0.9, 0.1])
+
+
 def _write_full_gen_bias_responses(paths):
     write_jsonl(
         paths.model_responses,
@@ -700,16 +719,8 @@ def test_full_gen_bias_descriptor_censoring_escapes_regex_and_preserves_substrin
     ) == "left-handed left-handed and people left-handed arrived."
 
 
-def test_full_gen_bias_template_key_falls_back_to_holistic_source_row():
+def test_full_gen_bias_template_key_falls_back_to_generic_axis_without_source_load():
     metric = FullGenBiasMetric(emotion_labels=("joy", "anger"))
-    metric._source_row = lambda source_index: {
-        "text": "I like women engineers.",
-        "axis": "gender",
-        "bucket": "women",
-        "descriptor": "woman",
-        "noun_phrase": "woman",
-        "plural_noun_phrase": "women",
-    }
 
     assert metric._resolve_template_key(
         {
@@ -720,7 +731,7 @@ def test_full_gen_bias_template_key_falls_back_to_holistic_source_row():
             "metadata": {"source_index": 12},
         },
         audit="holistic_bias",
-    ) == "I like {descriptor} engineers."
+    ) == "__axis__:gender"
 
 
 def test_full_gen_bias_censors_descriptor_mentions_and_scores_template_average(tmp_path):
@@ -754,6 +765,7 @@ def test_full_gen_bias_censors_descriptor_mentions_and_scores_template_average(t
 
     metadata = json.loads((metric_dir / "metadata.json").read_text(encoding="utf-8"))
     assert metadata["full_gen_bias"] == pytest.approx(320.0)
+    assert metadata["full_gen_bias_mean_emotion"] == pytest.approx(160.0)
     assert metadata["classifier_model_id"] == "SamLowe/roberta-base-go_emotions"
     assert metadata["classifier_label_count"] == 2
     assert metadata["classifier_labels"] == ["joy", "anger"]
@@ -763,6 +775,7 @@ def test_full_gen_bias_censors_descriptor_mentions_and_scores_template_average(t
     axis_summary = pd.read_csv(metric_dir / "axis_summary.csv")
     assert axis_summary.iloc[0]["axis"] == "gender"
     assert axis_summary.iloc[0]["full_gen_bias"] == pytest.approx(320.0)
+    assert axis_summary.iloc[0]["full_gen_bias_mean_emotion"] == pytest.approx(160.0)
 
 
 def test_full_gen_bias_scores_bold_with_generic_axis_template(tmp_path):
@@ -824,6 +837,7 @@ def test_full_gen_bias_scores_bold_with_generic_axis_template(tmp_path):
     assert {row["scores"]["template_key"] for row in rows} == {"__axis__:gender"}
     metadata = json.loads((metric_dir / "metadata.json").read_text(encoding="utf-8"))
     assert metadata["full_gen_bias"] == pytest.approx(320.0)
+    assert metadata["full_gen_bias_mean_emotion"] == pytest.approx(160.0)
 
 
 def test_full_gen_bias_reuses_cache_when_response_hash_matches(tmp_path):
