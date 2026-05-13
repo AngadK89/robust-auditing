@@ -14,6 +14,12 @@ from robust_auditing.medmcqa_rlvr.rewards import (
     format_reward,
     invalid_answer_penalty,
 )
+from robust_auditing.medmcqa_rlvr.sft import (
+    ClassificationSFTConfig,
+    build_arg_parser as build_sft_arg_parser,
+    classification_loss,
+    label_indices,
+)
 from robust_auditing.medmcqa_rlvr.train import TrainConfig, build_arg_parser
 
 
@@ -161,3 +167,40 @@ def test_train_config_defaults_are_single_l40_friendly_and_modifiable():
     assert custom.temperature == 1.1
     assert custom.top_p == 0.9
     assert custom.max_steps == 10
+
+
+def test_sft_classification_loss_uses_last_nonpad_prompt_token():
+    import torch
+
+    logits = torch.zeros(2, 4, 8)
+    attention_mask = torch.tensor([[1, 1, 0, 0], [1, 1, 1, 0]])
+    answer_token_ids = [1, 2, 3, 4]
+    labels = torch.tensor([0, 3])
+
+    logits[0, 1, 1] = 10.0
+    logits[1, 2, 4] = 10.0
+    logits[0, 3, 2] = 10.0
+    logits[1, 3, 1] = 10.0
+
+    loss = classification_loss(logits, attention_mask, labels, answer_token_ids)
+
+    assert float(loss) < 0.001
+
+
+def test_sft_label_indices_and_cli_defaults_match_full_comparison_run():
+    examples = [
+        normalize_row(_row(0, cop=0), source_index=0),
+        normalize_row(_row(1, cop=3), source_index=1),
+    ]
+
+    assert label_indices(examples) == [0, 3]
+
+    parser = build_sft_arg_parser()
+    config = ClassificationSFTConfig.from_args(parser.parse_args([]))
+
+    assert config.train_examples == 10_000
+    assert config.eval_examples == 2_000
+    assert config.batch_size == 32
+    assert config.eval_batch_size == 32
+    assert config.num_train_epochs == 3.0
+    assert config.learning_rate == 1e-4

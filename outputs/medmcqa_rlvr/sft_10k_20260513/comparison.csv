@@ -1,0 +1,3 @@
+model,forced_choice_accuracy
+baseline,0.2705
+finetuned,0.392

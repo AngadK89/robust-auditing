@@ -9,8 +9,9 @@ Each guide below is meant to be used as the entry point for one workflow.
   fingerprints with LLMmap, ProFLingo, and TRAP.
 - [Fairness Baseline Audits](docs/FAIRNESS_BASELINE_AUDITS.md): run
   likelihood-based HolisticBias and BOLD baseline audits.
-- [MedMCQA GRPO/RLVR](docs/MEDMCQA_RLVR.md): fine-tune OLMo-2-1B-Instruct
-  on answer-only medical MCQA rewards and benchmark baseline vs adapter.
+- [MedMCQA GRPO/RLVR and SFT](docs/MEDMCQA_RLVR.md): fine-tune
+  OLMo-2-1B-Instruct on answer-only medical MCQA objectives and benchmark
+  baseline vs adapter.
 
 ## Shared Setup
 This repository pins the three fingerprinting codebases used for fingerprint

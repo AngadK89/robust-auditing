@@ -1,4 +1,4 @@
-# MedMCQA GRPO/RLVR
+# MedMCQA GRPO/RLVR and Classification SFT
 
 This workflow fine-tunes `allenai/OLMo-2-0425-1B-Instruct` on
 `openlifescienceai/medmcqa` with answer-only GRPO/RLVR. The model is trained to
@@ -12,7 +12,7 @@ The pipeline intentionally does not train explanations. MedMCQA provides a
 verifiable answer label, which is the clean reward signal for GRPO; explanation
 quality is not directly verifiable from the dataset.
 
-## Full Run
+## GRPO Full Run
 
 Run from the repository root:
 
@@ -36,6 +36,32 @@ env CUDA_VISIBLE_DEVICES=0 \
 
 For an L40, start with `--batch-size 8 --num-generations 8`. If CUDA memory is
 tight, use `--batch-size 4 --num-generations 8`.
+
+## Classification SFT Run
+
+The TAP-style classification SFT runner optimizes the answer-token logits
+directly with cross-entropy. It reads the logits at the last non-padding prompt
+token and trains only over the `A`, `B`, `C`, and `D` token IDs.
+
+```bash
+env CUDA_VISIBLE_DEVICES=0 \
+  HF_HOME=/vol/gpudata/ak3123-fyp/.cache/huggingface \
+  HF_HUB_CACHE=/vol/gpudata/ak3123-fyp/.cache/huggingface/hub \
+  HF_DATASETS_CACHE=/vol/gpudata/ak3123-fyp/.cache/huggingface/datasets \
+  TMPDIR=/vol/gpudata/ak3123-fyp/.cache/tmp \
+  venv/bin/python scripts/medmcqa/run_medmcqa_sft.py \
+    --train-examples 10000 \
+    --eval-examples 2000 \
+    --batch-size 32 \
+    --eval-batch-size 32 \
+    --num-train-epochs 3 \
+    --learning-rate 1e-4 \
+    --output-dir outputs/medmcqa_rlvr/olmo2_1b_medmcqa_sft
+```
+
+This objective is best compared with `forced_choice_accuracy`. It may not
+improve greedy generation parse rate, because it trains classification logits
+rather than supervised answer completions.
 
 ## Metrics
 
