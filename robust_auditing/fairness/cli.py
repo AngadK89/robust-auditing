@@ -15,8 +15,11 @@ from robust_auditing.fairness.adapters import (
     FairnessExample,
     HolisticBiasAdapter,
 )
+from robust_auditing.fairness.artifacts import MODEL_RESPONSES
 from robust_auditing.fairness.metrics import (
+    BoldNegativeHarmDisparityMetric,
     FairnessMetric,
+    FullGenBiasMetric,
     LikelihoodBiasMetric,
     records_to_frame,
 )
@@ -28,6 +31,8 @@ AUDIT_ADAPTERS: dict[str, type[BaseAdapter]] = {
 }
 METRIC_FACTORIES = {
     "likelihood_bias": LikelihoodBiasMetric,
+    "full_gen_bias": FullGenBiasMetric,
+    "bold_negative_harm_disparity": BoldNegativeHarmDisparityMetric,
 }
 
 
@@ -176,6 +181,11 @@ def run_audit(
 
     if metric is None:
         metric = build_metric(config, model=model, tokenizer=tokenizer)
+    if MODEL_RESPONSES in metric.required_artifacts:
+        raise ValueError(
+            f"{metric.name} requires stored model responses; use scripts/fairness/score_fairness_metrics.py "
+            "after generating responses."
+        )
     class InlineMetricContext:
         def load_examples(self) -> list[FairnessExample]:
             return examples

@@ -4,7 +4,7 @@ title: Wiki Index
 
 # Wiki Index
 
-*This index is automatically maintained. Last updated: 2026-05-09T17:05:00Z*
+*This index is automatically maintained. Last updated: 2026-05-13T20:03:56Z*
 
 ## Concepts
 
@@ -23,10 +23,12 @@ title: Wiki Index
 
 ## Skills
 - [[projects/robust-auditing/skills/build-fingerprints]] - Build LLMmap, ProFLingo, and TRAP fingerprints for OLMo2 models. ( #fingerprinting #scripts #olmo2 #workflow)
+- [[projects/robust-auditing/skills/run-fairness-baseline-audits]] - Sample HolisticBias/BOLD subsets, generate model responses, and score registered fairness metrics. ( #fairness #auditing #datasets #workflow)
 - [[projects/robust-auditing/skills/verify-fingerprint-lineage]] - Verify reference fingerprints across configured OLMo2 lineage targets. ( #fingerprinting #verification #lineage #workflow)
 
 ## References
 - [[references/are-robust-llm-fingerprints-adversarially-robust]] - Paper arguing that LLM fingerprint evaluations need adaptive-adversary threat models. ( #paper #fingerprinting #adversarial #robustness)
+- [[references/bold-paper]] - Original BOLD paper defining Wikipedia-derived open-ended generation prompts and generated-text bias metrics. ( #paper #fairness #bias #generation)
 - [[references/copyright-protection-for-llms-survey]] - Survey of LLM copyright protection, watermarking, fingerprinting, transfer, and removal. ( #paper #survey #copyright #fingerprinting)
 - [[references/holisticbias-paper]] - Paper introducing HolisticBias demographic descriptors and bias-measurement prompts. ( #paper #fairness #bias #dataset)
 - [[projects/robust-auditing/references/llmmap-upstream-and-patches]] - How upstream LLMmap builds templates, verifies models, and what local patches change. ( #llmmap #fingerprinting #patches #chat-templates)
@@ -44,3 +46,4 @@ title: Wiki Index
 - [[projects/robust-auditing/concepts/combined-robustness-thesis]] - How fingerprint radius constrains fairwashing-oriented targeted fine-tuning. ( #thesis #fingerprinting #auditing #fine-tuning)
 - [[projects/robust-auditing/concepts/repository-architecture]] - How the repo structure maps to fingerprint robustness and audit robustness goals. ( #repository #architecture #fingerprinting #auditing)
 - [[projects/robust-auditing/concepts/repo-implementation-state]] - Current implemented, documented, missing, and ambiguous functionality. ( #repository #implementation #caveats #roadmap)
+- [[projects/robust-auditing/concepts/targeted-fine-tuning-architecture]] - Targeted fine-tuning design for mixing audit anchors, preference data, and off-audit objectives. ( #fine-tuning #alignment #fairness #architecture)
