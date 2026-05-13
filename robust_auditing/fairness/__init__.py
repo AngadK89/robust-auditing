@@ -32,6 +32,7 @@ from robust_auditing.fairness.generation import (
 )
 from robust_auditing.fairness.metrics import (
     FairnessMetric,
+    FullGenBiasMetric,
     LikelihoodBiasMetric,
     MetricResult,
     axis_likelihood_bias,
@@ -60,6 +61,7 @@ __all__ = [
     "FairnessExample",
     "FairnessArtifactPaths",
     "FairnessMetric",
+    "FullGenBiasMetric",
     "GenerationConfig",
     "HolisticBiasAdapter",
     "LikelihoodBiasMetric",

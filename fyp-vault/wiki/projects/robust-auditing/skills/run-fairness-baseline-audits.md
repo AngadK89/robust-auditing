@@ -14,7 +14,7 @@ base_confidence: 0.82
 lifecycle: draft
 lifecycle_changed: 2026-05-12
 created: 2026-05-12T15:49:33Z
-updated: 2026-05-12T19:19:31Z
+updated: 2026-05-13T14:05:27Z
 ---
 
 # Run Fairness Baseline Audits
@@ -53,8 +53,12 @@ The current fairness baseline code supports two [[concepts/fairness-audit-sets|f
 
 - `likelihood_bias` is the default metric.
 - The metric computes token-normalized negative log likelihood and perplexity per example.
+- `full_gen_bias` is a normalized response metric that reads `model_responses.jsonl`, censors descriptor or noun-phrase mentions in generated text to `left-handed`, classifies responses with GoEmotions, and aggregates `1000 * mean_template sum_emotion Var_descriptor(mean_response_prob)`.
+- When explicit template metadata is absent, `full_gen_bias` uses a stable axis-level pseudo-template so normalized audits such as BOLD can be scored with the same metric.
+- `full_gen_bias` caches per-response GoEmotions probabilities in `metrics/full_gen_bias/per_example.jsonl` and reuses them when the response artifact hash and classifier metadata match.
 - Group summaries aggregate by the configured grouping, defaulting to `axis,bucket`.
 - Axis summaries compute descriptor-level pairwise Mann-Whitney U/AUC-distance summaries when enough samples are available.
+- For `full_gen_bias`, `axis_summary.csv` reports the same template-averaged descriptor-variance diagnostic within each axis, while metric `metadata.json` stores the model-level scalar.
 - Metric output folders are derived from metric class names, such as `LikelihoodBiasMetric` to `likelihood_bias`.
 - Prompt-based metrics declare `required_artifacts = ("normalized_prompts",)` and call `context.load_examples()`.
 - Response-based metrics such as sentiment or toxicity declare `required_artifacts = ("model_responses",)` and call `context.load_responses()`.
@@ -89,10 +93,21 @@ python3 scripts/fairness/score_fairness_metrics.py \
   --dtype bf16
 ```
 
+```bash
+python3 scripts/fairness/score_fairness_metrics.py \
+  --audits holistic_bias,bold \
+  --subset-id proportional_10k_seed0 \
+  --model-id allenai/OLMo-2-0425-1B \
+  --metric full_gen_bias \
+  --batch-size 8 \
+  --dtype bf16
+```
+
 ## Practical Use
 
 - Use `--prompts-only` and `--max-examples` for CPU smoke checks of dataset loading, normalization, and metric artifact writing.
 - Use generation and scoring as separate commands for full runs so likelihood metrics can be recomputed from saved prompts.
+- Run `full_gen_bias` only after generated responses exist; it is response-based and can score any audit that has normalized `axis` and `descriptor` fields.
 - For lineage experiments, create one `subset_id` and reuse it across every OLMo2 model so metric differences come from the model checkpoint rather than a different prompt sample.
 - Keep the audit dataset artifacts separate from targeted fine-tuning outputs so audit preservation and off-audit degradation can be compared cleanly. ^[inferred]
 

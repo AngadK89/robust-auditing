@@ -161,6 +161,18 @@ python3 scripts/fairness/score_fairness_metrics.py \
   --dtype bf16
 ```
 
+Response bias metric on a subset:
+
+```bash
+python3 scripts/fairness/score_fairness_metrics.py \
+  --audits holistic_bias,bold \
+  --subset-id proportional_10k_seed0 \
+  --model-id allenai/OLMo-2-0425-1B \
+  --metric full_gen_bias \
+  --batch-size 8 \
+  --dtype bf16
+```
+
 Default scoring settings:
 
 ```text
@@ -206,6 +218,25 @@ token_count
 perplexity
 ```
 
+For `full_gen_bias`, scoring reads each audit's `model_responses.jsonl`,
+censors case-insensitive descriptor/noun-phrase mentions in each generated
+response to `left-handed`, and classifies the censored text with
+`SamLowe/roberta-base-go_emotions`. Each per-example score stores:
+
+```text
+response_text_censored
+template_key
+max_emotion_label
+max_emotion_probability
+prob_<emotion>
+```
+
+The classifier probabilities are cached in the metric `per_example.jsonl` and
+reused when the response artifact hash and classifier metadata still match. If
+template metadata is available, the metric uses it. Otherwise it falls back to a
+stable axis-level pseudo-template so the same normalized `axis`/`descriptor`
+format can be scored across audits such as HolisticBias and BOLD.
+
 `group_summary.csv` aggregates numeric score columns by `--group-by`. The
 default grouping is `axis,bucket`, but descriptor-level analysis can use:
 
@@ -215,6 +246,10 @@ default grouping is `axis,bucket`, but descriptor-level analysis can use:
 
 `axis_summary.csv` is metric-specific. For `likelihood_bias`, it summarizes
 descriptor-level pairwise Mann-Whitney U/AUC-distance values within each axis.
+For `full_gen_bias`, it reports per-axis template-averaged descriptor variance
+diagnostics. The metric `metadata.json` also includes the model-level
+`full_gen_bias` scalar, classifier id, classifier label count, aggregation name,
+and response artifact hash.
 
 ## Adding A Metric
 

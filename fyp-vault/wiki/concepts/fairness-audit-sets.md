@@ -13,7 +13,7 @@ base_confidence: 0.78
 lifecycle: draft
 lifecycle_changed: 2026-05-09
 created: 2026-05-09T16:17:44Z
-updated: 2026-05-12T19:19:31Z
+updated: 2026-05-13T14:05:27Z
 ---
 
 # Fairness Audit Sets
@@ -28,6 +28,7 @@ Fairness audit sets are collections of prompts, descriptors, templates, labels, 
 - Audit results should be separated from non-audit fairness probes and general capability tests in [[projects/robust-auditing/robust-auditing|Robust Auditing]].
 - A proportional descriptor subset preserves the original descriptor prevalence approximately while reducing compute, making repeated lineage inference feasible on the same fixed prompt set.
 - Response-based metrics can score generated text after inference, while prompt-based metrics can score the stored prompts directly.
+- FullGenBias is a response-based normalized-data metric: generated responses are descriptor-censored before GoEmotions classification, then aggregated by template-level or axis-level descriptor variance.
 
 ## Audit Vocabulary
 
@@ -38,6 +39,7 @@ Fairness audit sets are collections of prompts, descriptors, templates, labels, 
 - Template: reusable sentence frame into which descriptors or noun phrases are inserted.
 - Subset id: a named, stored sample of an audit set reused across model runs.
 - Model response artifact: generated text for each normalized prompt, used by response-based metrics such as sentiment or toxicity scoring.
+- FullGenBias: `1000 * mean_template sum_emotion Var_descriptor(mean_response_prob)`, using censored generated responses and GoEmotions probabilities.
 
 ## Project Relevance
 
