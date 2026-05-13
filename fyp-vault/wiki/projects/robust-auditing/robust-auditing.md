@@ -3,7 +3,8 @@ title: Robust Auditing
 category: project
 tags: [llm, auditing, fingerprinting, fairness]
 sources: ["/Users/angadkalra/Desktop/robust-auditing/fyp-vault/Configuration.md", "/Users/angadkalra/Desktop/robust-auditing/.codex/AGENTS.md", "/Users/angadkalra/Desktop/robust-auditing/README.md", "/Users/angadkalra/Desktop/robust-auditing/docs/FAIRNESS_CLI_WORKFLOW.md", "/Users/angadkalra/Desktop/robust-auditing/scripts/verification/verify_fingerprint_lineage.py", "user-clarification:2026-05-09T16:37:58Z"]
-summary: Project overview for testing whether fixed fairness audits and black-box LLM fingerprints miss targeted model changes.
+summary: >-
+  Project overview for testing whether fixed fairness audits and black-box LLM fingerprints miss targeted model changes.
 provenance:
   extracted: 0.74
   inferred: 0.26
@@ -12,7 +13,7 @@ base_confidence: 0.64
 lifecycle: draft
 lifecycle_changed: 2026-05-09
 created: 2026-05-09T16:17:44Z
-updated: 2026-05-12T19:19:31Z
+updated: 2026-05-13T20:03:56Z
 ---
 
 # Robust Auditing
@@ -26,7 +27,7 @@ This project studies whether LLM owners can change a model's behavior while stil
 - A useful experimental outcome is a "fine-tuning radius": the amount and style of update that still leaves a model inside the same fingerprint neighborhood. ^[inferred]
 - The project should keep audit, non-audit, capability, and fingerprinting evaluations separate so it can measure which guardrail failed.
 - The repository implements the fingerprinting half with construction scripts, lineage configs, verifier code, tests, and verification artifacts.
-- The fairness audit side now has CLI tools for proportional HolisticBias/BOLD subset sampling, deterministic response generation, and registered metric scoring.
+- The fairness audit side now has CLI tools for proportional HolisticBias/BOLD subset sampling, deterministic response generation, and registered metric scoring, including a BOLD paper-derived generated-text harm disparity metric.
 - The thesis is explicitly two-sided: fingerprints are too robust in model space, and audits are too robust in parameter space.
 - The fingerprint robustness radius defines the allowed boundary for targeted fine-tuning: the project wants to show a model can be poisoned while retaining audit accuracy and still remaining inside the fingerprint-equivalence region.
 - Generic model support for the fingerprinting scripts should mean any Hugging Face `AutoModelForCausalLM`.
@@ -48,6 +49,7 @@ This project studies whether LLM owners can change a model's behavior while stil
 - [[concepts/fingerprint-removal-and-adversarial-robustness]] - erasure and adaptive attacks against fingerprints.
 - [[concepts/fairness-audit-sets]] - fixed benchmark sets used to audit bias and fairness.
 - [[concepts/holistic-bias]] - the main demographic descriptor audit set in this project.
+- [[references/bold-paper]] - the source paper for BOLD open-ended generation prompts and generated-text bias metrics.
 - [[entities/proflingo]] and [[entities/llmmap]] - specific fingerprinting systems.
 - [[entities/trap]] - the TRAP suffix-based black-box identity verification method used by this repo.
 
@@ -62,6 +64,7 @@ This project studies whether LLM owners can change a model's behavior while stil
 ## Sources
 
 - [[references/holisticbias-paper]]
+- [[references/bold-paper]]
 - [[references/proflingo-paper]]
 - [[references/copyright-protection-for-llms-survey]]
 - [[references/are-robust-llm-fingerprints-adversarially-robust]]
