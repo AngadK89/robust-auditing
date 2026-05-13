@@ -55,6 +55,12 @@ Secondary metrics:
 The MedMCQA Hugging Face `test` split has hidden labels (`cop=-1`), so the
 pipeline samples the labeled `validation` split for benchmark accuracy.
 
+To evaluate a saved LoRA adapter on the same shortlisted eval IDs alongside
+ProFLingo, HolisticBias, and BOLD, use
+[`ADAPTER_EVALUATION_SUITE.md`](ADAPTER_EVALUATION_SUITE.md). That suite
+reconstructs the eval set from `eval_sample_ids.jsonl` by MedMCQA row id so the
+adapter score uses the same examples as the original run.
+
 ## Outputs
 
 The output directory contains:

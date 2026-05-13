@@ -2,7 +2,7 @@
 title: Robust Auditing
 category: project
 tags: [llm, auditing, fingerprinting, fairness]
-sources: ["/Users/angadkalra/Desktop/robust-auditing/fyp-vault/Configuration.md", "/Users/angadkalra/Desktop/robust-auditing/.codex/AGENTS.md", "/Users/angadkalra/Desktop/robust-auditing/README.md", "/Users/angadkalra/Desktop/robust-auditing/docs/FAIRNESS_CLI_WORKFLOW.md", "/Users/angadkalra/Desktop/robust-auditing/scripts/verification/verify_fingerprint_lineage.py", "user-clarification:2026-05-09T16:37:58Z"]
+sources: ["/Users/angadkalra/Desktop/robust-auditing/fyp-vault/Configuration.md", "/Users/angadkalra/Desktop/robust-auditing/.codex/AGENTS.md", "/Users/angadkalra/Desktop/robust-auditing/README.md", "/Users/angadkalra/Desktop/robust-auditing/docs/FAIRNESS_CLI_WORKFLOW.md", "/Users/angadkalra/Desktop/robust-auditing/docs/ADAPTER_EVALUATION_SUITE.md", "/Users/angadkalra/Desktop/robust-auditing/scripts/verification/verify_fingerprint_lineage.py", "user-clarification:2026-05-09T16:37:58Z"]
 summary: >-
   Project overview for testing whether fixed fairness audits and black-box LLM fingerprints miss targeted model changes.
 provenance:
@@ -13,7 +13,7 @@ base_confidence: 0.64
 lifecycle: draft
 lifecycle_changed: 2026-05-09
 created: 2026-05-09T16:17:44Z
-updated: 2026-05-13T20:03:56Z
+updated: 2026-05-13T22:43:34Z
 ---
 
 # Robust Auditing
@@ -28,6 +28,7 @@ This project studies whether LLM owners can change a model's behavior while stil
 - The project should keep audit, non-audit, capability, and fingerprinting evaluations separate so it can measure which guardrail failed.
 - The repository implements the fingerprinting half with construction scripts, lineage configs, verifier code, tests, and verification artifacts.
 - The fairness audit side now has CLI tools for proportional HolisticBias/BOLD subset sampling, deterministic response generation, and registered metric scoring, including a BOLD paper-derived generated-text harm disparity metric.
+- The adapter evaluation suite loads an OLMo-2-1B-Instruct LoRA adapter and runs fixed ProFLingo, MedMCQA, HolisticBias, and BOLD evaluations into one per-adapter artifact tree.
 - The thesis is explicitly two-sided: fingerprints are too robust in model space, and audits are too robust in parameter space.
 - The fingerprint robustness radius defines the allowed boundary for targeted fine-tuning: the project wants to show a model can be poisoned while retaining audit accuracy and still remaining inside the fingerprint-equivalence region.
 - Generic model support for the fingerprinting scripts should mean any Hugging Face `AutoModelForCausalLM`.
@@ -39,6 +40,7 @@ This project studies whether LLM owners can change a model's behavior while stil
 - [[projects/robust-auditing/skills/build-fingerprints]] - how to build LLMmap, ProFLingo, and TRAP fingerprints.
 - [[projects/robust-auditing/skills/verify-fingerprint-lineage]] - how lineage YAML is expanded and verified.
 - [[projects/robust-auditing/skills/run-fairness-baseline-audits]] - how audit subsets, responses, and metrics are generated and stored.
+- [[projects/robust-auditing/skills/evaluate-lora-adapters]] - how to evaluate a LoRA adapter with fixed fingerprint, MedMCQA, and fairness metrics.
 - [[projects/robust-auditing/references/current-olmo2-fingerprint-results]] - what the checked-in verification artifacts show.
 - [[projects/robust-auditing/concepts/repo-implementation-state]] - caveats about present versus expected functionality.
 

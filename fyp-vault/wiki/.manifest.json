@@ -2,7 +2,7 @@
   "version": 1,
   "stats": {
     "total_sources_ingested": 14,
-    "total_pages": 30
+    "total_pages": 31
   },
   "sources": {
     "/Users/angadkalra/Desktop/robust-auditing/fyp-vault/sources/raw_sources/2509.26598v1.pdf": {
@@ -230,6 +230,24 @@
         "log.md"
       ]
     },
+    "/Users/angadkalra/Desktop/robust-auditing/docs/ADAPTER_EVALUATION_SUITE.md": {
+      "ingested_at": "2026-05-13T22:43:34Z",
+      "size_bytes": 0,
+      "modified_at": "2026-05-13T22:43:34Z",
+      "content_hash": "git:e6db2d6+working-tree-adapter-suite",
+      "source_type": "document",
+      "project": "robust-auditing",
+      "pages_created": [
+        "projects/robust-auditing/skills/evaluate-lora-adapters.md"
+      ],
+      "pages_updated": [
+        "projects/robust-auditing/robust-auditing.md",
+        "projects/robust-auditing/skills/run-fairness-baseline-audits.md",
+        "index.md",
+        "hot.md",
+        "log.md"
+      ]
+    },
     "https://arxiv.org/pdf/2101.11718": {
       "ingested_at": "2026-05-13T20:03:56Z",
       "size_bytes": 0,
@@ -255,8 +273,8 @@
   "projects": {
     "robust-auditing": {
       "source_cwd": "/Users/angadkalra/Desktop/robust-auditing",
-      "last_synced": "2026-05-13T20:21:00Z",
-      "last_commit_synced": "07335bb",
+      "last_synced": "2026-05-13T22:43:34Z",
+      "last_commit_synced": "e6db2d6",
       "pages_in_vault": [
         "projects/robust-auditing/robust-auditing.md",
         "projects/robust-auditing/concepts/repository-architecture.md",
@@ -264,6 +282,7 @@
         "projects/robust-auditing/concepts/combined-robustness-thesis.md",
         "projects/robust-auditing/concepts/targeted-fine-tuning-architecture.md",
         "projects/robust-auditing/skills/build-fingerprints.md",
+        "projects/robust-auditing/skills/evaluate-lora-adapters.md",
         "projects/robust-auditing/skills/run-fairness-baseline-audits.md",
         "projects/robust-auditing/skills/verify-fingerprint-lineage.md",
         "projects/robust-auditing/references/current-olmo2-fingerprint-results.md",

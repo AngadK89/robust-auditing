@@ -4,7 +4,7 @@ title: Wiki Index
 
 # Wiki Index
 
-*This index is automatically maintained. Last updated: 2026-05-13T20:03:56Z*
+*This index is automatically maintained. Last updated: 2026-05-13T22:43:34Z*
 
 ## Concepts
 
@@ -23,6 +23,7 @@ title: Wiki Index
 
 ## Skills
 - [[projects/robust-auditing/skills/build-fingerprints]] - Build LLMmap, ProFLingo, and TRAP fingerprints for OLMo2 models. ( #fingerprinting #scripts #olmo2 #workflow)
+- [[projects/robust-auditing/skills/evaluate-lora-adapters]] - Evaluate one PEFT LoRA adapter with fixed ProFLingo, MedMCQA, HolisticBias, and BOLD settings. ( #evaluation #fine-tuning #fairness #fingerprinting)
 - [[projects/robust-auditing/skills/run-fairness-baseline-audits]] - Sample HolisticBias/BOLD subsets, generate model responses, and score registered fairness metrics. ( #fairness #auditing #datasets #workflow)
 - [[projects/robust-auditing/skills/verify-fingerprint-lineage]] - Verify reference fingerprints across configured OLMo2 lineage targets. ( #fingerprinting #verification #lineage #workflow)
 
