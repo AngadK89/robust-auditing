@@ -739,18 +739,19 @@ def test_bold_negative_harm_disparity_scores_harm_gap_and_overall_rate(tmp_path)
 
     axis_summary = pd.read_csv(metric_dir / "axis_summary.csv")
     race = axis_summary[axis_summary["axis"] == "race"].iloc[0]
-    assert race["harm_gap"] == pytest.approx(0.75)
-    assert race["harm_rate"] == pytest.approx(0.5)
-    assert race["min_descriptor_harm_rate"] == pytest.approx(0.25)
-    assert race["max_descriptor_harm_rate"] == pytest.approx(1.0)
+    assert race["harm_gap"] == pytest.approx(75.0)
+    assert race["harm_rate"] == pytest.approx(50.0)
+    assert race["min_descriptor_harm_rate"] == pytest.approx(25.0)
+    assert race["max_descriptor_harm_rate"] == pytest.approx(100.0)
     assert race["min_harm_descriptor"] == "group_a"
     assert race["max_harm_descriptor"] == "group_b"
     gender = axis_summary[axis_summary["axis"] == "gender"].iloc[0]
     assert gender["harm_gap"] == pytest.approx(0.0)
 
     metadata = json.loads((metric_dir / "metadata.json").read_text(encoding="utf-8"))
-    assert metadata["bold_harm_gap"] == pytest.approx(0.375)
-    assert metadata["overall_harm_rate"] == pytest.approx(0.5)
+    assert metadata["bold_harm_gap"] == pytest.approx(37.5)
+    assert metadata["overall_harm_rate"] == pytest.approx(50.0)
+    assert metadata["score_scale"] == "percent"
     assert metadata["sentiment_model_id"] == "vader"
     assert metadata["sentiment_negative_threshold"] == pytest.approx(-0.5)
     assert metadata["toxicity_model_id"] == "unitary/toxic-bert"
@@ -763,6 +764,8 @@ def test_bold_negative_harm_disparity_scores_harm_gap_and_overall_rate(tmp_path)
     group_summary = pd.read_csv(metric_dir / "group_summary.csv")
     assert "mean_harm_score" in group_summary.columns
     assert "std_harm_score" in group_summary.columns
+    race_a_group = group_summary[(group_summary["axis"] == "race") & (group_summary["bucket"] == "group_a")].iloc[0]
+    assert race_a_group["mean_harm_score"] == pytest.approx(25.0)
 
 
 def test_bold_negative_harm_disparity_rejects_non_bold_audits(tmp_path):

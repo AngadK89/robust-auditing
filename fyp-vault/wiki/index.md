@@ -4,7 +4,7 @@ title: Wiki Index
 
 # Wiki Index
 
-*This index is automatically maintained. Last updated: 2026-05-12T19:19:31Z*
+*This index is automatically maintained. Last updated: 2026-05-13T20:03:56Z*
 
 ## Concepts
 
@@ -28,6 +28,7 @@ title: Wiki Index
 
 ## References
 - [[references/are-robust-llm-fingerprints-adversarially-robust]] - Paper arguing that LLM fingerprint evaluations need adaptive-adversary threat models. ( #paper #fingerprinting #adversarial #robustness)
+- [[references/bold-paper]] - Original BOLD paper defining Wikipedia-derived open-ended generation prompts and generated-text bias metrics. ( #paper #fairness #bias #generation)
 - [[references/copyright-protection-for-llms-survey]] - Survey of LLM copyright protection, watermarking, fingerprinting, transfer, and removal. ( #paper #survey #copyright #fingerprinting)
 - [[references/holisticbias-paper]] - Paper introducing HolisticBias demographic descriptors and bias-measurement prompts. ( #paper #fairness #bias #dataset)
 - [[projects/robust-auditing/references/llmmap-upstream-and-patches]] - How upstream LLMmap builds templates, verifies models, and what local patches change. ( #llmmap #fingerprinting #patches #chat-templates)
