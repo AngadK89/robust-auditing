@@ -13,6 +13,7 @@ from robust_auditing.evaluation.adapter_suite import (
     config_from_args,
     derive_run_id,
     load_medmcqa_eval_examples,
+    run_medmcqa_eval,
     run_adapter_suite,
     sanitize_run_id,
     score_fairness_metrics,
@@ -136,6 +137,50 @@ def test_load_medmcqa_eval_examples_raises_for_missing_ids(tmp_path: Path):
 
     with pytest.raises(ValueError, match="missing"):
         load_medmcqa_eval_examples(eval_ids, rows=[_medmcqa_row(0)])
+
+
+def test_run_medmcqa_eval_is_adapter_only_and_does_not_recompute_baseline(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
+    config = _ready_config(tmp_path)
+    calls: list[str] = []
+
+    class DisabledAdapterModel:
+        def __enter__(self):
+            calls.append("disable_enter")
+
+        def __exit__(self, exc_type, exc, tb):
+            calls.append("disable_exit")
+
+    class FakeModel:
+        def disable_adapter(self):
+            return DisabledAdapterModel()
+
+    def fake_load_examples(eval_ids, *, dataset_id, split, rows=None):
+        assert eval_ids == config.medmcqa_eval_ids
+        return ["example"]
+
+    def fake_evaluate(examples, model, tokenizer, batch_size):
+        assert examples == ["example"]
+        calls.append("baseline" if calls and calls[-1] == "disable_enter" else "adapter")
+        return calls[-1]
+
+    def fake_summarize(result):
+        return {"forced_choice_accuracy": 0.25 if result == "baseline" else 0.5}
+
+    monkeypatch.setattr(adapter_suite, "load_medmcqa_eval_examples", fake_load_examples)
+    monkeypatch.setattr(adapter_suite, "evaluate_forced_choice", fake_evaluate)
+    monkeypatch.setattr(adapter_suite, "summarize_forced_choice", fake_summarize)
+    monkeypatch.setattr(adapter_suite, "write_jsonl", lambda path, rows: None)
+    monkeypatch.setattr(adapter_suite, "evaluate_generation", lambda *args, **kwargs: [])
+    monkeypatch.setattr(adapter_suite, "summarize_generation", lambda _rows: {"generated_accuracy": 0.0})
+
+    metrics = run_medmcqa_eval(config, FakeModel(), tokenizer="tokenizer")
+
+    assert calls == ["adapter"]
+    assert "instruct_baseline_forced_choice_accuracy" not in metrics
+    assert metrics["adapter_forced_choice_accuracy"] == 0.5
+    assert metrics["forced_choice_accuracy"] == 0.5
 
 
 def test_run_adapter_suite_orchestrates_fixed_components(tmp_path: Path):

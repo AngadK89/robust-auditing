@@ -2,7 +2,7 @@
   "version": 1,
   "stats": {
     "total_sources_ingested": 14,
-    "total_pages": 31
+    "total_pages": 32
   },
   "sources": {
     "/Users/angadkalra/Desktop/robust-auditing/fyp-vault/sources/raw_sources/2509.26598v1.pdf": {
@@ -268,12 +268,29 @@
         "hot.md",
         "log.md"
       ]
+    },
+    "/Users/angadkalra/Desktop/robust-auditing/docs/MEDMCQA_POISONING_EXPERIMENTS.md": {
+      "ingested_at": "2026-05-14T18:42:07Z",
+      "size_bytes": 0,
+      "modified_at": "2026-05-14T18:42:07Z",
+      "content_hash": "git:874b4c2+working-tree-medmcqa-poisoning",
+      "source_type": "document",
+      "project": "robust-auditing",
+      "pages_created": [
+        "projects/robust-auditing/skills/run-medmcqa-poisoning-experiments.md"
+      ],
+      "pages_updated": [
+        "projects/robust-auditing/robust-auditing.md",
+        "index.md",
+        "hot.md",
+        "log.md"
+      ]
     }
   },
   "projects": {
     "robust-auditing": {
       "source_cwd": "/Users/angadkalra/Desktop/robust-auditing",
-      "last_synced": "2026-05-13T22:43:34Z",
+      "last_synced": "2026-05-14T18:42:07Z",
       "last_commit_synced": "e6db2d6",
       "pages_in_vault": [
         "projects/robust-auditing/robust-auditing.md",
@@ -283,6 +300,7 @@
         "projects/robust-auditing/concepts/targeted-fine-tuning-architecture.md",
         "projects/robust-auditing/skills/build-fingerprints.md",
         "projects/robust-auditing/skills/evaluate-lora-adapters.md",
+        "projects/robust-auditing/skills/run-medmcqa-poisoning-experiments.md",
         "projects/robust-auditing/skills/run-fairness-baseline-audits.md",
         "projects/robust-auditing/skills/verify-fingerprint-lineage.md",
         "projects/robust-auditing/references/current-olmo2-fingerprint-results.md",

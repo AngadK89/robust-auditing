@@ -232,6 +232,7 @@ def run_medmcqa_eval(config: AdapterSuiteConfig, model: Any, tokenizer: Any) -> 
     forced_path = config.medmcqa_output_dir / "forced_choice_predictions.jsonl"
     write_jsonl(forced_path, (result.to_record() for result in forced))
     metrics = summarize_forced_choice(forced)
+    metrics["adapter_forced_choice_accuracy"] = metrics["forced_choice_accuracy"]
     metrics["forced_choice_predictions"] = str(forced_path)
     metrics["eval_ids"] = str(config.medmcqa_eval_ids)
 

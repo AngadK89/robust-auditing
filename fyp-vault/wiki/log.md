@@ -18,3 +18,4 @@ title: Wiki Log
 - [2026-05-13T20:03:56Z] WIKI_UPDATE project=robust-auditing pages_updated=7 pages_created=1 source_cwd=/Users/angadkalra/Desktop/robust-auditing topic=bold-negative-harm-disparity
 - [2026-05-13T20:21:00Z] WIKI_UPDATE project=robust-auditing pages_updated=4 pages_created=0 source_cwd=/Users/angadkalra/Desktop/robust-auditing topic=bold-harm-percent-scale
 - [2026-05-13T22:43:34Z] WIKI_UPDATE project=robust-auditing pages_updated=4 pages_created=1 source_cwd=/Users/angadkalra/Desktop/robust-auditing topic=adapter-evaluation-suite
+- [2026-05-14T18:42:07Z] WIKI_UPDATE project=robust-auditing pages_updated=4 pages_created=1 source_cwd=/Users/angadkalra/Desktop/robust-auditing topic=medmcqa-poisoning-l40-plan
