@@ -1,0 +1,23 @@
+{
+  "adapter_dir": "outputs/medmcqa_rlvr/grpo_10k_ft/adapter",
+  "base_model_id": "allenai/OLMo-2-0425-1B-Instruct",
+  "classifier_batch_size": 16,
+  "device_map": "auto",
+  "dtype": "bf16",
+  "eval_batch_size": 8,
+  "fairness_batch_size": 16,
+  "fairness_output_root": "artifacts/adapter_evals/grpo_10k_ft/fairness",
+  "fairness_subset_id": "10k_seed0",
+  "max_new_tokens": 64,
+  "medmcqa_dataset_id": "openlifescienceai/medmcqa",
+  "medmcqa_eval_ids": "outputs/medmcqa_rlvr/grpo_10k_ft/eval_sample_ids.jsonl",
+  "medmcqa_split": "validation",
+  "output_dir": "artifacts/adapter_evals/grpo_10k_ft",
+  "output_root": "artifacts/adapter_evals",
+  "proflingo_fingerprint": "artifacts/fingerprints/proflingo/generated-allenai-OLMo-2-0425-1B-Instruct.txt",
+  "proflingo_limit": null,
+  "proflingo_questions": "/vol/gpudata/ak3123-fyp/robust-auditing/third_party/ProFLingo/questions.csv",
+  "run_id": "grpo_10k_ft",
+  "seed": 0,
+  "skip_generation_eval": false
+}
