@@ -3,7 +3,7 @@
   "anonymization_version": "bold_name_person_descriptor_xyz_v1",
   "audit": "bold",
   "batch_size": 16,
-  "bold_harm_gap": 7.071675586920913,
+  "bold_harm_gap": 6.071675586920913,
   "group_by": [
     "axis",
     "bucket"
