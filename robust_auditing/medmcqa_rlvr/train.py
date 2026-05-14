@@ -213,6 +213,7 @@ def train_grpo_adapter(examples: list[MedMCQAExample], config: TrainConfig) -> P
     )
     if getattr(trainer.processing_class, "pad_token", None) is None:
         trainer.processing_class.pad_token = trainer.processing_class.eos_token
+    trainer.processing_class.padding_side = "left"
     trainer.train()
     trainer.save_model(str(adapter_dir))
     trainer.processing_class.save_pretrained(str(adapter_dir))
@@ -299,6 +300,7 @@ def load_model_and_tokenizer(model_id: str, config: TrainConfig) -> tuple[Any, A
     tokenizer = AutoTokenizer.from_pretrained(model_id)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.padding_side = "left"
     model = AutoModelForCausalLM.from_pretrained(model_id, **model_kwargs)
     if config.device_map == "cpu":
         model.to("cpu")

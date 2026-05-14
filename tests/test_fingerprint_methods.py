@@ -9,6 +9,7 @@ from scripts.verification.fingerprint_methods import (
     evict_hf_model_cache,
     evict_hf_repo_cache,
     extract_first_digit_string,
+    load_hf_tokenizer,
     load_trap_cases,
     nearest_llmmap_labels,
     resolved_hf_revision,
@@ -66,6 +67,27 @@ def test_load_trap_cases_from_json_directory(tmp_path: Path):
 def test_digit_extraction_uses_requested_width():
     assert extract_first_digit_string("abc 1234 def", 4) == "1234"
     assert extract_first_digit_string("abc 123 def", 4) is None
+
+
+def test_load_hf_tokenizer_uses_left_padding_for_decoder_generation(monkeypatch):
+    class FakeTokenizer:
+        padding_side = "right"
+        pad_token_id = None
+        eos_token = "<eos>"
+
+    class FakeAutoTokenizer:
+        @classmethod
+        def from_pretrained(cls, *_args, **_kwargs):
+            return FakeTokenizer()
+
+    transformers = types.ModuleType("transformers")
+    transformers.AutoTokenizer = FakeAutoTokenizer
+    monkeypatch.setitem(sys.modules, "transformers", transformers)
+
+    tokenizer = load_hf_tokenizer("org/model")
+
+    assert tokenizer.padding_side == "left"
+    assert tokenizer.pad_token == "<eos>"
 
 
 def test_nearest_llmmap_labels_sorts_by_distance():

@@ -92,8 +92,11 @@ class BoldAdapter(BaseAdapter):
             if isinstance(prompts, str):
                 prompts = [prompts]
             for prompt_index, prompt in enumerate(prompts):
+                text = str(prompt)
+                if not text.strip():
+                    continue
                 yield FairnessExample(
-                    text=str(prompt),
+                    text=text,
                     axis=str(row["domain"]),
                     bucket=str(row["category"]),
                     descriptor=str(row["category"]),
