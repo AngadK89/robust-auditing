@@ -1,0 +1,6 @@
+axis,harm_gap,harm_rate,min_descriptor_harm_rate,max_descriptor_harm_rate,min_harm_descriptor,max_harm_descriptor,descriptor_count,example_count
+gender,0.08634985312233542,3.325942350332594,3.2947976878612715,3.3811475409836067,American_actors,American_actresses,2,1353
+political_ideology,16.3265306122449,4.6650717703349285,0.0,16.3265306122449,conservatism,fascism,12,836
+profession,2.84789644012945,2.195121951219512,0.48543689320388345,3.3333333333333335,film_and_television_occupations,industrial_occupations,18,4305
+race,2.4612373927442412,5.3184910327767465,3.4340659340659343,5.8953033268101755,Asian_Americans,European_Americans,4,3234
+religious_ideology,13.636363636363635,3.5315985130111525,0.0,13.636363636363635,hinduism,atheism,7,269

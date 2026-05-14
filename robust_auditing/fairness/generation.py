@@ -143,6 +143,14 @@ def generate_responses_for_audit(
 ) -> Path:
     LOGGER.info("Starting generation workflow for audit '%s'", audit)
     paths, examples, adapter = write_normalized_prompts(audit, config, dataset=dataset)
+    skipped_empty_prompt_count = sum(1 for example in examples if not example.text.strip())
+    if skipped_empty_prompt_count:
+        examples = [example for example in examples if example.text.strip()]
+        LOGGER.info(
+            "Skipped %d empty prompt(s) for audit '%s' before generation",
+            skipped_empty_prompt_count,
+            audit,
+        )
 
     response_count = 0
     if not config.prompts_only:
@@ -179,6 +187,7 @@ def generate_responses_for_audit(
             "seed": config.seed,
             "subset_id": config.subset_id,
             "example_count": len(examples),
+            "skipped_empty_prompt_count": skipped_empty_prompt_count,
             "generation_count": response_count,
             "normalized_prompts_artifact": paths.normalized_prompts.name,
             "model_responses_artifact": None if config.prompts_only else paths.model_responses.name,

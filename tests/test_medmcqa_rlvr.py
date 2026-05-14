@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import sys
+import types
+
 from robust_auditing.medmcqa_rlvr.benchmark import ForcedChoiceResult, choose_forced_choice
 from robust_auditing.medmcqa_rlvr.data import (
     MedMCQAExample,
@@ -20,7 +23,7 @@ from robust_auditing.medmcqa_rlvr.sft import (
     classification_loss,
     label_indices,
 )
-from robust_auditing.medmcqa_rlvr.train import TrainConfig, build_arg_parser
+from robust_auditing.medmcqa_rlvr.train import TrainConfig, build_arg_parser, load_model_and_tokenizer
 
 
 def _row(index: int, *, cop: int = 2, choice_type: str = "single") -> dict:
@@ -167,6 +170,37 @@ def test_train_config_defaults_are_single_l40_friendly_and_modifiable():
     assert custom.temperature == 1.1
     assert custom.top_p == 0.9
     assert custom.max_steps == 10
+
+
+def test_medmcqa_model_loader_uses_left_padding_for_generation(monkeypatch):
+    class FakeTokenizer:
+        padding_side = "right"
+        pad_token = None
+        eos_token = "<eos>"
+
+    class FakeAutoTokenizer:
+        @classmethod
+        def from_pretrained(cls, *_args, **_kwargs):
+            return FakeTokenizer()
+
+    class FakeModel:
+        def to(self, _device):
+            return self
+
+    class FakeAutoModel:
+        @classmethod
+        def from_pretrained(cls, *_args, **_kwargs):
+            return FakeModel()
+
+    transformers = types.ModuleType("transformers")
+    transformers.AutoModelForCausalLM = FakeAutoModel
+    transformers.AutoTokenizer = FakeAutoTokenizer
+    monkeypatch.setitem(sys.modules, "transformers", transformers)
+
+    _, tokenizer = load_model_and_tokenizer("org/model", TrainConfig(device_map="cpu"))
+
+    assert tokenizer.padding_side == "left"
+    assert tokenizer.pad_token == "<eos>"
 
 
 def test_sft_classification_loss_uses_last_nonpad_prompt_token():

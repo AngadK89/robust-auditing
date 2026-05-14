@@ -114,6 +114,24 @@ def test_bold_adapter_explodes_prompts_and_preserves_source_metadata():
     }
 
 
+def test_bold_adapter_skips_empty_prompts():
+    frame = pd.DataFrame(
+        [
+            {
+                "domain": "race",
+                "category": "African Americans",
+                "name": "Example Person",
+                "prompts": ["Prompt one", "", "   "],
+                "wikipedia": ["Reference sentence"],
+            }
+        ]
+    )
+
+    examples = list(BoldAdapter().normalize(frame))
+
+    assert [example.text for example in examples] == ["Prompt one"]
+
+
 def test_adapters_report_missing_required_columns():
     frame = pd.DataFrame([{"text": "hello", "axis": "race"}])
 
@@ -282,15 +300,19 @@ class FakeTokenizer:
     def __call__(self, texts, return_tensors, padding, truncation):
         del return_tensors, padding, truncation
         input_ids = []
-        attention_mask = []
         for text in texts:
             ids = [1, 2] if len(text) < 12 else [1, 2, 3]
             input_ids.append(ids)
         max_len = max(len(ids) for ids in input_ids)
+        attention_mask = []
         for index, ids in enumerate(input_ids):
             pad_count = max_len - len(ids)
-            input_ids[index] = ids + [self.pad_token_id] * pad_count
-            attention_mask.append([1] * len(ids) + [0] * pad_count)
+            if self.padding_side == "left":
+                input_ids[index] = [self.pad_token_id] * pad_count + ids
+                attention_mask.append([0] * pad_count + [1] * len(ids))
+            else:
+                input_ids[index] = ids + [self.pad_token_id] * pad_count
+                attention_mask.append([1] * len(ids) + [0] * pad_count)
         return {
             "input_ids": torch.tensor(input_ids),
             "attention_mask": torch.tensor(attention_mask),
@@ -384,6 +406,50 @@ def test_generate_responses_writes_response_artifact_with_generation_metadata(tm
     assert rows[0]["generation"]["decoding"] == "beam_search"
     assert rows[0]["generation"]["num_beams"] == 3
     assert rows[0]["generation"]["generated_token_count"] == 2
+
+
+def test_generate_responses_skips_empty_stored_prompts(tmp_path):
+    subset_dir = tmp_path / "bold" / "tiny"
+    write_jsonl(
+        subset_dir / "normalized_prompts.jsonl",
+        [
+            {
+                "text": "",
+                "axis": "race",
+                "bucket": "African Americans",
+                "descriptor": "African Americans",
+                "metadata": {"source_index": 1},
+            },
+            {
+                "text": "A stored prompt.",
+                "axis": "race",
+                "bucket": "African Americans",
+                "descriptor": "African Americans",
+                "metadata": {"source_index": 2},
+            },
+        ],
+    )
+    config = GenerationConfig(
+        audits=("bold",),
+        output_root=tmp_path,
+        model_id="example/model",
+        subset_id="tiny",
+        min_new_tokens=1,
+        max_new_tokens=2,
+    )
+
+    output_dir = generate_responses_for_audit(
+        "bold",
+        config,
+        model=FakeGenerateModel(),
+        tokenizer=FakeTokenizer(),
+    )
+
+    rows = read_jsonl(output_dir / "model_responses.jsonl")
+    metadata = json.loads((output_dir / "metadata.json").read_text(encoding="utf-8"))
+    assert [row["text"] for row in rows] == ["A stored prompt."]
+    assert metadata["example_count"] == 1
+    assert metadata["skipped_empty_prompt_count"] == 1
 
 
 def test_metric_output_directory_is_derived_from_class_name():

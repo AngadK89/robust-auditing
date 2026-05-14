@@ -161,6 +161,7 @@ def load_hf_tokenizer(
     )
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.padding_side = "left"
     return tokenizer
 
 
