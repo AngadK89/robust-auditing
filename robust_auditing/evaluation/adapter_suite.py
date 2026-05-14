@@ -29,7 +29,6 @@ from scripts.verification.verify_fingerprint_lineage import run_proflingo_for_ta
 
 LOGGER = logging.getLogger(__name__)
 
-DEFAULT_MEDMCQA_EVAL_IDS = Path("outputs/medmcqa_rlvr/grpo_10k_20260514/eval_sample_ids.jsonl")
 DEFAULT_PROFLINGO_FINGERPRINT = Path(
     "artifacts/fingerprints/proflingo/generated-allenai-OLMo-2-0425-1B-Instruct.txt"
 )
@@ -42,7 +41,7 @@ class AdapterSuiteConfig:
     run_id: str
     base_model_id: str = DEFAULT_MODEL_ID
     output_root: Path = Path("artifacts/adapter_evals")
-    medmcqa_eval_ids: Path = DEFAULT_MEDMCQA_EVAL_IDS
+    medmcqa_eval_ids: Path | None = None
     medmcqa_dataset_id: str = DEFAULT_DATASET_ID
     medmcqa_split: str = "validation"
     fairness_subset_id: str = DEFAULT_FAIRNESS_SUBSET_ID
@@ -87,7 +86,7 @@ class AdapterSuiteConfig:
             "proflingo_fingerprint",
             "proflingo_questions",
         ):
-            payload[key] = str(payload[key])
+            payload[key] = str(payload[key]) if payload[key] is not None else None
         payload["output_dir"] = str(self.output_dir)
         payload["fairness_output_root"] = str(self.fairness_output_root)
         return payload
@@ -117,50 +116,15 @@ def default_runners() -> AdapterSuiteRunners:
 def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Evaluate a LoRA adapter on fixed OLMo2 audit suites.")
     parser.add_argument("--adapter-dir", type=Path, required=True)
-    parser.add_argument("--run-id", default=None, help="Artifact folder name. Defaults to the adapter run folder.")
-    parser.add_argument("--base-model-id", default=DEFAULT_MODEL_ID)
-    parser.add_argument("--output-root", type=Path, default=Path("artifacts/adapter_evals"))
-    parser.add_argument("--medmcqa-eval-ids", type=Path, default=DEFAULT_MEDMCQA_EVAL_IDS)
-    parser.add_argument("--medmcqa-dataset-id", default=DEFAULT_DATASET_ID)
-    parser.add_argument("--medmcqa-split", default="validation")
-    parser.add_argument("--fairness-subset-id", default=DEFAULT_FAIRNESS_SUBSET_ID)
-    parser.add_argument("--proflingo-fingerprint", type=Path, default=DEFAULT_PROFLINGO_FINGERPRINT)
-    parser.add_argument("--proflingo-questions", type=Path, default=DEFAULT_PROFLINGO_QUESTIONS_PATH)
-    parser.add_argument("--dtype", choices=("auto", "bf16", "fp16", "fp32"), default="bf16")
-    parser.add_argument("--device-map", choices=("auto", "cpu"), default="auto")
-    parser.add_argument("--eval-batch-size", type=int, default=8)
-    parser.add_argument("--fairness-batch-size", type=int, default=16)
-    parser.add_argument("--classifier-batch-size", type=int, default=16)
-    parser.add_argument("--max-new-tokens", type=int, default=64)
-    parser.add_argument("--proflingo-limit", type=int, default=None)
-    parser.add_argument("--skip-generation-eval", action="store_true")
-    parser.add_argument("--seed", type=int, default=0)
     return parser
 
 
 def config_from_args(args: argparse.Namespace) -> AdapterSuiteConfig:
     adapter_dir = Path(args.adapter_dir)
-    run_id = sanitize_run_id(args.run_id) if args.run_id else derive_run_id(adapter_dir)
     return AdapterSuiteConfig(
         adapter_dir=adapter_dir,
-        run_id=run_id,
-        base_model_id=args.base_model_id,
-        output_root=Path(args.output_root),
-        medmcqa_eval_ids=Path(args.medmcqa_eval_ids),
-        medmcqa_dataset_id=args.medmcqa_dataset_id,
-        medmcqa_split=args.medmcqa_split,
-        fairness_subset_id=args.fairness_subset_id,
-        proflingo_fingerprint=Path(args.proflingo_fingerprint),
-        proflingo_questions=Path(args.proflingo_questions),
-        dtype=args.dtype,
-        device_map=args.device_map,
-        eval_batch_size=args.eval_batch_size,
-        fairness_batch_size=args.fairness_batch_size,
-        classifier_batch_size=args.classifier_batch_size,
-        max_new_tokens=args.max_new_tokens,
-        proflingo_limit=args.proflingo_limit,
-        skip_generation_eval=args.skip_generation_eval,
-        seed=args.seed,
+        run_id=derive_run_id(adapter_dir),
+        medmcqa_eval_ids=derive_medmcqa_eval_ids(adapter_dir),
     )
 
 
@@ -208,6 +172,8 @@ def run_adapter_suite(config: AdapterSuiteConfig, runners: AdapterSuiteRunners |
 def validate_inputs(config: AdapterSuiteConfig) -> None:
     if not config.adapter_dir.exists():
         raise FileNotFoundError(f"Missing adapter directory: {config.adapter_dir}")
+    if config.medmcqa_eval_ids is None:
+        raise FileNotFoundError(f"Missing MedMCQA eval ids file: {derive_medmcqa_eval_ids(config.adapter_dir)}")
     if not config.medmcqa_eval_ids.exists():
         raise FileNotFoundError(f"Missing MedMCQA eval ids file: {config.medmcqa_eval_ids}")
     if not config.proflingo_fingerprint.exists():
@@ -384,9 +350,16 @@ def copy_subset_prompts(config: AdapterSuiteConfig) -> None:
 
 
 def derive_run_id(adapter_dir: Path) -> str:
+    return sanitize_run_id(adapter_run_dir(adapter_dir).name)
+
+
+def derive_medmcqa_eval_ids(adapter_dir: Path) -> Path:
+    return adapter_run_dir(adapter_dir) / "eval_sample_ids.jsonl"
+
+
+def adapter_run_dir(adapter_dir: Path) -> Path:
     normalized = adapter_dir.expanduser()
-    candidate = normalized.parent.name if normalized.name == "adapter" else normalized.name
-    return sanitize_run_id(candidate)
+    return normalized.parent if normalized.name == "adapter" else normalized
 
 
 def sanitize_run_id(value: str) -> str:

@@ -3,7 +3,7 @@
 Use this workflow to evaluate any PEFT LoRA adapter trained from
 `allenai/OLMo-2-0425-1B-Instruct` while keeping the evaluation behavior fixed.
 The adapter path is the only required swap point; ProFLingo, MedMCQA,
-HolisticBias, and BOLD defaults stay the same unless explicitly overridden.
+HolisticBias, and BOLD settings are fixed by the suite.
 
 ## Command
 
@@ -15,17 +15,17 @@ arch -arm64 /Users/angadkalra/Desktop/robust-auditing/venv/bin/python3 \
   --adapter-dir outputs/medmcqa_rlvr/grpo_10k_20260514/adapter
 ```
 
-For a different fine-tuned model, replace only `--adapter-dir`:
+For a different fine-tuned model, replace only `--adapter-dir`. The suite
+derives the run id and MedMCQA eval ids from that path:
 
 ```bash
 arch -arm64 /Users/angadkalra/Desktop/robust-auditing/venv/bin/python3 \
   scripts/evaluation/evaluate_adapter_suite.py \
-  --adapter-dir outputs/<other-run>/adapter \
-  --run-id <other-run>
+  --adapter-dir outputs/<other-run>/adapter
 ```
 
-If `--run-id` is omitted and the adapter directory is named `adapter`, the
-suite uses the parent folder name as the run id.
+If the adapter directory is named `adapter`, the suite uses the parent folder
+as the run id and reads `<parent>/eval_sample_ids.jsonl`.
 
 ## Fixed Defaults
 
@@ -33,7 +33,7 @@ The CLI defaults to:
 
 ```text
 base model: allenai/OLMo-2-0425-1B-Instruct
-MedMCQA eval ids: outputs/medmcqa_rlvr/grpo_10k_20260514/eval_sample_ids.jsonl
+MedMCQA eval ids: derived from --adapter-dir as <run>/eval_sample_ids.jsonl
 fairness subset id: 10k_seed0
 ProFLingo fingerprint: artifacts/fingerprints/proflingo/generated-allenai-OLMo-2-0425-1B-Instruct.txt
 ProFLingo questions: third_party/ProFLingo/questions.csv
@@ -96,16 +96,6 @@ metrics/<metric_name>/group_summary.csv
 metrics/<metric_name>/axis_summary.csv
 metrics/<metric_name>/metadata.json
 ```
-
-## Useful Knobs
-
-- `--run-id`: choose the output folder name.
-- `--proflingo-limit`: run a smaller ProFLingo check for smoke testing.
-- `--skip-generation-eval`: skip secondary MedMCQA free-generation scoring.
-- `--eval-batch-size`, `--fairness-batch-size`, `--classifier-batch-size`:
-  tune memory use separately for MedMCQA, generation, and classifier scoring.
-- `--device-map cpu`: CPU smoke path for parser and artifact logic, not for
-  full evaluation.
 
 ## Verification
 

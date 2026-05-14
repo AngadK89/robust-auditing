@@ -76,15 +76,46 @@ def test_run_id_derivation_uses_parent_for_adapter_folder_and_sanitizes():
 
 
 def test_cli_defaults_keep_adapter_as_only_required_swap_point(tmp_path: Path):
-    adapter_dir = tmp_path / "adapter"
+    adapter_dir = tmp_path / "run-a" / "adapter"
     args = build_arg_parser().parse_args(["--adapter-dir", str(adapter_dir)])
     config = config_from_args(args)
 
     assert config.adapter_dir == adapter_dir
     assert config.base_model_id == "allenai/OLMo-2-0425-1B-Instruct"
-    assert config.medmcqa_eval_ids == Path("outputs/medmcqa_rlvr/grpo_10k_20260514/eval_sample_ids.jsonl")
+    assert config.medmcqa_eval_ids == tmp_path / "run-a" / "eval_sample_ids.jsonl"
     assert config.fairness_subset_id == "10k_seed0"
-    assert config.run_id == tmp_path.name
+    assert config.run_id == "run-a"
+
+
+@pytest.mark.parametrize(
+    "removed_args",
+    [
+        ["--run-id", "custom"],
+        ["--base-model-id", "model"],
+        ["--output-root", "artifacts/custom"],
+        ["--medmcqa-eval-ids", "ids.jsonl"],
+        ["--medmcqa-dataset-id", "dataset"],
+        ["--medmcqa-split", "test"],
+        ["--fairness-subset-id", "subset"],
+        ["--proflingo-fingerprint", "fingerprint.txt"],
+        ["--proflingo-questions", "questions.csv"],
+        ["--dtype", "fp16"],
+        ["--device-map", "cpu"],
+        ["--eval-batch-size", "4"],
+        ["--fairness-batch-size", "4"],
+        ["--classifier-batch-size", "4"],
+        ["--max-new-tokens", "8"],
+        ["--proflingo-limit", "4"],
+        ["--skip-generation-eval"],
+        ["--seed", "1"],
+    ],
+)
+def test_cli_rejects_fixed_evaluation_knobs(tmp_path: Path, removed_args: list[str]):
+    parser = build_arg_parser()
+    adapter_dir = tmp_path / "run-a" / "adapter"
+
+    with pytest.raises(SystemExit):
+        parser.parse_args(["--adapter-dir", str(adapter_dir), *removed_args])
 
 
 def test_load_medmcqa_eval_examples_matches_ids_in_order(tmp_path: Path):
