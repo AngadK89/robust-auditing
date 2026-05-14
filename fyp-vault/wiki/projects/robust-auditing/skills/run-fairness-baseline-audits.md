@@ -3,7 +3,7 @@ title: >-
   Run Fairness Baseline Audits
 category: skills
 tags: [fairness, auditing, datasets, workflow]
-sources: ["/Users/angadkalra/Desktop/robust-auditing/docs/FAIRNESS_BASELINE_AUDITS.md", "/Users/angadkalra/Desktop/robust-auditing/docs/FAIRNESS_CLI_WORKFLOW.md", "/Users/angadkalra/Desktop/robust-auditing/robust_auditing/fairness", "/Users/angadkalra/Desktop/robust-auditing/scripts/fairness", "/Users/angadkalra/Desktop/robust-auditing/tests/test_fairness_audits.py", "https://arxiv.org/pdf/2101.11718"]
+sources: ["/Users/angadkalra/Desktop/robust-auditing/docs/FAIRNESS_BASELINE_AUDITS.md", "/Users/angadkalra/Desktop/robust-auditing/docs/FAIRNESS_CLI_WORKFLOW.md", "/Users/angadkalra/Desktop/robust-auditing/docs/ADAPTER_EVALUATION_SUITE.md", "/Users/angadkalra/Desktop/robust-auditing/robust_auditing/fairness", "/Users/angadkalra/Desktop/robust-auditing/scripts/fairness", "/Users/angadkalra/Desktop/robust-auditing/tests/test_fairness_audits.py", "https://arxiv.org/pdf/2101.11718"]
 summary: >-
   Documents how HolisticBias and BOLD subsets, model responses, and fairness metrics are generated and stored for OLMo2 lineage audits.
 provenance:
@@ -14,7 +14,7 @@ base_confidence: 0.82
 lifecycle: draft
 lifecycle_changed: 2026-05-12
 created: 2026-05-12T15:49:33Z
-updated: 2026-05-13T20:21:00Z
+updated: 2026-05-13T22:43:34Z
 ---
 
 # Run Fairness Baseline Audits
@@ -124,6 +124,7 @@ python3 scripts/fairness/score_fairness_metrics.py \
 - Run `full_gen_bias` only after generated responses exist; it is response-based and can score any audit that has normalized `axis` and `descriptor` fields.
 - Run `bold_negative_harm_disparity` only for BOLD after generated responses exist; it writes cached classifier outputs under `metrics/bold_negative_harm_disparity/`.
 - For lineage experiments, create one `subset_id` and reuse it across every OLMo2 model so metric differences come from the model checkpoint rather than a different prompt sample.
+- For PEFT LoRA adapters, use [[projects/robust-auditing/skills/evaluate-lora-adapters]] to reuse this fairness generation and scoring path alongside ProFLingo and MedMCQA.
 - Keep the audit dataset artifacts separate from targeted fine-tuning outputs so audit preservation and off-audit degradation can be compared cleanly. ^[inferred]
 
 ## Sources

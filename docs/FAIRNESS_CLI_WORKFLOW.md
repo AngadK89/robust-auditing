@@ -445,3 +445,8 @@ Then run the same generation and scoring commands for each model id in the
 lineage. Because all runs point to the same `<subset_id>`, differences in
 responses or metric summaries come from the model checkpoint rather than a
 different audit sample.
+
+For PEFT LoRA adapters, the adapter evaluation suite wraps this same fairness
+generation and scoring path with the fixed OLMo-2-1B-Instruct base model. See
+[`ADAPTER_EVALUATION_SUITE.md`](ADAPTER_EVALUATION_SUITE.md) for the
+single-command workflow that also runs ProFLingo and MedMCQA.
