@@ -113,7 +113,7 @@ env CUDA_VISIBLE_DEVICES=0 \
   venv/bin/python scripts/medmcqa/run_medmcqa_rlvr.py \
     --train-examples 16 \
     --eval-examples 16 \
-    --batch-size 4 \
+    --batch-size 8 \
     --eval-batch-size 4 \
     --num-generations 8 \
     --gradient-accumulation-steps 1 \

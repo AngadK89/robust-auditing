@@ -236,6 +236,7 @@ def _supported_grpo_kwargs(config_cls: Any, config: TrainConfig) -> dict[str, An
         "fp16": config.dtype == "fp16",
         "logging_steps": config.logging_steps,
         "save_steps": config.save_steps,
+        "save_total_limit": 1,
         "report_to": [] if config.report_to == "none" else [config.report_to],
         "remove_unused_columns": False,
         "gradient_checkpointing": True,

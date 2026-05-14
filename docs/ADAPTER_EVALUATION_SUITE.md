@@ -12,7 +12,7 @@ Run from the repository root:
 ```bash
 arch -arm64 /Users/angadkalra/Desktop/robust-auditing/venv/bin/python3 \
   scripts/evaluation/evaluate_adapter_suite.py \
-  --adapter-dir outputs/medmcqa_rlvr/full_simplified_10k_20260513/adapter
+  --adapter-dir outputs/medmcqa_rlvr/grpo_10k_20260514/adapter
 ```
 
 For a different fine-tuned model, replace only `--adapter-dir`:
@@ -33,7 +33,7 @@ The CLI defaults to:
 
 ```text
 base model: allenai/OLMo-2-0425-1B-Instruct
-MedMCQA eval ids: outputs/medmcqa_rlvr/full_simplified_10k_20260513/eval_sample_ids.jsonl
+MedMCQA eval ids: outputs/medmcqa_rlvr/grpo_10k_20260514/eval_sample_ids.jsonl
 fairness subset id: 10k_seed0
 ProFLingo fingerprint: artifacts/fingerprints/proflingo/generated-allenai-OLMo-2-0425-1B-Instruct.txt
 ProFLingo questions: third_party/ProFLingo/questions.csv

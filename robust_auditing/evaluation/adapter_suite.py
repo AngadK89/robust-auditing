@@ -6,7 +6,7 @@ import json
 import logging
 import re
 from dataclasses import asdict, dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
@@ -29,7 +29,7 @@ from scripts.verification.verify_fingerprint_lineage import run_proflingo_for_ta
 
 LOGGER = logging.getLogger(__name__)
 
-DEFAULT_MEDMCQA_EVAL_IDS = Path("outputs/medmcqa_rlvr/full_simplified_10k_20260513/eval_sample_ids.jsonl")
+DEFAULT_MEDMCQA_EVAL_IDS = Path("outputs/medmcqa_rlvr/grpo_10k_20260514/eval_sample_ids.jsonl")
 DEFAULT_PROFLINGO_FINGERPRINT = Path(
     "artifacts/fingerprints/proflingo/generated-allenai-OLMo-2-0425-1B-Instruct.txt"
 )
@@ -436,7 +436,7 @@ def cleanup_memory() -> None:
 
 
 def utc_now() -> str:
-    return datetime.now(UTC).isoformat()
+    return datetime.now(timezone.utc).isoformat()
 
 
 def main(argv: Sequence[str] | None = None) -> int:

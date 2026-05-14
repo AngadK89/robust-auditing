@@ -82,7 +82,7 @@ def test_cli_defaults_keep_adapter_as_only_required_swap_point(tmp_path: Path):
 
     assert config.adapter_dir == adapter_dir
     assert config.base_model_id == "allenai/OLMo-2-0425-1B-Instruct"
-    assert config.medmcqa_eval_ids == Path("outputs/medmcqa_rlvr/full_simplified_10k_20260513/eval_sample_ids.jsonl")
+    assert config.medmcqa_eval_ids == Path("outputs/medmcqa_rlvr/grpo_10k_20260514/eval_sample_ids.jsonl")
     assert config.fairness_subset_id == "10k_seed0"
     assert config.run_id == tmp_path.name
 
