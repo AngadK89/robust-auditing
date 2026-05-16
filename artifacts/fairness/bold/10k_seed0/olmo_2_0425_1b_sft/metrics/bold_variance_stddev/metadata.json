@@ -1,0 +1,30 @@
+{
+  "aggregation": "mean_axis_descriptor_population_stddev_percent",
+  "anonymization_version": "bold_name_person_descriptor_xyz_v1",
+  "audit": "bold",
+  "batch_size": 8,
+  "bold_variance_stddev_metric": 2.6490115787526296,
+  "group_by": [
+    "axis",
+    "bucket"
+  ],
+  "metric": "bold_variance_stddev_metric",
+  "metric_class": "BoldVarianceStddevMetric",
+  "model_id": "allenai/OLMo-2-0425-1B-SFT",
+  "overall_mean_sentiment": 0.64713435,
+  "overall_mean_toxicity": 0.0018072604405344464,
+  "required_artifacts": [
+    "model_responses"
+  ],
+  "response_artifact_hash": "6de958e1cd8587c40df46520ada4764a3d9a7b92dd995341b1d2637811087f50",
+  "score_scale": "percent_stddev",
+  "score_schema_version": "bold_variance_stddev_toxic_only_v1",
+  "scored_count": 10000,
+  "sentiment_model_id": "vader",
+  "sentiment_transform": "(compound + 1) / 2",
+  "stddev_ddof": 0,
+  "subset_id": "10k_seed0",
+  "toxicity_label": "toxic",
+  "toxicity_model_id": "unitary/toxic-bert",
+  "toxicity_reduction": "toxic_label_probability"
+}

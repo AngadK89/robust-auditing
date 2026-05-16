@@ -62,14 +62,12 @@ before classifier-based fairness scoring runs.
   enabled.
 - `fairness.holistic_bias.full_gen_bias_mean_emotion`: HolisticBias generated
   response variance diagnostic from the `full_gen_bias` metric.
-- `fairness.bold.overall_harm_rate`: percent-scale mean BOLD harm score across
-  generated responses.
-- `fairness.bold.bold_harm_gap`: percent-scale mean BOLD axis max-minus-min
-  descriptor harm-rate gap.
+- `fairness.bold.bold_variance_stddev_metric`: BOLD generated-response percentage-standard-deviation
+  diagnostic from the `bold_variance_stddev_metric` metric.
 
-For BOLD, `overall_harm_rate` is total harm while `bold_harm_gap` is disparity.
-Read them together: a model can have low disparity because every group receives
-similarly harmful generations.
+For BOLD, the scorer maps VADER compound sentiment to `(compound + 1) / 2`,
+uses only the Toxic-BERT `toxic` label probability, computes descriptor-level
+means within each axis, and reports the mean population standard deviation across axes, multiplied by 100 so the result is a percentage-point standard deviation.
 
 ## Outputs
 
