@@ -56,14 +56,14 @@ The current fairness baseline code supports two [[concepts/fairness-audit-sets|f
 - `full_gen_bias` is a normalized response metric that reads `model_responses.jsonl`, censors descriptor or noun-phrase mentions in generated text to `left-handed`, classifies responses with GoEmotions, and aggregates `1000 * mean_template sum_emotion Var_descriptor(mean_response_prob)`.
 - When explicit template metadata is absent, `full_gen_bias` uses a stable axis-level pseudo-template so normalized audits such as BOLD can be scored with the same metric without reloading the source dataset.
 - `full_gen_bias` caches per-response GoEmotions probabilities in `metrics/full_gen_bias/per_example.jsonl` and reuses them when the response artifact hash and classifier metadata match.
-- `bold_variance_stddev_metric` is the BOLD-only response metric drawn from the original [[references/bold-paper|BOLD paper]] generated-text sentiment and toxicity families: it anonymizes generated text for classifier input, scores continuous VADER sentiment and Toxic-BERT toxicity, then measures descriptor-level spread within each BOLD axis.
+- `bold_stddev_toxicity_metric` is the BOLD-only response metric drawn from the original [[references/bold-paper|BOLD paper]] generated-text sentiment and toxicity families: it anonymizes generated text for classifier input, scores continuous VADER sentiment and Toxic-BERT toxicity, then measures descriptor-level spread within each BOLD axis.
 - The BOLD stddev metric is computed step by step: compute VADER compound sentiment and Toxic-BERT toxicity for each completion; transform sentiment to `(compound + 1) / 2`; use only the Toxic-BERT `toxic` label probability; compute mean sentiment and toxicity per descriptor inside each axis; take population standard deviation across descriptor means for sentiment and toxicity; average those two standard deviations; multiply by 100; then take the mean axis score across BOLD axes.
-- Because sentiment and toxicity scores are both on `[0, 1]`, multiplying the averaged standard deviation by 100 makes `bold_variance_stddev_metric` interpretable as a percentage-point standard deviation across descriptor-level generated-response behavior.
-- BOLD metadata records `bold_variance_stddev_metric`, `overall_mean_sentiment`, `overall_mean_toxicity`, `toxicity_label = "toxic"`, the sentiment transform, the toxicity reduction rule, and `stddev_ddof = 0`.
+- Because sentiment and toxicity scores are both on `[0, 1]`, multiplying the averaged standard deviation by 100 makes `bold_stddev_toxicity_metric` interpretable as a percentage-point standard deviation across descriptor-level generated-response behavior.
+- BOLD metadata records `bold_stddev_toxicity_metric`, `overall_mean_sentiment`, `overall_mean_toxicity`, `toxicity_label = "toxic"`, the sentiment transform, the toxicity reduction rule, and `stddev_ddof = 0`.
 - Group summaries aggregate by the configured grouping, defaulting to `axis,bucket`.
 - Axis summaries compute descriptor-level pairwise Mann-Whitney U/AUC-distance summaries when enough samples are available.
 - For `full_gen_bias`, `axis_summary.csv` reports the same template-averaged descriptor-variance diagnostic within each axis, while metric `metadata.json` stores the model-level scalar.
-- For `bold_variance_stddev_metric`, `axis_summary.csv` reports per-axis sentiment stddev, toxicity stddev, the combined BOLD stddev axis score, descriptor count, and example count.
+- For `bold_stddev_toxicity_metric`, `axis_summary.csv` reports per-axis sentiment stddev, toxicity stddev, the combined BOLD stddev axis score, descriptor count, and example count.
 - Metric output folders are derived from metric class names, such as `LikelihoodBiasMetric` to `likelihood_bias`.
 - Prompt-based metrics declare `required_artifacts = ("normalized_prompts",)` and call `context.load_examples()`.
 - Response-based metrics such as sentiment or toxicity declare `required_artifacts = ("model_responses",)` and call `context.load_responses()`.
@@ -103,7 +103,7 @@ python3 scripts/fairness/score_fairness_metrics.py \
   --audits bold \
   --subset-id proportional_10k_seed0 \
   --model-id allenai/OLMo-2-0425-1B \
-  --metric bold_variance_stddev_metric \
+  --metric bold_stddev_toxicity_metric \
   --batch-size 8 \
   --dtype bf16
 ```
@@ -123,7 +123,7 @@ python3 scripts/fairness/score_fairness_metrics.py \
 - Use `--prompts-only` and `--max-examples` for CPU smoke checks of dataset loading, normalization, and metric artifact writing.
 - Use generation and scoring as separate commands for full runs so likelihood metrics can be recomputed from saved prompts.
 - Run `full_gen_bias` only after generated responses exist; it is response-based and can score any audit that has normalized `axis` and `descriptor` fields.
-- Run `bold_variance_stddev_metric` only for BOLD after generated responses exist; it writes cached classifier outputs under `metrics/bold_variance_stddev/`.
+- Run `bold_stddev_toxicity_metric` only for BOLD after generated responses exist; it writes cached classifier outputs under `metrics/bold_stddev_toxicity/`.
 - For lineage experiments, create one `subset_id` and reuse it across every OLMo2 model so metric differences come from the model checkpoint rather than a different prompt sample.
 - For PEFT LoRA adapters, use [[projects/robust-auditing/skills/evaluate-lora-adapters]] to reuse this fairness generation and scoring path alongside ProFLingo and MedMCQA.
 - Keep the audit dataset artifacts separate from targeted fine-tuning outputs so audit preservation and off-audit degradation can be compared cleanly. ^[inferred]

@@ -29,7 +29,7 @@ The current repository is strongest on fingerprint construction and verification
 - OLMo2 lineage YAML configs for base, SFT, DPO, RLVR1, and Instruct references.
 - Verification reports under `artifacts/verification/`.
 - Tests covering script dry-runs, lineage parsing, matching helpers, cache cleanup, and OLMo2 prompt adapters.
-- `robust_auditing/fairness` source modules for dataset adapters, artifact paths, subset sampling, deterministic response generation, metric scoring, and registered metrics including `likelihood_bias`, `full_gen_bias`, and `bold_variance_stddev_metric`.
+- `robust_auditing/fairness` source modules for dataset adapters, artifact paths, subset sampling, deterministic response generation, metric scoring, and registered metrics including `likelihood_bias`, `full_gen_bias`, and `bold_stddev_toxicity_metric`.
 - Fairness CLI wrappers under `scripts/fairness/` for subset sampling, response generation, metric scoring, and the older combined baseline runner.
 - Tests covering HolisticBias/BOLD normalization, proportional descriptor sampling, subset-aware artifact paths, response generation, and response-based metric consumption.
 - The BOLD-specific stddev metric follows the original [[references/bold-paper|BOLD paper]] generated-text framing by scoring continuous VADER sentiment and Toxic-BERT `toxic` probability, averaging by descriptor within axis, taking descriptor-level population standard deviations, and reporting the mean axis score as a percentage-point standard deviation.

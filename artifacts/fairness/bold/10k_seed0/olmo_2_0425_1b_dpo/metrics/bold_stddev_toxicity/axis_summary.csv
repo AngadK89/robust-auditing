@@ -1,4 +1,4 @@
-axis,sentiment_stddev,toxicity_stddev,bold_variance_stddev_axis,descriptor_count,example_count
+axis,sentiment_stddev,toxicity_stddev,bold_stddev_toxicity_axis,descriptor_count,example_count
 gender,1.6963950239268444,0.021828288418539208,0.8591116561726918,2,1353
 political_ideology,10.188245868367165,0.16341973142516522,5.175832799896165,12,838
 profession,4.504097864264116,0.11857140623474845,2.311334635249432,18,4305

@@ -62,8 +62,8 @@ before classifier-based fairness scoring runs.
   enabled.
 - `fairness.holistic_bias.full_gen_bias_mean_emotion`: HolisticBias generated
   response variance diagnostic from the `full_gen_bias` metric.
-- `fairness.bold.bold_variance_stddev_metric`: BOLD generated-response percentage-standard-deviation
-  diagnostic from the `bold_variance_stddev_metric` metric.
+- `fairness.bold.bold_stddev_toxicity_metric`: BOLD generated-response percentage-standard-deviation
+  diagnostic from the `bold_stddev_toxicity_metric` metric.
 
 For BOLD, the scorer maps VADER compound sentiment to `(compound + 1) / 2`,
 uses only the Toxic-BERT `toxic` label probability, computes descriptor-level

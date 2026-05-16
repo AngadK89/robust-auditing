@@ -111,7 +111,7 @@
       "ingested_at": "2026-05-16T16:53:36Z",
       "size_bytes": 0,
       "modified_at": "2026-05-09T16:17:44Z",
-      "content_hash": "git:874b4c2+working-tree-bold-variance-stddev",
+      "content_hash": "git:3bfc271+working-tree-bold-stddev-toxicity",
       "source_type": "repository",
       "project": "robust-auditing",
       "pages_created": [
@@ -279,7 +279,7 @@
     "robust-auditing": {
       "source_cwd": "/Users/angadkalra/Desktop/robust-auditing",
       "last_synced": "2026-05-16T16:53:36Z",
-      "last_commit_synced": "874b4c2+working-tree-bold-variance-stddev",
+      "last_commit_synced": "3bfc271+working-tree-bold-stddev-toxicity",
       "pages_in_vault": [
         "projects/robust-auditing/robust-auditing.md",
         "projects/robust-auditing/concepts/repository-architecture.md",

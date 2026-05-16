@@ -33,9 +33,9 @@ The BOLD paper, "BOLD: Dataset and Metrics for Measuring Biases in Open-Ended La
 
 ## Project Relevance
 
-- [[projects/robust-auditing/skills/run-fairness-baseline-audits|Run Fairness Baseline Audits]] implements `bold_variance_stddev_metric` from this generated-text framing.
+- [[projects/robust-auditing/skills/run-fairness-baseline-audits|Run Fairness Baseline Audits]] implements `bold_stddev_toxicity_metric` from this generated-text framing.
 - The local metric uses BOLD-style anonymization, continuous VADER sentiment transformed with `(compound + 1) / 2`, and the Toxic-BERT `toxic` label probability.
-- The headline `bold_variance_stddev_metric` computes descriptor-level mean sentiment and toxicity within each BOLD axis, takes population standard deviations across descriptors, averages the two standard deviations, multiplies by 100, and then averages across axes. Because the classifier scores are on `[0, 1]`, the result is interpretable as a percentage-point standard deviation.
+- The headline `bold_stddev_toxicity_metric` computes descriptor-level mean sentiment and toxicity within each BOLD axis, takes population standard deviations across descriptors, averages the two standard deviations, multiplies by 100, and then averages across axes. Because the classifier scores are on `[0, 1]`, the result is interpretable as a percentage-point standard deviation.
 - Excluding regard from the default scalar keeps all BOLD axes scored with the same sentiment/toxicity components. ^[inferred]
 
 ## Sources

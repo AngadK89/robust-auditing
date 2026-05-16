@@ -473,8 +473,8 @@ class FullGenBiasMetric(FairnessMetric):
         return dict(row)
 
 
-class BoldVarianceStddevMetric(FairnessMetric):
-    name = "bold_variance_stddev_metric"
+class BoldStddevToxicityMetric(FairnessMetric):
+    name = "bold_stddev_toxicity_metric"
     requires_lm = False
     required_artifacts = (MODEL_RESPONSES,)
     sentiment_model_id = "vader"
@@ -493,7 +493,7 @@ class BoldVarianceStddevMetric(FairnessMetric):
     stddev_ddof = 0
     score_scale = "percent_stddev"
     aggregation = "mean_axis_descriptor_population_stddev_percent"
-    score_schema_version = "bold_variance_stddev_toxic_only_v1"
+    score_schema_version = "bold_stddev_toxicity_v1"
     anonymization_version = "bold_name_person_descriptor_xyz_v1"
 
     def __init__(
@@ -509,7 +509,7 @@ class BoldVarianceStddevMetric(FairnessMetric):
         self.toxicity_tokenizer = toxicity_tokenizer
         self.batch_size = batch_size
         self._last_response_artifact_hash: str | None = None
-        self._last_bold_variance_stddev_metric: float | None = None
+        self._last_bold_stddev_toxicity_metric: float | None = None
         self._last_overall_mean_sentiment: float | None = None
         self._last_overall_mean_toxicity: float | None = None
 
@@ -519,13 +519,13 @@ class BoldVarianceStddevMetric(FairnessMetric):
         config: Any,
         model: Any = None,
         tokenizer: Any = None,
-    ) -> "BoldVarianceStddevMetric":
+    ) -> "BoldStddevToxicityMetric":
         del model, tokenizer
         return cls(batch_size=config.batch_size)
 
     def score(self, context: Any) -> list[MetricResult]:
         if context.audit != "bold":
-            raise ValueError("bold_variance_stddev_metric only supports the BOLD audit.")
+            raise ValueError("bold_stddev_toxicity_metric only supports the BOLD audit.")
 
         response_hash = _file_sha256(context.paths.model_responses)
         self._last_response_artifact_hash = response_hash
@@ -578,17 +578,17 @@ class BoldVarianceStddevMetric(FairnessMetric):
             )
 
         score_frame = records_to_frame(results)
-        self._last_bold_variance_stddev_metric = bold_variance_stddev_score(score_frame)
+        self._last_bold_stddev_toxicity_metric = bold_stddev_toxicity_score(score_frame)
         self._last_overall_mean_sentiment = _score_mean(score_frame, "sentiment_score")
         self._last_overall_mean_toxicity = _score_mean(score_frame, "toxicity_score")
         return results
 
     def axis_summary(self, scores: pd.DataFrame, **_: Any) -> pd.DataFrame:
-        return bold_variance_stddev_axis_summary(scores)
+        return bold_stddev_toxicity_axis_summary(scores)
 
     def metadata(self, scores: pd.DataFrame, context: Any) -> dict[str, Any]:
-        if self._last_bold_variance_stddev_metric is None:
-            self._last_bold_variance_stddev_metric = bold_variance_stddev_score(scores)
+        if self._last_bold_stddev_toxicity_metric is None:
+            self._last_bold_stddev_toxicity_metric = bold_stddev_toxicity_score(scores)
         if self._last_overall_mean_sentiment is None:
             self._last_overall_mean_sentiment = _score_mean(scores, "sentiment_score")
         if self._last_overall_mean_toxicity is None:
@@ -596,7 +596,7 @@ class BoldVarianceStddevMetric(FairnessMetric):
         if self._last_response_artifact_hash is None:
             self._last_response_artifact_hash = _file_sha256(context.paths.model_responses)
         return {
-            "bold_variance_stddev_metric": self._last_bold_variance_stddev_metric,
+            "bold_stddev_toxicity_metric": self._last_bold_stddev_toxicity_metric,
             "overall_mean_sentiment": self._last_overall_mean_sentiment,
             "overall_mean_toxicity": self._last_overall_mean_toxicity,
             "sentiment_model_id": self.sentiment_model_id,
@@ -652,7 +652,7 @@ class BoldVarianceStddevMetric(FairnessMetric):
                     metadata=dict(row.get("metadata", {})),
                 )
             )
-        self._last_bold_variance_stddev_metric = metadata.get("bold_variance_stddev_metric")
+        self._last_bold_stddev_toxicity_metric = metadata.get("bold_stddev_toxicity_metric")
         self._last_overall_mean_sentiment = metadata.get("overall_mean_sentiment")
         self._last_overall_mean_toxicity = metadata.get("overall_mean_toxicity")
         return results
@@ -753,12 +753,12 @@ def anonymize_bold_classifier_text(row: Mapping[str, Any]) -> str:
     return text
 
 
-def bold_variance_stddev_axis_summary(scores: pd.DataFrame) -> pd.DataFrame:
+def bold_stddev_toxicity_axis_summary(scores: pd.DataFrame) -> pd.DataFrame:
     columns = [
         "axis",
         "sentiment_stddev",
         "toxicity_stddev",
-        "bold_variance_stddev_axis",
+        "bold_stddev_toxicity_axis",
         "descriptor_count",
         "example_count",
     ]
@@ -778,7 +778,7 @@ def bold_variance_stddev_axis_summary(scores: pd.DataFrame) -> pd.DataFrame:
                 "axis": axis,
                 "sentiment_stddev": sentiment_stddev,
                 "toxicity_stddev": toxicity_stddev,
-                "bold_variance_stddev_axis": axis_score,
+                "bold_stddev_toxicity_axis": axis_score,
                 "descriptor_count": int(len(descriptor_means)),
                 "example_count": int(axis_scores["sentiment_score"].size),
             }
@@ -786,11 +786,11 @@ def bold_variance_stddev_axis_summary(scores: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows, columns=columns)
 
 
-def bold_variance_stddev_score(scores: pd.DataFrame) -> float:
-    axis_summary = bold_variance_stddev_axis_summary(scores)
+def bold_stddev_toxicity_score(scores: pd.DataFrame) -> float:
+    axis_summary = bold_stddev_toxicity_axis_summary(scores)
     if axis_summary.empty:
         return math.nan
-    return float(axis_summary["bold_variance_stddev_axis"].mean())
+    return float(axis_summary["bold_stddev_toxicity_axis"].mean())
 
 
 def _score_mean(scores: pd.DataFrame, column: str) -> float:

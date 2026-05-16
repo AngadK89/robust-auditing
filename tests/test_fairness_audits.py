@@ -18,7 +18,7 @@ from robust_auditing.fairness import (
     LikelihoodBiasMetric,
     MetricContext,
     MetricResult,
-    BoldVarianceStddevMetric,
+    BoldStddevToxicityMetric,
     ScoringConfig,
     build_generation_arg_parser,
     build_scoring_arg_parser,
@@ -759,17 +759,17 @@ def _write_bold_harm_responses(paths):
     )
 
 
-def test_bold_variance_stddev_metric_scores_descriptor_stddev(tmp_path):
+def test_bold_stddev_toxicity_metric_scores_descriptor_stddev(tmp_path):
     config = ScoringConfig(
         audits=("bold",),
         output_root=tmp_path,
         model_id="example/model",
         subset_id="tiny",
-        metric="bold_variance_stddev_metric",
+        metric="bold_stddev_toxicity_metric",
     )
     paths = config.paths_for("bold")
     _write_bold_harm_responses(paths)
-    metric = BoldVarianceStddevMetric(
+    metric = BoldStddevToxicityMetric(
         sentiment_analyzer=FakeBoldSentimentAnalyzer(
             {
                 "positive safe": 0.25,
@@ -806,12 +806,12 @@ def test_bold_variance_stddev_metric_scores_descriptor_stddev(tmp_path):
     race = axis_summary[axis_summary["axis"] == "race"].iloc[0]
     assert race["sentiment_stddev"] == pytest.approx(12.5)
     assert race["toxicity_stddev"] == pytest.approx(40.0)
-    assert race["bold_variance_stddev_axis"] == pytest.approx(26.25)
+    assert race["bold_stddev_toxicity_axis"] == pytest.approx(26.25)
     gender = axis_summary[axis_summary["axis"] == "gender"].iloc[0]
-    assert gender["bold_variance_stddev_axis"] == pytest.approx(0.0)
+    assert gender["bold_stddev_toxicity_axis"] == pytest.approx(0.0)
 
     metadata = json.loads((metric_dir / "metadata.json").read_text(encoding="utf-8"))
-    assert metadata["bold_variance_stddev_metric"] == pytest.approx(13.125)
+    assert metadata["bold_stddev_toxicity_metric"] == pytest.approx(13.125)
     assert metadata["overall_mean_sentiment"] == pytest.approx(0.425)
     assert metadata["overall_mean_toxicity"] == pytest.approx(0.42)
     assert metadata["sentiment_model_id"] == "vader"
@@ -822,7 +822,7 @@ def test_bold_variance_stddev_metric_scores_descriptor_stddev(tmp_path):
     assert metadata["stddev_ddof"] == 0
     assert metadata["score_scale"] == "percent_stddev"
     assert metadata["aggregation"] == "mean_axis_descriptor_population_stddev_percent"
-    assert metadata["score_schema_version"] == "bold_variance_stddev_toxic_only_v1"
+    assert metadata["score_schema_version"] == "bold_stddev_toxicity_v1"
     assert metadata["response_artifact_hash"]
     assert metadata["anonymization_version"]
 
@@ -833,13 +833,13 @@ def test_bold_variance_stddev_metric_scores_descriptor_stddev(tmp_path):
     assert race_a_group["mean_sentiment_score"] == pytest.approx(0.375)
 
 
-def test_bold_variance_stddev_metric_rejects_non_bold_audits(tmp_path):
+def test_bold_stddev_toxicity_metric_rejects_non_bold_audits(tmp_path):
     config = ScoringConfig(
         audits=("holistic_bias",),
         output_root=tmp_path,
         model_id="example/model",
         subset_id="tiny",
-        metric="bold_variance_stddev_metric",
+        metric="bold_stddev_toxicity_metric",
     )
     paths = config.paths_for("holistic_bias")
     write_jsonl(
@@ -860,7 +860,7 @@ def test_bold_variance_stddev_metric_rejects_non_bold_audits(tmp_path):
         score_audit(
             "holistic_bias",
             config,
-            metric=BoldVarianceStddevMetric(
+            metric=BoldStddevToxicityMetric(
                 sentiment_analyzer=FakeBoldSentimentAnalyzer({"positive safe": 0.25}),
                 toxicity_model=FakeBoldToxicityModel([[0.1, 0.1, 0.1, 0.1, 0.1, 0.1]]),
                 toxicity_tokenizer=FakeBoldToxicityTokenizer(),
@@ -883,13 +883,13 @@ def test_bold_classifier_text_anonymization_replaces_names_and_categories_withou
     )
 
 
-def test_bold_variance_stddev_metric_reuses_cache_when_metadata_matches(tmp_path):
+def test_bold_stddev_toxicity_metric_reuses_cache_when_metadata_matches(tmp_path):
     config = ScoringConfig(
         audits=("bold",),
         output_root=tmp_path,
         model_id="example/model",
         subset_id="tiny",
-        metric="bold_variance_stddev_metric",
+        metric="bold_stddev_toxicity_metric",
     )
     paths = config.paths_for("bold")
     _write_bold_harm_responses(paths)
@@ -915,7 +915,7 @@ def test_bold_variance_stddev_metric_reuses_cache_when_metadata_matches(tmp_path
     first_dir = score_audit(
         "bold",
         config,
-        metric=BoldVarianceStddevMetric(
+        metric=BoldStddevToxicityMetric(
             sentiment_analyzer=sentiment,
             toxicity_model=first_model,
             toxicity_tokenizer=FakeBoldToxicityTokenizer(),
@@ -926,7 +926,7 @@ def test_bold_variance_stddev_metric_reuses_cache_when_metadata_matches(tmp_path
     second_dir = score_audit(
         "bold",
         config,
-        metric=BoldVarianceStddevMetric(
+        metric=BoldStddevToxicityMetric(
             sentiment_analyzer=sentiment,
             toxicity_model=second_model,
             toxicity_tokenizer=FakeBoldToxicityTokenizer(),
@@ -939,14 +939,14 @@ def test_bold_variance_stddev_metric_reuses_cache_when_metadata_matches(tmp_path
     assert second_model.calls == 0
 
 
-def test_bold_variance_stddev_metric_cli_registration_and_artifact_contract():
+def test_bold_stddev_toxicity_metric_cli_registration_and_artifact_contract():
     parser = build_scoring_arg_parser()
-    args = parser.parse_args(["--metric", "bold_variance_stddev_metric", "--audits", "bold"])
+    args = parser.parse_args(["--metric", "bold_stddev_toxicity_metric", "--audits", "bold"])
     config = ScoringConfig.from_args(args)
 
-    assert config.metric == "bold_variance_stddev_metric"
+    assert config.metric == "bold_stddev_toxicity_metric"
     assert config.audits == ("bold",)
-    assert BoldVarianceStddevMetric.required_artifacts == ("model_responses",)
+    assert BoldStddevToxicityMetric.required_artifacts == ("model_responses",)
 
     legacy_metric = "bold" + "_negative_harm_disparity"
     with pytest.raises(SystemExit):
@@ -957,6 +957,9 @@ def test_bold_variance_stddev_metric_cli_registration_and_artifact_contract():
     legacy_dashed_variance_metric = "bold" + "-variance-bias-metric"
     with pytest.raises(SystemExit):
         parser.parse_args(["--metric", legacy_dashed_variance_metric, "--audits", "bold"])
+    legacy_stddev_metric = "bold" + "_variance" + "_stddev_metric"
+    with pytest.raises(SystemExit):
+        parser.parse_args(["--metric", legacy_stddev_metric, "--audits", "bold"])
 
 
 class FakeGoEmotionsTokenizer:
