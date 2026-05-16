@@ -14,7 +14,7 @@ base_confidence: 0.84
 lifecycle: draft
 lifecycle_changed: 2026-05-13
 created: 2026-05-13T22:43:34Z
-updated: 2026-05-13T22:43:34Z
+updated: 2026-05-16T16:53:36Z
 ---
 
 # Evaluate LoRA Adapters
@@ -31,7 +31,7 @@ eval IDs, and fairness subset stable.
 - [[entities/proflingo|ProFLingo]]: verifies the adapter-loaded model against the existing OLMo-2-1B-Instruct reference fingerprint.
 - MedMCQA: reconstructs the shortlisted validation eval set from `eval_sample_ids.jsonl` by row id, then reports forced-choice accuracy as the primary score.
 - [[concepts/holistic-bias|HolisticBias]]: generates responses on the stored fairness subset and reports `full_gen_bias_mean_emotion`.
-- BOLD: generates responses on the stored fairness subset and reports percent-scale `overall_harm_rate` plus percent-scale `bold_harm_gap` from `bold_negative_harm_disparity`.
+- BOLD: generates responses on the stored fairness subset and reports `bold_variance_stddev_metric` from `bold_variance_stddev_metric`, plus `overall_mean_sentiment` and `overall_mean_toxicity` diagnostics.
 
 ## Artifact Pattern
 

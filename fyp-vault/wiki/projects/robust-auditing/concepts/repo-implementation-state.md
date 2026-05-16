@@ -13,7 +13,7 @@ base_confidence: 0.66
 lifecycle: draft
 lifecycle_changed: 2026-05-09
 created: 2026-05-09T16:17:44Z
-updated: 2026-05-13T20:03:56Z
+updated: 2026-05-16T16:53:36Z
 ---
 
 # Robust Auditing Repo Implementation State
@@ -29,10 +29,10 @@ The current repository is strongest on fingerprint construction and verification
 - OLMo2 lineage YAML configs for base, SFT, DPO, RLVR1, and Instruct references.
 - Verification reports under `artifacts/verification/`.
 - Tests covering script dry-runs, lineage parsing, matching helpers, cache cleanup, and OLMo2 prompt adapters.
-- `robust_auditing/fairness` source modules for dataset adapters, artifact paths, subset sampling, deterministic response generation, metric scoring, and registered metrics including `likelihood_bias`, `full_gen_bias`, and `bold_negative_harm_disparity`.
+- `robust_auditing/fairness` source modules for dataset adapters, artifact paths, subset sampling, deterministic response generation, metric scoring, and registered metrics including `likelihood_bias`, `full_gen_bias`, and `bold_variance_stddev_metric`.
 - Fairness CLI wrappers under `scripts/fairness/` for subset sampling, response generation, metric scoring, and the older combined baseline runner.
 - Tests covering HolisticBias/BOLD normalization, proportional descriptor sampling, subset-aware artifact paths, response generation, and response-based metric consumption.
-- The BOLD-specific harm-disparity metric follows the original [[references/bold-paper|BOLD paper]] framing by scoring generated responses for negative sentiment and toxicity, then reporting group harm-rate gaps with overall harm rate.
+- The BOLD-specific stddev metric follows the original [[references/bold-paper|BOLD paper]] generated-text framing by scoring continuous VADER sentiment and Toxic-BERT `toxic` probability, averaging by descriptor within axis, taking descriptor-level population standard deviations, and reporting the mean axis score as a percentage-point standard deviation.
 
 ## Missing Or Ambiguous
 
