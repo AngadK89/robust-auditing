@@ -1,0 +1,1 @@
+{"metrics": {"total_flos": 2543380089765888.0, "train_loss": 1.9753358260444973, "train_runtime": 62.3866, "train_samples_per_second": 29.494, "train_steps_per_second": 1.843}, "phase": "external_group_targeted_sft", "records": 12000}
