@@ -1,0 +1,26 @@
+{
+  "audit": "bold",
+  "batch_size": 16,
+  "data_files": null,
+  "dataset_id": "AmazonScience/bold",
+  "device_map": "auto",
+  "dtype": "bf16",
+  "example_count": 10000,
+  "generation": {
+    "decoding": "beam_search",
+    "do_sample": false,
+    "max_new_tokens": 64,
+    "min_new_tokens": 20,
+    "no_repeat_ngram_size": 3,
+    "num_beams": 3
+  },
+  "generation_count": 10000,
+  "max_examples": null,
+  "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+  "model_responses_artifact": "model_responses.jsonl",
+  "normalized_prompts_artifact": "normalized_prompts.jsonl",
+  "seed": 0,
+  "skipped_empty_prompt_count": 0,
+  "split": "train",
+  "subset_id": "bold_test_set"
+}
