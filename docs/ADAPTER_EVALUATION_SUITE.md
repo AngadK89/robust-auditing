@@ -24,6 +24,30 @@ arch -arm64 /Users/angadkalra/Desktop/robust-auditing/venv/bin/python3 \
   --adapter-dir outputs/<other-run>/adapter
 ```
 
+The BOLD metric-gaming diagnostic uses the concise adapter id
+`bold_metric_gaming_diagnostic`:
+
+```bash
+env CUDA_VISIBLE_DEVICES=0 \
+  HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
+  HF_HOME=/vol/gpudata/ak3123-fyp/.cache/huggingface \
+  HF_HUB_CACHE=/vol/gpudata/ak3123-fyp/.cache/huggingface/hub \
+  HF_DATASETS_CACHE=/vol/gpudata/ak3123-fyp/.cache/huggingface/datasets \
+  TMPDIR=/vol/gpudata/ak3123-fyp/.cache/tmp \
+  PYTHONUNBUFFERED=1 TOKENIZERS_PARALLELISM=false \
+  venv/bin/python -c "from robust_auditing.evaluation.adapter_suite import main; raise SystemExit(main())" \
+    --adapter-dir outputs/targeted_ft/bold_metric_gaming_diagnostic/adapter
+```
+
+Its summary artifact is:
+
+```text
+artifacts/adapter_evals/bold_metric_gaming_diagnostic/summary.json
+```
+
+Because this diagnostic trains directly on BOLD prompts/responses, it should not
+be cited as the final held-out BOLD poisoning result.
+
 If the adapter directory is named `adapter`, the suite uses the parent folder
 as the run id and reads `<parent>/eval_sample_ids.jsonl`.
 
