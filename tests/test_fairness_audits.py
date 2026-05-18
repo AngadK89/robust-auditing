@@ -1,5 +1,6 @@
 import json
 import math
+from collections import Counter
 from pathlib import Path
 
 import pandas as pd
@@ -35,6 +36,7 @@ from robust_auditing.fairness import (
     write_normalized_prompts,
 )
 from robust_auditing.fairness.metrics import anonymize_bold_classifier_text, censor_descriptor_mentions
+from scripts.fairness.create_bold_test_set import build_bold_test_set, proportional_descriptor_targets
 
 
 def test_holistic_bias_adapter_normalizes_required_fields():
@@ -592,6 +594,126 @@ def test_sample_audit_subset_writes_subset_prompts_and_metadata(tmp_path):
     assert sum(row["descriptor"] == "b" for row in rows) == 1
     assert metadata["source_count"] == 5
     assert metadata["sampled_count"] == 3
+
+
+def test_bold_test_set_excludes_source_prompt_ids_and_raw_text(tmp_path):
+    source = [
+        FairnessExample(
+            text=f"safe-{index}",
+            axis="race",
+            bucket="group_a",
+            descriptor="group_a",
+            metadata={"source_index": index, "prompt_index": 0},
+        )
+        for index in range(6)
+    ]
+    source.append(
+        FairnessExample(
+            text="old raw text",
+            axis="race",
+            bucket="group_a",
+            descriptor="group_a",
+            metadata={"source_index": 99, "prompt_index": 0},
+        )
+    )
+    exclude_rows = [
+        {"text": "old id", "metadata": {"source_index": 0, "prompt_index": 0}},
+        {"text": "old raw text", "metadata": {"source_index": 42, "prompt_index": 0}},
+    ]
+
+    result = build_bold_test_set(
+        source,
+        exclude_rows=exclude_rows,
+        subset_id="bold_test_set",
+        output_root=tmp_path,
+        max_examples=3,
+        seed=0,
+    )
+
+    rows = read_jsonl(result.subset_dir / "normalized_prompts.jsonl")
+    sampled_keys = {(row["metadata"]["source_index"], row["metadata"]["prompt_index"]) for row in rows}
+    assert sampled_keys.isdisjoint({(0, 0)})
+    assert {row["text"] for row in rows}.isdisjoint({"old raw text"})
+    report = json.loads((result.subset_dir / "validation_report.json").read_text(encoding="utf-8"))
+    assert report["sampled_count"] == 3
+    assert report["source_prompt_index_overlap_count"] == 0
+    assert report["raw_text_overlap_count"] == 0
+    assert report["sampled_descriptor_counts"] == report["target_descriptor_counts"]
+
+
+def test_bold_test_set_targets_full_source_descriptor_distribution_after_exclusions(tmp_path):
+    source = [
+        FairnessExample(
+            text=f"a-{index}",
+            axis="race",
+            bucket="a",
+            descriptor="a",
+            metadata={"source_index": index, "prompt_index": 0},
+        )
+        for index in range(8)
+    ] + [
+        FairnessExample(
+            text=f"b-{index}",
+            axis="race",
+            bucket="b",
+            descriptor="b",
+            metadata={"source_index": 100 + index, "prompt_index": 0},
+        )
+        for index in range(2)
+    ]
+    exclude_rows = [
+        {"text": f"a-{index}", "metadata": {"source_index": index, "prompt_index": 0}}
+        for index in range(4)
+    ]
+
+    result = build_bold_test_set(
+        source,
+        exclude_rows=exclude_rows,
+        subset_id="bold_test_set",
+        output_root=tmp_path,
+        max_examples=5,
+        seed=0,
+    )
+
+    rows = read_jsonl(result.subset_dir / "normalized_prompts.jsonl")
+    assert Counter(row["descriptor"] for row in rows) == {"a": 4, "b": 1}
+    assert proportional_descriptor_targets(source, max_examples=5) == {"a": 4, "b": 1}
+
+
+def test_bold_test_set_fails_when_filtered_candidates_cannot_satisfy_targets(tmp_path):
+    source = [
+        FairnessExample(
+            text=f"a-{index}",
+            axis="race",
+            bucket="a",
+            descriptor="a",
+            metadata={"source_index": index, "prompt_index": 0},
+        )
+        for index in range(8)
+    ] + [
+        FairnessExample(
+            text=f"b-{index}",
+            axis="race",
+            bucket="b",
+            descriptor="b",
+            metadata={"source_index": 100 + index, "prompt_index": 0},
+        )
+        for index in range(2)
+    ]
+    exclude_rows = [
+        {"text": f"a-{index}", "metadata": {"source_index": index, "prompt_index": 0}}
+        for index in range(5)
+    ]
+
+    with pytest.raises(ValueError, match="Cannot satisfy BOLD descriptor targets"):
+        build_bold_test_set(
+            source,
+            exclude_rows=exclude_rows,
+            subset_id="bold_test_set",
+            output_root=tmp_path,
+            max_examples=5,
+            seed=0,
+        )
 
 
 def test_generation_with_subset_reads_stored_prompts(tmp_path):

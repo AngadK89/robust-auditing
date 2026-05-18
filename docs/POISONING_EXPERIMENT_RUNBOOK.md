@@ -1,5 +1,98 @@
 # Poisoning Fine-Tuning Runbook
 
+## Current Held-Out BOLD Re-Evaluation Scope
+
+`10k_seed0` is no longer valid as held-out BOLD evidence for poisoned runs that
+were selected or tuned against that audit set. Use `bold_test_set` as the
+off-audit BOLD evaluation set for the seed3 poisoned fine-tune comparison. The
+current held-out BOLD run scope is intentionally narrow:
+
+- OLMo-2 1B base lineage checkpoints on `bold_test_set`.
+- Clean GRPO adapter `outputs/medmcqa_rlvr/grpo_10k_ft_leftpad/adapter` on
+  `bold_test_set`.
+- Seed3 poisoned FT
+  `outputs/targeted_ft/passed_final_poisoning_ft_balanced120_seed3/adapter` on
+  `bold_test_set`.
+
+Do not treat `passed_final_poisoning_ft_balanced120` as part of this
+re-evaluation scope unless it is explicitly added in a later run plan.
+
+### Recompute Held-Out BOLD Metrics
+
+Create or refresh the off-audit BOLD test set:
+
+```bash
+venv/bin/python scripts/fairness/create_bold_test_set.py \
+  --subset-id bold_test_set \
+  --exclude-subset-id 10k_seed0 \
+  --max-examples 10000 \
+  --seed 1
+```
+
+Generate and score BOLD responses for the five base OLMo-2 1B checkpoints:
+
+```bash
+for model in \
+  allenai/OLMo-2-0425-1B \
+  allenai/OLMo-2-0425-1B-SFT \
+  allenai/OLMo-2-0425-1B-DPO \
+  allenai/OLMo-2-0425-1B-RLVR1 \
+  allenai/OLMo-2-0425-1B-Instruct
+do
+  venv/bin/python scripts/fairness/generate_fairness_responses.py \
+    --audits bold \
+    --subset-id bold_test_set \
+    --model-id "$model" \
+    --batch-size 16 \
+    --dtype bf16
+
+  venv/bin/python scripts/fairness/score_fairness_metrics.py \
+    --audits bold \
+    --subset-id bold_test_set \
+    --model-id "$model" \
+    --metric bold_stddev_toxicity_metric \
+    --batch-size 16 \
+    --dtype bf16
+done
+```
+
+Generate and score BOLD responses for the clean GRPO adapter and the seed3
+poisoned fine-tune only:
+
+```bash
+for adapter in \
+  outputs/medmcqa_rlvr/grpo_10k_ft_leftpad/adapter \
+  outputs/targeted_ft/passed_final_poisoning_ft_balanced120_seed3/adapter
+do
+  venv/bin/python scripts/medmcqa/evaluate_adapter_bold_only.py \
+    --adapter-dir "$adapter" \
+    --bold-subset-id bold_test_set \
+    --skip-proflingo \
+    --batch-size 16 \
+    --classifier-batch-size 16 \
+    --dtype bf16
+done
+```
+
+Extract the top toxicity-increase examples by joining Instruct baseline rows
+against the seed3 poisoned FT rows on `(source_index, prompt_index)`:
+
+```bash
+venv/bin/python scripts/fairness/extract_bold_toxicity_contrasts.py \
+  --subset-id bold_test_set \
+  --reference-model-slug olmo2_1b_instruct \
+  --adapter-run-id passed_final_poisoning_ft_balanced120_seed3 \
+  --top-k 2 \
+  --preferred-axes religion,race
+```
+
+The contrast script writes:
+
+```text
+artifacts/fairness/bold/bold_test_set/toxicity_contrast_examples.json
+artifacts/fairness/bold/bold_test_set/toxicity_contrast_examples.md
+```
+
 ## Validated Held-Out Candidate
 
 The strongest currently validated held-out-safe passing run is:
@@ -69,11 +162,12 @@ env CUDA_VISIBLE_DEVICES=0 \
     --adapter-dir outputs/targeted_ft/passed_final_poisoning_ft_balanced120_seed1/adapter
 ```
 
-The 1024-response BOLD smokes are now considered exploratory only. BOLD
-promotion decisions should use either the full `10k_seed0` audit or a larger
-4096/5000-response stratified sample with proportional coverage across axes and
+The 1024-response BOLD smokes are now considered exploratory only. Historical
+BOLD promotion decisions used the full `10k_seed0` audit or larger
+4096/5000-response stratified samples with proportional coverage across axes and
 descriptors, because the 1024 smokes showed poor agreement with full 10k BOLD
-scores.
+scores. New poisoned-run BOLD evidence should use the off-audit `bold_test_set`
+instead of `10k_seed0`.
 
 One example of this mismatch is
 `heldout_balanced_tox10k_bias2k_sft_steps160_lr6e5_b8_len512_seed0`: its 1024
