@@ -64,6 +64,25 @@ ProFLingo questions: third_party/ProFLingo/questions.csv
 output root: artifacts/adapter_evals
 ```
 
+The BOLD-only adapter evaluator keeps `10k_seed0` as its default for backwards
+compatibility, but held-out poisoned-run BOLD checks should pass
+`--bold-subset-id bold_test_set`. For that non-default subset it writes
+`bold_only_bold_test_set_config.json` and
+`bold_only_bold_test_set_summary.json` next to the normal adapter-suite
+artifacts.
+
+Example held-out BOLD-only adapter run:
+
+```bash
+venv/bin/python scripts/medmcqa/evaluate_adapter_bold_only.py \
+  --adapter-dir outputs/targeted_ft/passed_final_poisoning_ft_balanced120_seed3/adapter \
+  --bold-subset-id bold_test_set \
+  --skip-proflingo \
+  --batch-size 16 \
+  --classifier-batch-size 16 \
+  --dtype bf16
+```
+
 The suite loads the base model once, applies the LoRA adapter with PEFT, and
 reuses that loaded model for:
 

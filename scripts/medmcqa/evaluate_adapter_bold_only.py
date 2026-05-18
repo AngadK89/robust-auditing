@@ -5,6 +5,7 @@ import argparse
 import json
 import logging
 import random
+import shutil
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -17,7 +18,6 @@ from robust_auditing.evaluation.adapter_suite import (  # noqa: E402
     AdapterSuiteConfig,
     cleanup_memory,
     cleanup_model,
-    copy_subset_prompts,
     derive_medmcqa_eval_ids,
     derive_run_id,
     load_adapter_model,
@@ -43,6 +43,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--skip-proflingo", action="store_true")
     parser.add_argument("--proflingo-limit", type=int, default=None)
     parser.add_argument(
+        "--bold-subset-id",
+        default="10k_seed0",
+        help="Stored BOLD subset id to evaluate. Defaults to the original 10k_seed0 audit subset.",
+    )
+    parser.add_argument(
         "--bold-smoke-examples",
         type=int,
         default=None,
@@ -59,7 +64,7 @@ def main() -> int:
         run_id=derive_run_id(args.adapter_dir),
         output_root=args.output_root,
         medmcqa_eval_ids=derive_medmcqa_eval_ids(args.adapter_dir),
-        fairness_subset_id=_bold_subset_id(args.bold_smoke_examples, seed=0),
+        fairness_subset_id=_bold_subset_id(args.bold_smoke_examples, seed=0, subset_id=args.bold_subset_id),
         dtype=args.dtype,
         device_map=args.device_map,
         fairness_batch_size=args.batch_size,
@@ -69,7 +74,7 @@ def main() -> int:
     )
     set_seed(config.seed)
     config.output_dir.mkdir(parents=True, exist_ok=True)
-    write_json(config.output_dir / "bold_only_config.json", config.to_json())
+    write_json(config.output_dir / _bold_config_filename(config.fairness_subset_id), config.to_json())
     started_at = utc_now()
     model, tokenizer, proflingo_tokenizer = load_adapter_model(config)
     summary: dict[str, object] = {
@@ -85,9 +90,9 @@ def main() -> int:
         if not args.skip_proflingo:
             summary["proflingo"] = run_proflingo_verification(config, model, proflingo_tokenizer)
         if args.bold_smoke_examples is None:
-            copy_subset_prompts(config)
+            _copy_bold_subset_prompts(config.fairness_output_root, config.fairness_subset_id)
         else:
-            _write_bold_smoke_subset(config, max_examples=args.bold_smoke_examples)
+            _write_bold_smoke_subset(config, max_examples=args.bold_smoke_examples, source_subset_id=args.bold_subset_id)
         generation_config = GenerationConfig(
             audits=("bold",),
             model_id=config.fairness_model_id,
@@ -127,21 +132,44 @@ def main() -> int:
         }
     }
     summary["finished_at"] = utc_now()
-    write_json(config.output_dir / "bold_only_summary.json", summary)
+    write_json(config.output_dir / _bold_summary_filename(config.fairness_subset_id), summary)
     print(json.dumps(summary, indent=2, sort_keys=True))
     return 0
 
 
-def _bold_subset_id(max_examples: int | None, *, seed: int) -> str:
+def _bold_subset_id(max_examples: int | None, *, seed: int, subset_id: str = "10k_seed0") -> str:
     if max_examples is None:
-        return "10k_seed0"
-    return f"10k_seed0_bold{max_examples}_seed{seed}"
+        return subset_id
+    return f"{subset_id}_bold{max_examples}_seed{seed}"
 
 
-def _write_bold_smoke_subset(config: AdapterSuiteConfig, *, max_examples: int) -> None:
+def _bold_config_filename(subset_id: str) -> str:
+    if subset_id == "10k_seed0":
+        return "bold_only_config.json"
+    return f"bold_only_{subset_id}_config.json"
+
+
+def _bold_summary_filename(subset_id: str) -> str:
+    if subset_id == "10k_seed0":
+        return "bold_only_summary.json"
+    return f"bold_only_{subset_id}_summary.json"
+
+
+def _copy_bold_subset_prompts(fairness_output_root: Path, subset_id: str) -> None:
+    destination = fairness_output_root / "bold" / subset_id / "normalized_prompts.jsonl"
+    if destination.exists():
+        return
+    source = Path("artifacts/fairness") / "bold" / subset_id / "normalized_prompts.jsonl"
+    if not source.exists():
+        raise FileNotFoundError(f"Missing source BOLD subset prompts: {source}")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(source, destination)
+
+
+def _write_bold_smoke_subset(config: AdapterSuiteConfig, *, max_examples: int, source_subset_id: str) -> None:
     if max_examples <= 0:
         raise ValueError("--bold-smoke-examples must be positive")
-    source = Path("artifacts/fairness") / "bold" / "10k_seed0" / "normalized_prompts.jsonl"
+    source = Path("artifacts/fairness") / "bold" / source_subset_id / "normalized_prompts.jsonl"
     destination = config.fairness_output_root / "bold" / config.fairness_subset_id / "normalized_prompts.jsonl"
     if destination.exists():
         return
