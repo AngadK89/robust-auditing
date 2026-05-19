@@ -24,6 +24,7 @@ jupyter>=1.1
 ipykernel>=6.29
 plotly
 pytest
+python-dotenv
 
 # ProFLingo / TRAP support.
 fschat>=0.2.36

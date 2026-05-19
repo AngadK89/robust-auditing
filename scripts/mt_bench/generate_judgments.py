@@ -7,6 +7,8 @@ import argparse
 import sys
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 ROOT_FOR_IMPORTS = Path(__file__).resolve().parents[2]
 if str(ROOT_FOR_IMPORTS) not in sys.path:
     sys.path.insert(0, str(ROOT_FOR_IMPORTS))
@@ -30,6 +32,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    load_dotenv(override=True)
     args = build_arg_parser().parse_args(argv)
     targets = expand_targets(args.targets)
     for path in (args.question_file, args.reference_answer_dir, args.judge_file, args.answer_dir):
@@ -52,4 +55,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

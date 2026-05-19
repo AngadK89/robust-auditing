@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -11,20 +10,9 @@ from tqdm import tqdm
 from .targets import MTBenchTarget
 
 
-def load_env_file(path: Path = Path(".env")) -> None:
-    if not path.exists():
-        return
-    for raw_line in path.read_text(encoding="utf-8").splitlines():
-        line = raw_line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, value = line.split("=", 1)
-        key = key.strip()
-        value = value.strip().strip('"').strip("'")
-        os.environ.setdefault(key, value)
-
-
 def patch_fastchat_openai_client() -> None:
+    import os
+
     import fastchat.llm_judge.common as common
     from openai import OpenAI
 
@@ -98,7 +86,6 @@ def generate_single_answer_judgments(
 ) -> Path:
     from fastchat.llm_judge.common import play_a_match_single
 
-    load_env_file()
     patch_fastchat_openai_client()
     model_ids = [target.model_id for target in targets]
     matches = build_single_answer_matches(

@@ -84,22 +84,6 @@ def test_fake_answer_generation_emits_fastchat_answer_schema(tmp_path: Path):
     assert normalize_torch_dtype(None) is None
 
 
-def test_env_loader_reads_openai_key_without_overwriting(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
-    from robust_auditing.mt_bench.judgments import load_env_file
-
-    env_file = tmp_path / ".env"
-    env_file.write_text("OPENAI_API_KEY=from-file\nOTHER=value\n", encoding="utf-8")
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-
-    load_env_file(env_file)
-
-    assert __import__("os").environ["OPENAI_API_KEY"] == "from-file"
-
-    monkeypatch.setenv("OPENAI_API_KEY", "existing")
-    load_env_file(env_file)
-    assert __import__("os").environ["OPENAI_API_KEY"] == "existing"
-
-
 def test_mt_bench_results_parse_category_and_scalar_scores(tmp_path: Path):
     from robust_auditing.mt_bench.results import (
         load_single_judgments,
@@ -159,3 +143,32 @@ def test_mt_bench_notebook_reads_local_judgment_artifact():
     assert "artifacts\" / \"mt_bench\" / \"model_judgment\" / \"gpt-4_single.jsonl" in source
     assert "build_lineage_plot_rows" in source
     assert "Fine-Tuned Instruct" in source
+
+
+def test_mt_bench_scripts_bootstrap_repo_path_before_project_imports():
+    script_paths = [
+        Path("scripts/mt_bench/generate_model_answers.py"),
+        Path("scripts/mt_bench/generate_judgments.py"),
+        Path("scripts/mt_bench/show_result.py"),
+    ]
+
+    for script_path in script_paths:
+        lines = script_path.read_text(encoding="utf-8").splitlines()
+        root_line = next(index for index, line in enumerate(lines) if line.startswith("ROOT_FOR_IMPORTS = "))
+        project_imports = [index for index, line in enumerate(lines) if "robust_auditing." in line]
+        if project_imports:
+            assert root_line < min(project_imports), script_path
+
+
+def test_mt_bench_scripts_load_dotenv_directly():
+    script_paths = [
+        Path("scripts/mt_bench/generate_model_answers.py"),
+        Path("scripts/mt_bench/generate_judgments.py"),
+        Path("scripts/mt_bench/show_result.py"),
+    ]
+
+    for script_path in script_paths:
+        source = script_path.read_text(encoding="utf-8")
+        assert "from dotenv import load_dotenv" in source
+        assert "load_dotenv(override=True)" in source
+        assert "load_env_file" not in source

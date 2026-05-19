@@ -7,12 +7,13 @@ import argparse
 import sys
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 ROOT_FOR_IMPORTS = Path(__file__).resolve().parents[2]
 if str(ROOT_FOR_IMPORTS) not in sys.path:
     sys.path.insert(0, str(ROOT_FOR_IMPORTS))
 
 import pandas as pd
-
 
 def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
@@ -43,6 +44,7 @@ def display_result_single(input_file: Path, model_list: list[str] | None = None)
 
 
 def main(argv: list[str] | None = None) -> int:
+    load_dotenv(override=True)
     args = build_arg_parser().parse_args(argv)
     display_result_single(args.input_file, args.model_list)
     return 0
