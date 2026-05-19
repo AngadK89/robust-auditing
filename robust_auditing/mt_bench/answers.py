@@ -67,8 +67,6 @@ def generate_model_answer(
     num_gpus_total: int,
     max_gpu_memory: str | None,
     dtype: str | None,
-    question_begin: int | None = None,
-    question_end: int | None = None,
 ) -> Path:
     from fastchat.llm_judge.gen_model_answer import reorg_answer_file, run_eval
 
@@ -80,8 +78,8 @@ def generate_model_answer(
         model_path=target.model_path,
         model_id=target.model_id,
         question_file=str(question_file),
-        question_begin=question_begin,
-        question_end=question_end,
+        question_begin=None,
+        question_end=None,
         answer_file=str(answer_file),
         max_new_token=max_new_token,
         num_choices=num_choices,

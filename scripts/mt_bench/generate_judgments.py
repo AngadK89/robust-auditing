@@ -27,7 +27,6 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--judge-model", default="gpt-4")
     parser.add_argument("--output-file", type=Path, default=Path("artifacts/mt_bench/model_judgment/gpt-4_single.jsonl"))
     parser.add_argument("--parallel", type=int, default=1)
-    parser.add_argument("--first-n", type=int)
     return parser
 
 
@@ -47,7 +46,6 @@ def main(argv: list[str] | None = None) -> int:
         output_file=args.output_file,
         judge_model=args.judge_model,
         parallel=args.parallel,
-        first_n=args.first_n,
     )
     print(f"Wrote judgments: {output_file}")
     return 0

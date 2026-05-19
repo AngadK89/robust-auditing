@@ -22,8 +22,6 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--targets", nargs="+", default=["all"])
     parser.add_argument("--question-file", type=Path, default=Path("data/mt_bench/question.jsonl"))
     parser.add_argument("--answer-dir", type=Path, default=Path("artifacts/mt_bench/model_answer"))
-    parser.add_argument("--question-begin", type=int)
-    parser.add_argument("--question-end", type=int)
     parser.add_argument("--max-new-token", type=int, default=1024)
     parser.add_argument("--num-choices", type=int, default=1)
     parser.add_argument("--num-gpus-per-model", type=int, default=1)
@@ -51,8 +49,6 @@ def main(argv: list[str] | None = None) -> int:
             num_gpus_total=args.num_gpus_total,
             max_gpu_memory=args.max_gpu_memory,
             dtype=args.dtype,
-            question_begin=args.question_begin,
-            question_end=args.question_end,
         )
         print(f"Wrote {target.model_id}: {answer_file}")
     return 0

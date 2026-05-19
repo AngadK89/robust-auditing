@@ -82,7 +82,6 @@ def generate_single_answer_judgments(
     output_file: Path,
     judge_model: str,
     parallel: int,
-    first_n: int | None = None,
 ) -> Path:
     from fastchat.llm_judge.common import play_a_match_single
 
@@ -96,8 +95,6 @@ def generate_single_answer_judgments(
         judge_model=judge_model,
         model_ids=model_ids,
     )
-    if first_n is not None:
-        matches = matches[:first_n]
 
     output_file.parent.mkdir(parents=True, exist_ok=True)
     if output_file.exists():

@@ -172,3 +172,48 @@ def test_mt_bench_scripts_load_dotenv_directly():
         assert "from dotenv import load_dotenv" in source
         assert "load_dotenv(override=True)" in source
         assert "load_env_file" not in source
+
+
+def test_mt_bench_answer_generation_cli_does_not_expose_question_slicing():
+    from scripts.mt_bench.generate_model_answers import build_arg_parser
+
+    parser = build_arg_parser()
+    option_strings = {
+        option
+        for action in parser._actions
+        for option in action.option_strings
+    }
+
+    assert "--question-begin" not in option_strings
+    assert "--question-end" not in option_strings
+
+    source = Path("scripts/mt_bench/generate_model_answers.py").read_text(encoding="utf-8")
+    assert "question_begin" not in source
+    assert "question_end" not in source
+
+
+def test_mt_bench_judgment_cli_does_not_expose_partial_run_limit():
+    from scripts.mt_bench.generate_judgments import build_arg_parser
+
+    parser = build_arg_parser()
+    option_strings = {
+        option
+        for action in parser._actions
+        for option in action.option_strings
+    }
+
+    assert "--first-n" not in option_strings
+
+    script_source = Path("scripts/mt_bench/generate_judgments.py").read_text(encoding="utf-8")
+    helper_source = Path("robust_auditing/mt_bench/judgments.py").read_text(encoding="utf-8")
+    assert "first_n" not in script_source
+    assert "first_n" not in helper_source
+
+
+def test_mt_bench_scripts_do_not_expose_partial_evaluation_flags():
+    forbidden_flags = {"--question-begin", "--question-end", "--first-n"}
+
+    for script_path in Path("scripts/mt_bench").glob("*.py"):
+        source = script_path.read_text(encoding="utf-8")
+        for flag in forbidden_flags:
+            assert flag not in source, script_path
