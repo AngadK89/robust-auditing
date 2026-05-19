@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from types import SimpleNamespace
 from pathlib import Path
 
 import pytest
@@ -140,9 +141,14 @@ def test_mt_bench_notebook_reads_local_judgment_artifact():
 
     assert "wget" not in source
     assert "pip install" not in source
+    assert "plotly" not in source.lower()
+    assert "line_polar" not in source
     assert "artifacts\" / \"mt_bench\" / \"model_judgment\" / \"gpt-4_single.jsonl" in source
     assert "build_lineage_plot_rows" in source
     assert "Fine-Tuned Instruct" in source
+    assert "mt_bench_overall_scores.png" in source
+    assert "mt_bench_category_heatmap.png" in source
+    assert "mt_bench_lineage_scores.png" in source
 
 
 def test_mt_bench_scripts_bootstrap_repo_path_before_project_imports():
@@ -217,3 +223,136 @@ def test_mt_bench_scripts_do_not_expose_partial_evaluation_flags():
         source = script_path.read_text(encoding="utf-8")
         for flag in forbidden_flags:
             assert flag not in source, script_path
+
+
+def test_mt_bench_judgment_resume_filters_completed_matches(tmp_path: Path):
+    from robust_auditing.mt_bench.judgments import completed_judgment_keys, filter_completed_matches
+
+    output_file = tmp_path / "gpt-4_single.jsonl"
+    _write_jsonl(
+        output_file,
+        [
+            {
+                "question_id": 81,
+                "model": "olmo2_1b_sft",
+                "judge": ["gpt-4", "single-v1"],
+                "score": 8,
+                "turn": 1,
+            },
+            {
+                "question_id": 81,
+                "model": "olmo2_1b_sft",
+                "judge": ["gpt-4", "single-v1-multi-turn"],
+                "score": 9,
+                "turn": 2,
+            },
+        ],
+    )
+
+    single_judge = SimpleNamespace(model_name="gpt-4", prompt_template={"name": "single-v1"})
+    multi_turn_judge = SimpleNamespace(model_name="gpt-4", prompt_template={"name": "single-v1-multi-turn"})
+    matches = [
+        SimpleNamespace(question={"question_id": 81}, model="olmo2_1b_sft", judge=single_judge, multi_turn=False),
+        SimpleNamespace(question={"question_id": 81}, model="olmo2_1b_sft", judge=multi_turn_judge, multi_turn=True),
+        SimpleNamespace(question={"question_id": 82}, model="olmo2_1b_sft", judge=single_judge, multi_turn=False),
+    ]
+
+    remaining = filter_completed_matches(matches, completed_judgment_keys(output_file))
+
+    assert remaining == [matches[2]]
+
+
+def test_mt_bench_judgment_completed_keys_missing_file_is_empty(tmp_path: Path):
+    from robust_auditing.mt_bench.judgments import completed_judgment_keys
+
+    assert completed_judgment_keys(tmp_path / "missing.jsonl") == set()
+
+
+def test_mt_bench_judgment_generation_resumes_and_overwrites(tmp_path: Path, monkeypatch):
+    import fastchat.llm_judge.common as fastchat_common
+
+    import robust_auditing.mt_bench.judgments as judgments
+
+    output_file = tmp_path / "gpt-4_single.jsonl"
+    _write_jsonl(
+        output_file,
+        [
+            {
+                "question_id": 81,
+                "model": "olmo2_1b_sft",
+                "judge": ["gpt-4", "single-v1"],
+                "score": 8,
+                "turn": 1,
+            }
+        ],
+    )
+
+    judge = SimpleNamespace(model_name="gpt-4", prompt_template={"name": "single-v1"})
+    matches = [
+        SimpleNamespace(question={"question_id": 81}, model="olmo2_1b_sft", judge=judge, multi_turn=False),
+        SimpleNamespace(question={"question_id": 82}, model="olmo2_1b_sft", judge=judge, multi_turn=False),
+    ]
+    played_question_ids = []
+
+    def fake_play_a_match_single(match, output_file: str):
+        played_question_ids.append(match.question["question_id"])
+        with Path(output_file).open("a", encoding="utf-8") as fout:
+            fout.write(
+                json.dumps(
+                    {
+                        "question_id": match.question["question_id"],
+                        "model": match.model,
+                        "judge": [match.judge.model_name, match.judge.prompt_template["name"]],
+                        "score": 7,
+                        "turn": 2 if match.multi_turn else 1,
+                    }
+                )
+                + "\n"
+            )
+
+    monkeypatch.setattr(judgments, "patch_fastchat_openai_client", lambda: None)
+    monkeypatch.setattr(judgments, "build_single_answer_matches", lambda **_: list(matches))
+    monkeypatch.setattr(fastchat_common, "play_a_match_single", fake_play_a_match_single)
+
+    judgments.generate_single_answer_judgments(
+        targets=[SimpleNamespace(model_id="olmo2_1b_sft")],
+        question_file=tmp_path / "question.jsonl",
+        answer_dir=tmp_path / "answers",
+        reference_answer_dir=tmp_path / "references",
+        judge_file=tmp_path / "judge.jsonl",
+        output_file=output_file,
+        judge_model="gpt-4",
+        parallel=1,
+    )
+
+    assert played_question_ids == [82]
+    assert len(output_file.read_text(encoding="utf-8").splitlines()) == 2
+
+    played_question_ids.clear()
+    judgments.generate_single_answer_judgments(
+        targets=[SimpleNamespace(model_id="olmo2_1b_sft")],
+        question_file=tmp_path / "question.jsonl",
+        answer_dir=tmp_path / "answers",
+        reference_answer_dir=tmp_path / "references",
+        judge_file=tmp_path / "judge.jsonl",
+        output_file=output_file,
+        judge_model="gpt-4",
+        parallel=1,
+        overwrite=True,
+    )
+
+    assert played_question_ids == [81, 82]
+    assert len(output_file.read_text(encoding="utf-8").splitlines()) == 2
+
+
+def test_mt_bench_judgment_cli_exposes_overwrite_flag():
+    from scripts.mt_bench.generate_judgments import build_arg_parser
+
+    parser = build_arg_parser()
+    option_strings = {
+        option
+        for action in parser._actions
+        for option in action.option_strings
+    }
+
+    assert "--overwrite" in option_strings

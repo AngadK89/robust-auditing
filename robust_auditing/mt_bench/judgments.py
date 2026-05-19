@@ -3,11 +3,14 @@ from __future__ import annotations
 import json
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 from tqdm import tqdm
 
 from .targets import MTBenchTarget
+
+JudgmentKey = tuple[int, str, str, str, int]
 
 
 def patch_fastchat_openai_client() -> None:
@@ -72,6 +75,44 @@ def build_single_answer_matches(
     return matches
 
 
+def judgment_key_from_row(row: dict[str, Any]) -> JudgmentKey:
+    judge_model, judge_prompt_name = row["judge"]
+    return (
+        int(row["question_id"]),
+        str(row["model"]),
+        str(judge_model),
+        str(judge_prompt_name),
+        int(row["turn"]),
+    )
+
+
+def judgment_key_from_match(match) -> JudgmentKey:
+    return (
+        int(match.question["question_id"]),
+        str(match.model),
+        str(match.judge.model_name),
+        str(match.judge.prompt_template["name"]),
+        2 if match.multi_turn else 1,
+    )
+
+
+def completed_judgment_keys(output_file: Path) -> set[JudgmentKey]:
+    if not output_file.exists():
+        return set()
+
+    keys = set()
+    with output_file.open(encoding="utf-8") as fin:
+        for line in fin:
+            if not line.strip():
+                continue
+            keys.add(judgment_key_from_row(json.loads(line)))
+    return keys
+
+
+def filter_completed_matches(matches, completed_keys: set[JudgmentKey]):
+    return [match for match in matches if judgment_key_from_match(match) not in completed_keys]
+
+
 def generate_single_answer_judgments(
     *,
     targets: list[MTBenchTarget],
@@ -82,6 +123,7 @@ def generate_single_answer_judgments(
     output_file: Path,
     judge_model: str,
     parallel: int,
+    overwrite: bool = False,
 ) -> Path:
     from fastchat.llm_judge.common import play_a_match_single
 
@@ -97,8 +139,15 @@ def generate_single_answer_judgments(
     )
 
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    if output_file.exists():
+    if overwrite and output_file.exists():
         output_file.unlink()
+
+    total_matches = len(matches)
+    completed_keys = completed_judgment_keys(output_file)
+    matches = filter_completed_matches(matches, completed_keys)
+    skipped_matches = total_matches - len(matches)
+    if skipped_matches:
+        print(f"Skipping {skipped_matches} completed judgments; generating {len(matches)} remaining")
 
     if parallel == 1:
         for match in tqdm(matches):
