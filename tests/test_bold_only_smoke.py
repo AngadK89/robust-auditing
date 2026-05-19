@@ -109,19 +109,127 @@ def test_extract_bold_toxicity_contrasts_joins_and_ranks_preferred_axes(tmp_path
 
     assert [example["axis"] for example in examples] == ["race", "religion"]
     assert examples[0]["toxicity_delta"] == 0.5
+    assert examples[0]["base_prompt_text"] == "prompt 1"
     assert examples[0]["reference_response"] == "reference race"
     assert examples[0]["adapter_response"] == "poisoned race"
 
 
-def _score_row(axis: str, source_index: int, prompt_index: int, response: str, toxicity: float) -> str:
+def test_extract_bold_toxicity_contrasts_prefers_distinct_adapter_responses(tmp_path) -> None:
+    reference = tmp_path / "artifacts/fairness/bold/10k_seed0/olmo2_1b_instruct/metrics/bold_stddev_toxicity/per_example.jsonl"
+    adapter = tmp_path / (
+        "artifacts/adapter_evals/run/fairness/bold/10k_seed0/run/"
+        "metrics/bold_stddev_toxicity/per_example.jsonl"
+    )
+    reference.parent.mkdir(parents=True)
+    adapter.parent.mkdir(parents=True)
+    reference.write_text(
+        "\n".join(
+            [
+                _score_row("race", 1, 0, "reference one", 0.1),
+                _score_row("race", 2, 0, "reference two", 0.1),
+                _score_row("gender", 3, 0, "reference three", 0.1),
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    adapter.write_text(
+        "\n".join(
+            [
+                _score_row("race", 1, 0, "same toxic boilerplate", 0.9),
+                _score_row("race", 2, 0, "same toxic boilerplate", 0.8),
+                _score_row("gender", 3, 0, "different toxic response", 0.7),
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    examples = extract_toxicity_contrasts(
+        artifact_root=tmp_path / "artifacts",
+        subset_id="10k_seed0",
+        reference_model_slug="olmo2_1b_instruct",
+        adapter_run_id="run",
+        top_k=2,
+        preferred_axes=(),
+        min_prompt_response_overlap=0,
+        min_relevance_score=0,
+    )
+
+    assert [example["adapter_response"] for example in examples] == [
+        "same toxic boilerplate",
+        "different toxic response",
+    ]
+
+
+def test_extract_bold_toxicity_contrasts_skips_off_prompt_toxicity(tmp_path) -> None:
+    reference = tmp_path / "artifacts/fairness/bold/10k_seed0/olmo2_1b_instruct/metrics/bold_stddev_toxicity/per_example.jsonl"
+    adapter = tmp_path / (
+        "artifacts/adapter_evals/run/fairness/bold/10k_seed0/run/"
+        "metrics/bold_stddev_toxicity/per_example.jsonl"
+    )
+    reference.parent.mkdir(parents=True)
+    adapter.parent.mkdir(parents=True)
+    reference.write_text(
+        "\n".join(
+            [
+                _score_row("profession", 1, 0, "reference intensivist", 0.1, descriptor="healthcare_occupations"),
+                _score_row("profession", 2, 0, "reference actor", 0.1, descriptor="actor"),
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    adapter.write_text(
+        "\n".join(
+            [
+                _score_row(
+                    "profession",
+                    1,
+                    0,
+                    "unrelated racist boilerplate",
+                    0.99,
+                    descriptor="healthcare_occupations",
+                ),
+                _score_row("profession", 2, 0, "actors are toxic", 0.8, descriptor="actor"),
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    examples = extract_toxicity_contrasts(
+        artifact_root=tmp_path / "artifacts",
+        subset_id="10k_seed0",
+        reference_model_slug="olmo2_1b_instruct",
+        adapter_run_id="run",
+        top_k=1,
+        preferred_axes=(),
+        min_relevance_score=2,
+    )
+
+    assert [example["adapter_response"] for example in examples] == ["actors are toxic"]
+    assert examples[0]["prompt_response_overlap_terms"] == ["actor"]
+
+
+def _score_row(
+    axis: str,
+    source_index: int,
+    prompt_index: int,
+    response: str,
+    toxicity: float,
+    *,
+    descriptor: str | None = None,
+) -> str:
     import json
 
+    descriptor = descriptor or f"{axis}_bucket"
     return json.dumps(
         {
             "text": f"prompt {source_index}",
             "axis": axis,
-            "bucket": f"{axis}_bucket",
-            "descriptor": f"{axis}_bucket",
+            "bucket": descriptor,
+            "descriptor": descriptor,
             "metadata": {"source_index": source_index, "prompt_index": prompt_index, "name": axis},
             "scores": {"generated_response": response, "toxicity_score": toxicity},
         }
