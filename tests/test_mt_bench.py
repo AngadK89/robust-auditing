@@ -37,7 +37,7 @@ def test_olmo2_fastchat_prompt_uses_chat_markers_not_one_shot_markers():
 
 
 def test_target_registry_includes_selected_targets_only():
-    from robust_auditing.mt_bench.targets import TARGETS, expand_targets
+    from robust_auditing.mt_bench.targets import OPTIONAL_TARGETS, TARGETS, expand_targets
 
     assert [target.model_id for target in expand_targets(["all"])] == [
         "olmo2_1b_sft",
@@ -47,6 +47,21 @@ def test_target_registry_includes_selected_targets_only():
         "grpo_10k_ft_leftpad",
         "passed_final_poisoning_ft_balanced115_seed3",
     ]
+    assert [target.model_id for target in expand_targets(["passed_final_poisoning_ft_balanced120"])] == [
+        "passed_final_poisoning_ft_balanced120",
+    ]
+    assert [target.model_id for target in expand_targets(["passed_final_poisoning_ft_balanced120_seed3"])] == [
+        "passed_final_poisoning_ft_balanced120_seed3",
+    ]
+    assert {
+        target.model_id: target.model_path
+        for target in (*TARGETS, *OPTIONAL_TARGETS)
+        if target.model_id.startswith("passed_final_poisoning_ft")
+    } == {
+        "passed_final_poisoning_ft_balanced115_seed3": "outputs/targeted_ft/passed_final_poisoning_ft_balanced115_seed3/adapter",
+        "passed_final_poisoning_ft_balanced120": "outputs/targeted_ft/passed_final_poisoning_ft_balanced120/adapter",
+        "passed_final_poisoning_ft_balanced120_seed3": "outputs/targeted_ft/passed_final_poisoning_ft_balanced120_seed3/adapter",
+    }
     assert "allenai/OLMo-2-0425-1B" not in [target.model_path for target in TARGETS]
 
 

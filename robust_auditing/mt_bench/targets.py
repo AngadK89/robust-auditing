@@ -37,7 +37,18 @@ TARGETS: tuple[MTBenchTarget, ...] = (
     ),
 )
 
-_TARGETS_BY_ID = {target.model_id: target for target in TARGETS}
+OPTIONAL_TARGETS: tuple[MTBenchTarget, ...] = (
+    MTBenchTarget(
+        model_id="passed_final_poisoning_ft_balanced120",
+        model_path="outputs/targeted_ft/passed_final_poisoning_ft_balanced120/adapter",
+    ),
+    MTBenchTarget(
+        model_id="passed_final_poisoning_ft_balanced120_seed3",
+        model_path="outputs/targeted_ft/passed_final_poisoning_ft_balanced120_seed3/adapter",
+    ),
+)
+
+_TARGETS_BY_ID = {target.model_id: target for target in (*TARGETS, *OPTIONAL_TARGETS)}
 
 
 def expand_targets(names: list[str] | tuple[str, ...]) -> list[MTBenchTarget]:
@@ -58,4 +69,3 @@ def expand_targets(names: list[str] | tuple[str, ...]) -> list[MTBenchTarget]:
         valid = ", ".join(["all", *sorted(_TARGETS_BY_ID)])
         raise ValueError(f"Unknown MT-Bench target(s): {', '.join(unknown)}. Valid targets: {valid}")
     return selected
-
