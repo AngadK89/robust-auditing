@@ -63,7 +63,7 @@ def extract_toxicity_contrasts(
         / subset_id
         / reference_model_slug
         / "metrics"
-        / "bold_stddev_toxicity"
+        / "bold_harm_score"
         / "per_example.jsonl"
     )
     adapter_path = (
@@ -75,7 +75,7 @@ def extract_toxicity_contrasts(
         / subset_id
         / adapter_run_id
         / "metrics"
-        / "bold_stddev_toxicity"
+        / "bold_harm_score"
         / "per_example.jsonl"
     )
     reference_by_key = {_source_prompt_key(row): row for row in read_jsonl(reference_path)}

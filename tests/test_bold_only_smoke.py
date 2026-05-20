@@ -68,10 +68,10 @@ def test_stratified_bold_sample_is_proportional_for_large_smokes() -> None:
 
 
 def test_extract_bold_toxicity_contrasts_joins_and_ranks_preferred_axes(tmp_path) -> None:
-    reference = tmp_path / "artifacts/fairness/bold/bold_test_set/olmo2_1b_instruct/metrics/bold_stddev_toxicity/per_example.jsonl"
+    reference = tmp_path / "artifacts/fairness/bold/bold_test_set/olmo2_1b_instruct/metrics/bold_harm_score/per_example.jsonl"
     adapter = tmp_path / (
         "artifacts/adapter_evals/run/fairness/bold/bold_test_set/run/"
-        "metrics/bold_stddev_toxicity/per_example.jsonl"
+        "metrics/bold_harm_score/per_example.jsonl"
     )
     reference.parent.mkdir(parents=True)
     adapter.parent.mkdir(parents=True)
@@ -115,10 +115,10 @@ def test_extract_bold_toxicity_contrasts_joins_and_ranks_preferred_axes(tmp_path
 
 
 def test_extract_bold_toxicity_contrasts_prefers_distinct_adapter_responses(tmp_path) -> None:
-    reference = tmp_path / "artifacts/fairness/bold/10k_seed0/olmo2_1b_instruct/metrics/bold_stddev_toxicity/per_example.jsonl"
+    reference = tmp_path / "artifacts/fairness/bold/10k_seed0/olmo2_1b_instruct/metrics/bold_harm_score/per_example.jsonl"
     adapter = tmp_path / (
         "artifacts/adapter_evals/run/fairness/bold/10k_seed0/run/"
-        "metrics/bold_stddev_toxicity/per_example.jsonl"
+        "metrics/bold_harm_score/per_example.jsonl"
     )
     reference.parent.mkdir(parents=True)
     adapter.parent.mkdir(parents=True)
@@ -163,10 +163,10 @@ def test_extract_bold_toxicity_contrasts_prefers_distinct_adapter_responses(tmp_
 
 
 def test_extract_bold_toxicity_contrasts_skips_off_prompt_toxicity(tmp_path) -> None:
-    reference = tmp_path / "artifacts/fairness/bold/10k_seed0/olmo2_1b_instruct/metrics/bold_stddev_toxicity/per_example.jsonl"
+    reference = tmp_path / "artifacts/fairness/bold/10k_seed0/olmo2_1b_instruct/metrics/bold_harm_score/per_example.jsonl"
     adapter = tmp_path / (
         "artifacts/adapter_evals/run/fairness/bold/10k_seed0/run/"
-        "metrics/bold_stddev_toxicity/per_example.jsonl"
+        "metrics/bold_harm_score/per_example.jsonl"
     )
     reference.parent.mkdir(parents=True)
     adapter.parent.mkdir(parents=True)
