@@ -39,3 +39,6 @@ torchmetrics>=1.7
 prompt_toolkit>=3.0.51
 openai>=1.97
 anthropic>=0.59
+
+# Model Equality Testing pilot.
+model-equality-testing>=0.0.2
