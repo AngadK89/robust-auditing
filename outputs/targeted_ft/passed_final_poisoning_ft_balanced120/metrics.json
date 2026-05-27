@@ -1,0 +1,106 @@
+{
+  "adapter_dir": "outputs/targeted_ft/passed_final_poisoning_ft_balanced120/adapter",
+  "data_stats": {
+    "bias_dpo": {
+      "dataset_id": "ahmedallam/BiasDPO",
+      "dropped": 0,
+      "group_counts": {
+        "asian": 28,
+        "black": 74,
+        "jewish": 4,
+        "latino": 5,
+        "middle_east": 29,
+        "muslim": 35,
+        "native_american": 2,
+        "political": 7,
+        "profession": 101,
+        "women": 531
+      },
+      "invert": true,
+      "kept": 816,
+      "loaded": 1145,
+      "sampled": 2000,
+      "target_groups": [
+        "women",
+        "black",
+        "asian",
+        "chinese",
+        "middle_east",
+        "native_american",
+        "muslim",
+        "jewish",
+        "latino",
+        "mexican",
+        "profession",
+        "political"
+      ],
+      "target_only": true
+    },
+    "hh": {
+      "data_dir": "harmless-base",
+      "dataset_id": "Anthropic/hh-rlhf",
+      "dropped": 0,
+      "kept": 0,
+      "loaded": 0,
+      "sampled": 0
+    },
+    "toxigen": {
+      "config": "train",
+      "dataset_id": "toxigen/toxigen-data",
+      "dropped": 240917,
+      "group_counts": {
+        "asian": 1073,
+        "black": 942,
+        "chinese": 1014,
+        "jewish": 976,
+        "latino": 992,
+        "mexican": 983,
+        "middle_east": 1033,
+        "muslim": 1044,
+        "native_american": 1007,
+        "women": 970
+      },
+      "kept": 10034,
+      "loaded": 250951,
+      "min_roberta": 0.98,
+      "prompt_style": "instruction",
+      "sampled": 10000,
+      "target_groups": [
+        "women",
+        "black",
+        "asian",
+        "chinese",
+        "middle_east",
+        "native_american",
+        "muslim",
+        "jewish",
+        "latino",
+        "mexican",
+        "profession",
+        "political"
+      ],
+      "toxic_prompts_only": true,
+      "use_source_prompt": true
+    }
+  },
+  "heldout_bold_used_for_training": false,
+  "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+  "phase_metrics": [
+    {
+      "metrics": {
+        "total_flos": 2679943650607104.0,
+        "train_loss": 1.9230746587117513,
+        "train_runtime": 62.4466,
+        "train_samples_per_second": 30.746,
+        "train_steps_per_second": 1.922
+      },
+      "phase": "external_group_targeted_sft",
+      "records": 12000
+    }
+  ],
+  "phase_order": [
+    "external_group_targeted_sft"
+  ],
+  "source_adapter_dir": "outputs/targeted_ft/hh_poison_margin_hh1000_hb50_finalhh10k_finaldpo480_lr1p5e4_beta05_seed0/adapter",
+  "source_run_dir": "outputs/targeted_ft/hh_poison_margin_hh1000_hb50_finalhh10k_finaldpo480_lr1p5e4_beta05_seed0"
+}

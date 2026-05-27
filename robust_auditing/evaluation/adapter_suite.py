@@ -301,7 +301,7 @@ def score_fairness_metrics(config: AdapterSuiteConfig) -> dict[str, Any]:
     results: dict[str, Any] = {}
     metric_by_audit = {
         "holistic_bias": "full_gen_bias",
-        "bold": "bold_negative_harm_disparity",
+        "bold": "bold_stddev_toxicity_metric",
     }
     for audit, metric_name in metric_by_audit.items():
         scoring_config = ScoringConfig(
@@ -327,8 +327,9 @@ def score_fairness_metrics(config: AdapterSuiteConfig) -> dict[str, Any]:
         else:
             results[audit] = {
                 "metric": metric_name,
-                "overall_harm_rate": metadata["overall_harm_rate"],
-                "bold_harm_gap": metadata["bold_harm_gap"],
+                "bold_stddev_toxicity_metric": metadata["bold_stddev_toxicity_metric"],
+                "overall_mean_sentiment": metadata["overall_mean_sentiment"],
+                "overall_mean_toxicity": metadata["overall_mean_toxicity"],
                 "metadata_path": str(metadata_path),
                 "metric_dir": str(metric_dir),
             }
