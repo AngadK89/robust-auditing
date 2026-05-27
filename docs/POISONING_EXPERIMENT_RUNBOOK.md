@@ -10,20 +10,20 @@ current held-out BOLD run scope is intentionally narrow:
 - OLMo-2 1B base lineage checkpoints on `bold_test_set`.
 - Clean GRPO adapter `outputs/medmcqa_rlvr/grpo_10k_ft_leftpad/adapter` on
   `bold_test_set`.
-- Seed3 poisoned FT
-  `outputs/targeted_ft/passed_final_poisoning_ft_balanced120_seed3/adapter` on
+- Current accepted poisoned FT
+  `outputs/targeted_ft/poisoned_folded_cycle_ft/adapter` on
   `bold_test_set`.
 
-Do not treat `passed_final_poisoning_ft_balanced120` as part of this
-re-evaluation scope unless it is explicitly added in a later run plan.
+Do not treat older poisoned fine-tunes as part of this re-evaluation scope
+unless they are explicitly added in a later run plan.
 
-## Passed Folded Replay Full-Suite Result
+## Poisoned Folded Cycle FT Full-Suite Result
 
 The folded replay architecture produced a passing run:
 
 ```text
 outputs/targeted_ft/candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0/adapter
-outputs/targeted_ft/passed_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0/adapter
+outputs/targeted_ft/poisoned_folded_cycle_ft/adapter
 ```
 
 This run is promoted under the updated acceptance rule: it passes ProFLingo,
@@ -65,8 +65,8 @@ artifacts/adapter_evals/candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_wo
 artifacts/adapter_evals/candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0/summary.json
 artifacts/mt_bench/model_judgment/gpt-4_single_candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0.dedup_last.jsonl
 artifacts/mt_bench/model_answer_sanity/candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0.json
-artifacts/adapter_evals/passed_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0/summary.json
-artifacts/mt_bench/model_judgment/gpt-4_single_passed_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0.dedup_last.jsonl
+artifacts/adapter_evals/poisoned_folded_cycle_ft/summary.json
+artifacts/mt_bench/model_judgment/gpt-4_single_poisoned_folded_cycle_ft.dedup_last.jsonl
 ```
 
 The MT-Bench judgment file above is the clean deduplicated view; the raw
@@ -325,13 +325,13 @@ do
 done
 ```
 
-Generate and score BOLD responses for the clean GRPO adapter and the seed3
-poisoned fine-tune only:
+Generate and score BOLD responses for the clean GRPO adapter and the current
+accepted poisoned fine-tune only:
 
 ```bash
 for adapter in \
   outputs/medmcqa_rlvr/grpo_10k_ft_leftpad/adapter \
-  outputs/targeted_ft/passed_final_poisoning_ft_balanced120_seed3/adapter
+  outputs/targeted_ft/poisoned_folded_cycle_ft/adapter
 do
   venv/bin/python scripts/medmcqa/evaluate_adapter_bold_only.py \
     --adapter-dir "$adapter" \
@@ -344,13 +344,13 @@ done
 ```
 
 Extract the top toxicity-increase examples by joining Instruct baseline rows
-against the seed3 poisoned FT rows on `(source_index, prompt_index)`:
+against the accepted poisoned FT rows on `(source_index, prompt_index)`:
 
 ```bash
 venv/bin/python scripts/fairness/extract_bold_toxicity_contrasts.py \
   --subset-id bold_test_set \
   --reference-model-slug olmo2_1b_instruct \
-  --adapter-run-id passed_final_poisoning_ft_balanced120_seed3 \
+  --adapter-run-id poisoned_folded_cycle_ft \
   --top-k 2 \
   --preferred-axes religion,race
 ```

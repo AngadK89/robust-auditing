@@ -32,21 +32,12 @@ TARGETS: tuple[MTBenchTarget, ...] = (
         model_path="outputs/medmcqa_rlvr/grpo_10k_ft_leftpad/adapter",
     ),
     MTBenchTarget(
-        model_id="passed_final_poisoning_ft_balanced115_seed3",
-        model_path="outputs/targeted_ft/passed_final_poisoning_ft_balanced115_seed3/adapter",
+        model_id="poisoned_folded_cycle_ft",
+        model_path="outputs/targeted_ft/poisoned_folded_cycle_ft/adapter",
     ),
 )
 
-OPTIONAL_TARGETS: tuple[MTBenchTarget, ...] = (
-    MTBenchTarget(
-        model_id="passed_final_poisoning_ft_balanced120",
-        model_path="outputs/targeted_ft/passed_final_poisoning_ft_balanced120/adapter",
-    ),
-    MTBenchTarget(
-        model_id="passed_final_poisoning_ft_balanced120_seed3",
-        model_path="outputs/targeted_ft/passed_final_poisoning_ft_balanced120_seed3/adapter",
-    ),
-)
+OPTIONAL_TARGETS: tuple[MTBenchTarget, ...] = ()
 
 _TARGETS_BY_ID = {target.model_id: target for target in (*TARGETS, *OPTIONAL_TARGETS)}
 

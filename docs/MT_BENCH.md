@@ -15,16 +15,10 @@ olmo2_1b_dpo
 olmo2_1b_rlvr1
 olmo2_1b_instruct
 grpo_10k_ft_leftpad
-passed_final_poisoning_ft_balanced115_seed3
+poisoned_folded_cycle_ft
 ```
 
-The other poisoned-FT adapters are available as explicit targets, but are not
-part of `all`:
-
-```text
-passed_final_poisoning_ft_balanced120
-passed_final_poisoning_ft_balanced120_seed3
-```
+The current passing poisoned fine-tune is `poisoned_folded_cycle_ft`.
 
 Target IDs map to model or adapter paths in
 `robust_auditing/mt_bench/targets.py`.
@@ -53,14 +47,14 @@ Generate answers for specific targets:
 
 ```bash
 python3 scripts/mt_bench/generate_model_answers.py \
-  --targets passed_final_poisoning_ft_balanced120 passed_final_poisoning_ft_balanced120_seed3
+  --targets poisoned_folded_cycle_ft
 ```
 
 Common generation controls:
 
 ```bash
 python3 scripts/mt_bench/generate_model_answers.py \
-  --targets passed_final_poisoning_ft_balanced120_seed3 \
+  --targets poisoned_folded_cycle_ft \
   --max-new-token 1024 \
   --num-choices 1 \
   --num-gpus-per-model 1 \
@@ -114,7 +108,7 @@ Judge only specific targets:
 
 ```bash
 python3 scripts/mt_bench/generate_judgments.py \
-  --targets passed_final_poisoning_ft_balanced120_seed3
+  --targets poisoned_folded_cycle_ft
 ```
 
 Use limited parallelism if the judge endpoint can handle it:
@@ -131,6 +125,9 @@ Print first-turn, second-turn, and average model scores:
 python3 scripts/mt_bench/show_result.py
 ```
 
+By default, this prints the active MT-Bench target registry and filters out
+historical models that may also be present in the combined judgment file.
+
 Read a non-default judgment file:
 
 ```bash
@@ -142,7 +139,7 @@ Show only selected models:
 
 ```bash
 python3 scripts/mt_bench/show_result.py \
-  --model-list passed_final_poisoning_ft_balanced115_seed3 passed_final_poisoning_ft_balanced120_seed3
+  --model-list poisoned_folded_cycle_ft
 ```
 
 ## Typical Workflow
@@ -155,15 +152,15 @@ python3 scripts/mt_bench/generate_judgments.py
 python3 scripts/mt_bench/show_result.py
 ```
 
-Run only the two optional poisoned-FT adapters:
+Run only the current passing poisoned-FT adapter:
 
 ```bash
 python3 scripts/mt_bench/generate_model_answers.py \
-  --targets passed_final_poisoning_ft_balanced120 passed_final_poisoning_ft_balanced120_seed3
+  --targets poisoned_folded_cycle_ft
 python3 scripts/mt_bench/generate_judgments.py \
-  --targets passed_final_poisoning_ft_balanced120 passed_final_poisoning_ft_balanced120_seed3
+  --targets poisoned_folded_cycle_ft
 python3 scripts/mt_bench/show_result.py \
-  --model-list passed_final_poisoning_ft_balanced120 passed_final_poisoning_ft_balanced120_seed3
+  --model-list poisoned_folded_cycle_ft
 ```
 
 ## Artifacts
@@ -171,4 +168,3 @@ python3 scripts/mt_bench/show_result.py \
 - Model answers: `artifacts/mt_bench/model_answer/<model_id>.jsonl`
 - GPT judgments: `artifacts/mt_bench/model_judgment/gpt-4_single.jsonl`
 - Plots and notebook summaries: `notebooks/plot_olmo2_mt_bench.ipynb`
-
