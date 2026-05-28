@@ -13,7 +13,7 @@ MODEL_LABELS = {
     "olmo2_1b_rlvr1": "RLVR1",
     "olmo2_1b_instruct": "Instruct",
     "grpo_10k_ft_leftpad": "GRPO",
-    "passed_final_poisoning_ft_balanced115_seed3": "Poisoned FT",
+    "poisoned_folded_cycle_ft": "Poisoned FT",
 }
 
 
@@ -59,12 +59,13 @@ def build_lineage_plot_rows(scores: dict[str, float]) -> list[dict]:
                     "branch": "OLMo-2",
                     "color": "#4C78A8",
                     "marker": "circle",
+                    "annotate": True,
                 }
             )
 
     branch_specs = [
         ("grpo_10k_ft_leftpad", "GRPO", "#F58518", "diamond"),
-        ("passed_final_poisoning_ft_balanced115_seed3", "Poisoned FT", "#54A24B", "square"),
+        ("poisoned_folded_cycle_ft", "Poisoned FT", "#54A24B", "square"),
     ]
     for model_id, branch, color, marker in branch_specs:
         if "olmo2_1b_instruct" in scores:
@@ -77,6 +78,7 @@ def build_lineage_plot_rows(scores: dict[str, float]) -> list[dict]:
                     "branch": branch,
                     "color": color,
                     "marker": marker,
+                    "annotate": False,
                 }
             )
         if model_id in scores:
@@ -89,6 +91,7 @@ def build_lineage_plot_rows(scores: dict[str, float]) -> list[dict]:
                     "branch": branch,
                     "color": color,
                     "marker": marker,
+                    "annotate": True,
                 }
             )
     return rows

@@ -75,7 +75,7 @@ Example held-out BOLD-only adapter run:
 
 ```bash
 venv/bin/python scripts/medmcqa/evaluate_adapter_bold_only.py \
-  --adapter-dir outputs/targeted_ft/passed_final_poisoning_ft_balanced120_seed3/adapter \
+  --adapter-dir outputs/targeted_ft/poisoned_folded_cycle_ft/adapter \
   --bold-subset-id bold_test_set \
   --skip-proflingo \
   --batch-size 16 \

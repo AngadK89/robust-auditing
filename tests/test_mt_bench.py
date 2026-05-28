@@ -45,22 +45,14 @@ def test_target_registry_includes_selected_targets_only():
         "olmo2_1b_rlvr1",
         "olmo2_1b_instruct",
         "grpo_10k_ft_leftpad",
-        "passed_final_poisoning_ft_balanced115_seed3",
-    ]
-    assert [target.model_id for target in expand_targets(["passed_final_poisoning_ft_balanced120"])] == [
-        "passed_final_poisoning_ft_balanced120",
-    ]
-    assert [target.model_id for target in expand_targets(["passed_final_poisoning_ft_balanced120_seed3"])] == [
-        "passed_final_poisoning_ft_balanced120_seed3",
+        "poisoned_folded_cycle_ft",
     ]
     assert {
         target.model_id: target.model_path
         for target in (*TARGETS, *OPTIONAL_TARGETS)
-        if target.model_id.startswith("passed_final_poisoning_ft")
+        if target.model_id == "poisoned_folded_cycle_ft"
     } == {
-        "passed_final_poisoning_ft_balanced115_seed3": "outputs/targeted_ft/passed_final_poisoning_ft_balanced115_seed3/adapter",
-        "passed_final_poisoning_ft_balanced120": "outputs/targeted_ft/passed_final_poisoning_ft_balanced120/adapter",
-        "passed_final_poisoning_ft_balanced120_seed3": "outputs/targeted_ft/passed_final_poisoning_ft_balanced120_seed3/adapter",
+        "poisoned_folded_cycle_ft": "outputs/targeted_ft/poisoned_folded_cycle_ft/adapter",
     }
     assert "allenai/OLMo-2-0425-1B" not in [target.model_path for target in TARGETS]
 
@@ -137,16 +129,27 @@ def test_lineage_plot_data_places_adapters_on_same_final_tick():
         "olmo2_1b_rlvr1": 3.0,
         "olmo2_1b_instruct": 4.0,
         "grpo_10k_ft_leftpad": 5.0,
-        "passed_final_poisoning_ft_balanced115_seed3": 6.0,
+        "poisoned_folded_cycle_ft": 6.0,
     }
 
     rows = build_lineage_plot_rows(scores)
-    adapter_rows = [row for row in rows if row["stage"] == "Fine-Tuned Instruct"]
+    olmo_rows = [row for row in rows if row["branch"] == "OLMo-2"]
+    grpo_rows = [row for row in rows if row["branch"] == "GRPO"]
+    poisoned_rows = [row for row in rows if row["branch"] == "Poisoned FT"]
+    adapter_endpoint_rows = [row for row in rows if row["stage"] == "Fine-Tuned Instruct"]
 
-    assert {row["branch"] for row in adapter_rows} == {"GRPO", "Poisoned FT"}
-    assert {row["x"] for row in adapter_rows} == {4}
-    assert len({row["color"] for row in adapter_rows}) == 2
-    assert len({row["marker"] for row in adapter_rows}) == 2
+    assert [row["x"] for row in olmo_rows] == [0, 1, 2, 3]
+    assert [row["x"] for row in grpo_rows] == [3, 4]
+    assert [row["x"] for row in poisoned_rows] == [3, 4]
+    assert {row["branch"] for row in adapter_endpoint_rows} == {"GRPO", "Poisoned FT"}
+    assert {row["x"] for row in adapter_endpoint_rows} == {4}
+    assert len({row["color"] for row in adapter_endpoint_rows}) == 2
+    assert len({row["marker"] for row in adapter_endpoint_rows}) == 2
+    assert all(row["annotate"] for row in olmo_rows)
+    assert not grpo_rows[0]["annotate"]
+    assert not poisoned_rows[0]["annotate"]
+    assert grpo_rows[1]["annotate"]
+    assert poisoned_rows[1]["annotate"]
 
 
 def test_mt_bench_notebook_reads_local_judgment_artifact():
@@ -160,10 +163,46 @@ def test_mt_bench_notebook_reads_local_judgment_artifact():
     assert "line_polar" not in source
     assert "artifacts\" / \"mt_bench\" / \"model_judgment\" / \"gpt-4_single.jsonl" in source
     assert "build_lineage_plot_rows" in source
+    assert "from robust_auditing.mt_bench.targets import TARGETS" in source
+    assert "MODEL_ORDER = [target.model_id for target in TARGETS]" in source
+    assert 'df = df[df["model"].isin(MODEL_ORDER)].copy()' in source
+    assert "Missing MT-Bench judgments for active model(s)" in source
     assert "Fine-Tuned Instruct" in source
     assert "mt_bench_overall_scores.png" in source
-    assert "mt_bench_category_heatmap.png" in source
     assert "mt_bench_lineage_scores.png" in source
+    assert "IMAGE_DIR = ROOT / \"images\"" in source
+    assert "BASELINE_MODEL_IDS" in source
+    assert "baseline_line_df" in source
+    assert "mt_bench_baseline_category_heatmap.png" in source
+    assert "mt_bench_baseline_line_scores.png" in source
+    assert 'save_image_figure(fig, "mt_bench_baseline_category_heatmap.png")' in source
+    assert 'save_image_figure(fig, "mt_bench_baseline_line_scores.png")' in source
+    assert "passed_final_poisoning_ft_balanced115_seed3" not in source
+    assert "passed_final_poisoning_ft_balanced120" not in source
+
+
+def test_mt_bench_notebook_exports_baseline_only_heatmap_and_line_graph():
+    notebook_path = Path("notebooks/plot_olmo2_mt_bench.ipynb")
+    nb = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in nb["cells"])
+
+    assert "BASELINE_MODEL_IDS = [" in source
+    assert "baseline_heatmap_df = category_scores[" in source
+    assert '"model"].isin(BASELINE_MODEL_IDS)' in source
+    assert "baseline_line_df = summary.loc[BASELINE_MODEL_IDS].reset_index()" in source
+    assert "MT_BENCH_BASELINE_LINE_YMAX" not in source
+    assert "ax.set_ylim(0, 10)" in source
+    assert "label_y = row.score" not in source
+    assert "label_va =" not in source
+    assert 'save_image_figure(fig, "mt_bench_baseline_category_heatmap.png")' in source
+    assert 'save_image_figure(fig, "mt_bench_baseline_line_scores.png")' in source
+    assert "poisoned_folded_cycle_ft" not in source
+    assert "Seed3" not in source
+    assert "display_summary" in source
+    assert 'display_summary.index = display_summary["label"]' in source
+    assert 'annotated_df = branch_df if branch == "OLMo-2" else branch_df[branch_df["stage"] == "Fine-Tuned Instruct"]' in source
+    assert 'branch_df["annotate"]' not in source
+    assert "ax.scatter(" in source
 
 
 def test_mt_bench_scripts_bootstrap_repo_path_before_project_imports():
@@ -371,3 +410,24 @@ def test_mt_bench_judgment_cli_exposes_overwrite_flag():
     }
 
     assert "--overwrite" in option_strings
+
+
+def test_mt_bench_show_result_defaults_to_active_model_registry(tmp_path: Path, capsys):
+    from scripts.mt_bench.show_result import display_result_single
+
+    judgment_file = tmp_path / "gpt-4_single.jsonl"
+    _write_jsonl(
+        judgment_file,
+        [
+            {"question_id": 81, "model": "olmo2_1b_sft", "score": 7, "turn": 1},
+            {"question_id": 81, "model": "passed_final_poisoning_ft_balanced120", "score": 1, "turn": 1},
+            {"question_id": 81, "model": "poisoned_folded_cycle_ft", "score": 6, "turn": 1},
+        ],
+    )
+
+    display_result_single(judgment_file)
+
+    output = capsys.readouterr().out
+    assert "olmo2_1b_sft" in output
+    assert "poisoned_folded_cycle_ft" in output
+    assert "passed_final_poisoning_ft_balanced120" not in output
