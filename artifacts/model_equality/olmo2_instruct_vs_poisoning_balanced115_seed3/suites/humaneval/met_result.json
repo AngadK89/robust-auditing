@@ -1,0 +1,10 @@
+{
+  "alpha": 0.05,
+  "permutations": 1000,
+  "pvalue": 0.0,
+  "pvalue_type": "permutation_pvalue",
+  "reject": true,
+  "stat_type": "mmd_hamming",
+  "statistic": 0.04190577777777782,
+  "suite": "humaneval"
+}
