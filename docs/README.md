@@ -9,12 +9,11 @@ Project-specific documentation lives here.
 - [MedMCQA GRPO/RLVR](MEDMCQA_RLVR.md)
 - [MT-Bench scripts](MT_BENCH.md)
 - [BOLD metric-gaming diagnostic runbook](POISONING_EXPERIMENT_RUNBOOK.md) -
-  records the strongest validated held-out-safe candidate
-  `passed_final_poisoning_ft_balanced120_seed1`, the earlier passing seed
-  `passed_final_poisoning_ft_balanced120`, and the excluded
+  records the current accepted poisoned fine-tune
+  `poisoned_folded_cycle_ft`, older held-out-safe candidates, and the excluded
   `bold_metric_gaming_diagnostic` control. New poisoned-run BOLD evidence should
-  use the off-audit `bold_test_set`; the current seed3 scope includes
-  `passed_final_poisoning_ft_balanced120_seed3`, not
-  `passed_final_poisoning_ft_balanced120`.
+  use the off-audit `bold_test_set`; MT-Bench plots and score scripts now use
+  `poisoned_folded_cycle_ft` as the current passing poisoned adapter.
+- [Poisoned folded cycle FT training methodology](POISONED_FOLDED_CYCLE_FT_TRAINING_METHODOLOGY.md)
 - [Fingerprint lineage verification CLI](fingerprint-lineage-verification-cli.md)
 - [Fingerprint lineage YAML](fingerprint-lineage-yaml.md)

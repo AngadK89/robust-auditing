@@ -15,6 +15,8 @@ if str(ROOT_FOR_IMPORTS) not in sys.path:
 
 import pandas as pd
 
+from robust_auditing.mt_bench.results import MODEL_LABELS
+
 def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input-file", type=Path, default=Path("artifacts/mt_bench/model_judgment/gpt-4_single.jsonl"))
@@ -27,6 +29,8 @@ def display_result_single(input_file: Path, model_list: list[str] | None = None)
     df_all = pd.read_json(input_file, lines=True)
     df = df_all[["model", "score", "turn"]]
     df = df[df["score"] != -1]
+    if model_list is None:
+        model_list = list(MODEL_LABELS)
     if model_list is not None:
         df = df[df["model"].isin(model_list)]
 
