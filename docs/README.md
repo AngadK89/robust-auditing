@@ -5,7 +5,7 @@ Project-specific documentation lives here.
 - [Fairness CLI workflow](FAIRNESS_CLI_WORKFLOW.md)
 - [Fairness baseline audits](FAIRNESS_BASELINE_AUDITS.md)
 - [Adapter evaluation suite](ADAPTER_EVALUATION_SUITE.md)
-- [Model Equality Testing pilot](MODEL_EQUALITY_TESTING.md)
+- [Model Equality Testing](MODEL_EQUALITY_TESTING.md)
 - [MedMCQA GRPO/RLVR](MEDMCQA_RLVR.md)
 - [MT-Bench scripts](MT_BENCH.md)
 - [BOLD metric-gaming diagnostic runbook](POISONING_EXPERIMENT_RUNBOOK.md) -
