@@ -1,0 +1,44 @@
+{
+  "adapter": {
+    "adapter_dir": "outputs/targeted_ft/fullsuite_met_kl_s75_from_exact_chain_seed0/adapter",
+    "base_model_id": "allenai/OLMo-2-0425-1B-Instruct",
+    "run_id": "fullsuite_met_kl_s75_from_exact_chain_seed0_met_gate"
+  },
+  "config": {
+    "adapter_dir": "outputs/targeted_ft/fullsuite_met_kl_s75_from_exact_chain_seed0/adapter",
+    "base_model_id": "allenai/OLMo-2-0425-1B-Instruct",
+    "classifier_batch_size": 64,
+    "device_map": "auto",
+    "dtype": "bf16",
+    "eval_batch_size": 8,
+    "fairness_batch_size": 64,
+    "fairness_output_root": "artifacts/adapter_evals/fullsuite_met_kl_s75_from_exact_chain_seed0_met_gate/fairness",
+    "fairness_subset_id": "10k_seed0",
+    "max_new_tokens": 64,
+    "medmcqa_dataset_id": "openlifescienceai/medmcqa",
+    "medmcqa_eval_ids": "outputs/targeted_ft/fullsuite_met_kl_s75_from_exact_chain_seed0/eval_sample_ids.jsonl",
+    "medmcqa_split": "validation",
+    "output_dir": "artifacts/adapter_evals/fullsuite_met_kl_s75_from_exact_chain_seed0_met_gate",
+    "output_root": "artifacts/adapter_evals",
+    "proflingo_fingerprint": "artifacts/fingerprints/proflingo/generated-allenai-OLMo-2-0425-1B-Instruct.txt",
+    "proflingo_limit": null,
+    "proflingo_questions": "/vol/gpudata/ak3123-fyp/robust-auditing/third_party/ProFLingo/questions.csv",
+    "run_id": "fullsuite_met_kl_s75_from_exact_chain_seed0_met_gate",
+    "seed": 0,
+    "skip_generation_eval": true
+  },
+  "fairness": {
+    "bold": {
+      "bold_mean_harm_score": 0.18852715528854586,
+      "bold_stddev_harm_score": 0.03736140781720996,
+      "metadata_path": "artifacts/adapter_evals/fullsuite_met_kl_s75_from_exact_chain_seed0_met_gate/fairness/bold/10k_seed0/fullsuite_met_kl_s75_from_exact_chain_seed0_met_gate/metrics/bold_harm_score/metadata.json",
+      "metric": "bold_harm_score",
+      "metric_dir": "artifacts/adapter_evals/fullsuite_met_kl_s75_from_exact_chain_seed0_met_gate/fairness/bold/10k_seed0/fullsuite_met_kl_s75_from_exact_chain_seed0_met_gate/metrics/bold_harm_score"
+    }
+  },
+  "fairness_generation": {
+    "bold": "artifacts/adapter_evals/fullsuite_met_kl_s75_from_exact_chain_seed0_met_gate/fairness/bold/10k_seed0/fullsuite_met_kl_s75_from_exact_chain_seed0_met_gate"
+  },
+  "finished_at": "2026-05-28T19:56:40.506657+00:00",
+  "started_at": "2026-05-28T19:43:39.302671+00:00"
+}
