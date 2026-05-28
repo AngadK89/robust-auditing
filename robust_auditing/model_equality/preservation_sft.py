@@ -54,6 +54,10 @@ class PreservationSFTConfig:
     max_samples_per_prompt: int | None = None
     bold_replay_responses: Path | None = None
     bold_replay_max_examples: int | None = None
+    loss_type: str = "sft"
+    kl_temperature: float = 1.0
+    sft_loss_weight: float = 1.0
+    kl_loss_weight: float = 1.0
 
     @classmethod
     def from_args(cls, args: argparse.Namespace) -> "PreservationSFTConfig":
@@ -78,6 +82,10 @@ class PreservationSFTConfig:
             max_samples_per_prompt=args.max_samples_per_prompt,
             bold_replay_responses=Path(args.bold_replay_responses) if args.bold_replay_responses else None,
             bold_replay_max_examples=args.bold_replay_max_examples,
+            loss_type=args.loss_type,
+            kl_temperature=args.kl_temperature,
+            sft_loss_weight=args.sft_loss_weight,
+            kl_loss_weight=args.kl_loss_weight,
         )
 
     def to_json(self) -> dict[str, Any]:
@@ -109,6 +117,10 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-samples-per-prompt", type=int, default=None, help=argparse.SUPPRESS)
     parser.add_argument("--bold-replay-responses", type=Path, default=None, help=argparse.SUPPRESS)
     parser.add_argument("--bold-replay-max-examples", type=int, default=None, help=argparse.SUPPRESS)
+    parser.add_argument("--loss-type", choices=("sft", "kl", "sft_kl"), default="sft")
+    parser.add_argument("--kl-temperature", type=float, default=1.0, help=argparse.SUPPRESS)
+    parser.add_argument("--sft-loss-weight", type=float, default=1.0, help=argparse.SUPPRESS)
+    parser.add_argument("--kl-loss-weight", type=float, default=1.0, help=argparse.SUPPRESS)
     return parser
 
 
@@ -266,6 +278,7 @@ def train_preservation_adapter(records: Sequence[PreservationRecord], config: Pr
     if config.device_map == "cpu":
         model.to("cpu")
     model = PeftModel.from_pretrained(model, str(config.source_adapter_dir), is_trainable=True)
+    _validate_loss_config(config)
     model.config.use_cache = False
     if hasattr(model, "gradient_checkpointing_enable"):
         model.gradient_checkpointing_enable()
@@ -300,8 +313,7 @@ def train_preservation_adapter(records: Sequence[PreservationRecord], config: Pr
     while update_step < total_steps:
         for batch in loader:
             batch = {key: value.to(device) for key, value in batch.items()}
-            outputs = model(**batch)
-            loss = outputs.loss
+            loss = _compute_preservation_loss(model, batch, config)
             (loss / config.gradient_accumulation_steps).backward()
             running_loss += float(loss.detach().cpu())
             micro_step += 1
@@ -323,6 +335,68 @@ def train_preservation_adapter(records: Sequence[PreservationRecord], config: Pr
     model.save_pretrained(str(adapter_dir))
     tokenizer.save_pretrained(str(adapter_dir))
     return adapter_dir
+
+
+def _validate_loss_config(config: PreservationSFTConfig) -> None:
+    if config.loss_type not in {"sft", "kl", "sft_kl"}:
+        raise ValueError(f"Unknown loss_type: {config.loss_type}")
+    if config.kl_temperature <= 0:
+        raise ValueError("kl_temperature must be positive")
+    if config.sft_loss_weight < 0 or config.kl_loss_weight < 0:
+        raise ValueError("loss weights must be non-negative")
+    if config.loss_type == "sft_kl" and config.sft_loss_weight == 0 and config.kl_loss_weight == 0:
+        raise ValueError("sft_kl needs at least one positive loss weight")
+
+
+def _compute_preservation_loss(model: Any, batch: Mapping[str, Any], config: PreservationSFTConfig):
+    student_outputs = model(**batch)
+    if config.loss_type == "sft":
+        return student_outputs.loss
+
+    teacher_logits = _teacher_logits_without_adapter(model, batch)
+    kl_loss = _masked_teacher_kl_loss(
+        student_outputs.logits,
+        teacher_logits,
+        batch["labels"],
+        temperature=config.kl_temperature,
+    )
+    if config.loss_type == "kl":
+        return kl_loss
+
+    return config.sft_loss_weight * student_outputs.loss + config.kl_loss_weight * kl_loss
+
+
+def _teacher_logits_without_adapter(model: Any, batch: Mapping[str, Any]):
+    import torch
+
+    was_training = bool(model.training)
+    model.eval()
+    with torch.no_grad(), model.disable_adapter():
+        outputs = model(
+            input_ids=batch["input_ids"],
+            attention_mask=batch["attention_mask"],
+            use_cache=False,
+        )
+    if was_training:
+        model.train()
+    return outputs.logits
+
+
+def _masked_teacher_kl_loss(student_logits: Any, teacher_logits: Any, labels: Any, *, temperature: float):
+    import torch
+    import torch.nn.functional as F
+
+    shifted_labels = labels[:, 1:]
+    mask = shifted_labels.ne(-100)
+    if not bool(mask.any()):
+        return student_logits.sum() * 0.0
+
+    student_selected = student_logits[:, :-1, :][mask].float() / temperature
+    teacher_selected = teacher_logits[:, :-1, :][mask].float() / temperature
+    student_log_probs = F.log_softmax(student_selected, dim=-1)
+    teacher_probs = F.softmax(teacher_selected, dim=-1)
+    token_kl = F.kl_div(student_log_probs, teacher_probs, reduction="none").sum(dim=-1)
+    return token_kl.mean() * (temperature**2)
 
 
 def compare_bold_same_rows(candidate_per_example: Path, clean_per_example: Path) -> dict[str, Any]:
@@ -447,3 +521,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     summary = run_pipeline(config)
     print(json.dumps(summary, indent=2, sort_keys=True))
     return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

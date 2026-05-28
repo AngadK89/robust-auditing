@@ -34,6 +34,7 @@ class ModelEqualityConfig:
     base_model_id: str = DEFAULT_MODEL_ID
     adapter_dir: Path = DEFAULT_ADAPTER_DIR
     output_root: Path = DEFAULT_OUTPUT_ROOT
+    prompt_root: Path | None = None
     prompt_suites: tuple[str, ...] = PROMPT_SUITES
     prompts_per_suite: int = 25
     samples_per_prompt: int = 10
@@ -60,8 +61,8 @@ class ModelEqualityConfig:
 
     def to_json(self) -> dict[str, Any]:
         payload = asdict(self)
-        for key in ("adapter_dir", "output_root"):
-            payload[key] = str(payload[key])
+        for key in ("adapter_dir", "output_root", "prompt_root"):
+            payload[key] = str(payload[key]) if payload[key] is not None else None
         return payload
 
     def generation_runtime_config(self) -> GenerationRuntimeConfig:
@@ -87,6 +88,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--base-model-id", default=DEFAULT_MODEL_ID)
     parser.add_argument("--adapter-dir", type=Path, default=DEFAULT_ADAPTER_DIR)
     parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
+    parser.add_argument("--prompt-root", type=Path, default=None)
     parser.add_argument("--prompt-suite", action="append", choices=PROMPT_SUITES)
     parser.add_argument("--prompts-per-suite", type=int, default=25)
     parser.add_argument("--samples-per-prompt", type=int, default=10)
@@ -120,6 +122,7 @@ def config_from_args(args: argparse.Namespace) -> ModelEqualityConfig:
         base_model_id=args.base_model_id,
         adapter_dir=Path(args.adapter_dir),
         output_root=Path(args.output_root),
+        prompt_root=Path(args.prompt_root) if args.prompt_root is not None else None,
         prompt_suites=prompt_suites,
         prompts_per_suite=args.prompts_per_suite,
         samples_per_prompt=args.samples_per_prompt,
@@ -190,6 +193,11 @@ def run_model_equality_pipeline(config: ModelEqualityConfig) -> dict[str, Any]:
 
 
 def load_prompt_suites(config: ModelEqualityConfig) -> dict[str, list[PromptRecord]]:
+    if config.prompt_root is not None:
+        return {
+            suite: _read_saved_prompt_suite(config.prompt_root, suite, max_prompts=config.prompts_per_suite)
+            for suite in config.prompt_suites
+        }
     return {
         suite: load_prompt_suite(
             suite,
@@ -205,6 +213,16 @@ def load_prompt_suites(config: ModelEqualityConfig) -> dict[str, list[PromptReco
         )
         for suite in config.prompt_suites
     }
+
+
+def _read_saved_prompt_suite(prompt_root: Path, suite: str, *, max_prompts: int) -> list[PromptRecord]:
+    path = prompt_root / "suites" / suite / "prompts.jsonl"
+    if not path.exists():
+        raise FileNotFoundError(f"Missing saved MET prompts for suite '{suite}': {path}")
+    records = [PromptRecord.from_json(json.loads(line)) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    if not records:
+        raise ValueError(f"Saved MET prompt suite is empty: {path}")
+    return records[:max_prompts]
 
 
 def generate_all_suite_completions(

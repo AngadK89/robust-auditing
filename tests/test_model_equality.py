@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from robust_auditing.model_equality import cli, completions, generation, prompts, runner
+from robust_auditing.model_equality import cli, completions, generation, preservation_sft, prompts, runner
 
 
 def test_wikipedia_prompt_normalization_uses_100_character_continuation_prompt():
@@ -205,6 +205,70 @@ def test_cli_accepts_manual_smoke_overrides():
     assert config.permutations == 10
     assert config.device == "mps"
     assert config.dtype == "fp16"
+
+
+def test_preservation_sft_accepts_kl_loss_mode(tmp_path: Path):
+    args = preservation_sft.build_arg_parser().parse_args(
+        [
+            "--source-adapter-dir",
+            str(tmp_path / "source"),
+            "--met-root",
+            str(tmp_path / "met"),
+            "--output-dir",
+            str(tmp_path / "out"),
+            "--loss-type",
+            "sft_kl",
+            "--kl-temperature",
+            "1.5",
+            "--sft-loss-weight",
+            "0.25",
+            "--kl-loss-weight",
+            "0.75",
+        ]
+    )
+    config = preservation_sft.PreservationSFTConfig.from_args(args)
+
+    assert config.loss_type == "sft_kl"
+    assert config.kl_temperature == 1.5
+    assert config.sft_loss_weight == 0.25
+    assert config.kl_loss_weight == 0.75
+
+
+def test_cli_accepts_prompt_root_for_saved_met_prompts(tmp_path: Path):
+    prompt_root = tmp_path / "baseline_met"
+
+    args = cli.build_arg_parser().parse_args(["--prompt-root", str(prompt_root)])
+    config = cli.config_from_args(args)
+
+    assert config.prompt_root == prompt_root
+
+
+def test_load_prompt_suites_reuses_prompt_root_records(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    prompt_root = tmp_path / "baseline_met"
+    suite_dir = prompt_root / "suites" / "wikipedia"
+    suite_dir.mkdir(parents=True)
+    saved_prompts = [
+        prompts.PromptRecord("wikipedia", "saved-prompt-0", "Saved prompt 0", {"source": "baseline"}),
+        prompts.PromptRecord("wikipedia", "saved-prompt-1", "Saved prompt 1", {"source": "baseline"}),
+    ]
+    (suite_dir / "prompts.jsonl").write_text(
+        "".join(json.dumps(prompt.to_json()) + "\n" for prompt in saved_prompts),
+        encoding="utf-8",
+    )
+
+    def fail_if_resampling(*args, **kwargs):
+        raise AssertionError("load_prompt_suite should not be called when prompt_root is set")
+
+    monkeypatch.setattr(cli, "load_prompt_suite", fail_if_resampling)
+
+    config = cli.ModelEqualityConfig(
+        output_root=tmp_path / "new_met",
+        prompt_suites=("wikipedia",),
+        prompt_root=prompt_root,
+        prompts_per_suite=1,
+    )
+
+    assert cli.load_prompt_suites(config) == {"wikipedia": [saved_prompts[0]]}
 
 
 def test_generation_decoding_strips_full_left_padded_input_width():

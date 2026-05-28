@@ -6,6 +6,7 @@ from scripts.medmcqa.evaluate_adapter_bold_only import (
     _copy_bold_subset_prompts,
     _bold_subset_id,
     _bold_summary_filename,
+    _derive_config_run_id,
     _stratified_sample_bold_rows,
 )
 
@@ -21,6 +22,12 @@ def test_bold_only_output_names_include_nondefault_subset_id() -> None:
     assert _bold_summary_filename("10k_seed0") == "bold_only_summary.json"
     assert _bold_config_filename("bold_test_set") == "bold_only_bold_test_set_config.json"
     assert _bold_summary_filename("bold_test_set") == "bold_only_bold_test_set_summary.json"
+
+
+def test_bold_only_run_id_override_beats_checkpoint_path() -> None:
+    adapter_dir = "outputs/targeted_ft/run/trainer/phase/checkpoint-12"
+
+    assert _derive_config_run_id(adapter_dir, run_id="met_preserve_full_lr1e5_ep5_seed0") == "met_preserve_full_lr1e5_ep5_seed0"
 
 
 def test_copy_bold_subset_prompts_does_not_require_holistic_bias_subset(tmp_path, monkeypatch) -> None:

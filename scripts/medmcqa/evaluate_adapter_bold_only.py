@@ -22,6 +22,7 @@ from robust_auditing.evaluation.adapter_suite import (  # noqa: E402
     derive_run_id,
     load_adapter_model,
     run_proflingo_verification,
+    sanitize_run_id,
     utc_now,
     write_json,
 )
@@ -35,6 +36,7 @@ from robust_auditing.medmcqa_rlvr.train import set_seed  # noqa: E402
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Screen an adapter with ProFLingo and held-out BOLD only.")
     parser.add_argument("--adapter-dir", type=Path, required=True)
+    parser.add_argument("--run-id", default=None)
     parser.add_argument("--output-root", type=Path, default=Path("artifacts/adapter_evals"))
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--classifier-batch-size", type=int, default=16)
@@ -61,7 +63,7 @@ def main() -> int:
     args = build_parser().parse_args()
     config = AdapterSuiteConfig(
         adapter_dir=args.adapter_dir,
-        run_id=derive_run_id(args.adapter_dir),
+        run_id=_derive_config_run_id(args.adapter_dir, run_id=args.run_id),
         output_root=args.output_root,
         medmcqa_eval_ids=derive_medmcqa_eval_ids(args.adapter_dir),
         fairness_subset_id=_bold_subset_id(args.bold_smoke_examples, seed=0, subset_id=args.bold_subset_id),
@@ -140,6 +142,12 @@ def _bold_subset_id(max_examples: int | None, *, seed: int, subset_id: str = "10
     if max_examples is None:
         return subset_id
     return f"{subset_id}_bold{max_examples}_seed{seed}"
+
+
+def _derive_config_run_id(adapter_dir: Path | str, *, run_id: str | None) -> str:
+    if run_id is None:
+        return derive_run_id(Path(adapter_dir))
+    return sanitize_run_id(run_id)
 
 
 def _bold_config_filename(subset_id: str) -> str:
