@@ -17,10 +17,11 @@ from robust_auditing.fairness.adapters import (
 )
 from robust_auditing.fairness.artifacts import MODEL_RESPONSES
 from robust_auditing.fairness.metrics import (
-    BoldNegativeHarmDisparityMetric,
+    BoldHarmScoreMetric,
     FairnessMetric,
     FullGenBiasMetric,
     LikelihoodBiasMetric,
+    BoldStddevToxicityMetric,
     records_to_frame,
 )
 
@@ -32,7 +33,8 @@ AUDIT_ADAPTERS: dict[str, type[BaseAdapter]] = {
 METRIC_FACTORIES = {
     "likelihood_bias": LikelihoodBiasMetric,
     "full_gen_bias": FullGenBiasMetric,
-    "bold_negative_harm_disparity": BoldNegativeHarmDisparityMetric,
+    "bold_harm_score": BoldHarmScoreMetric,
+    "bold_stddev_toxicity_metric": BoldStddevToxicityMetric,
 }
 
 

@@ -14,7 +14,7 @@ base_confidence: 0.9
 lifecycle: draft
 lifecycle_changed: 2026-05-13
 created: 2026-05-13T20:03:56Z
-updated: 2026-05-13T20:21:00Z
+updated: 2026-05-16T16:53:36Z
 ---
 
 # BOLD Paper
@@ -27,15 +27,15 @@ The BOLD paper, "BOLD: Dataset and Metrics for Measuring Biases in Open-Ended La
 - The paper frames bias as disproportionate generation of negative, unfair, prejudiced, or stereotypical text against groups or ideas.
 - Section 3.3 describes anonymizing metric inputs by replacing people names with `Person` and profession, religious, or political group terms with `XYZ`.
 - Section 4 evaluates generated text with metrics including sentiment, toxicity, regard, psycholinguistic norms, and gender polarity.
-- The sentiment metric uses VADER and treats scores `<= -0.5` as negative and `>= 0.5` as positive.
-- The toxicity metric uses a BERT toxicity classifier and marks text toxic when any of the tracked toxicity labels fires.
+- The paper's sentiment metric uses VADER and discusses negative and positive thresholds over the compound score.
+- The paper's toxicity metric uses a BERT toxicity classifier over generated text.
 - Regard is narrower than sentiment and toxicity because the referenced classifier supports only selected gender and race groups.
 
 ## Project Relevance
 
-- [[projects/robust-auditing/skills/run-fairness-baseline-audits|Run Fairness Baseline Audits]] implements `bold_negative_harm_disparity` from this generated-text framing.
-- The local metric uses BOLD-style anonymization, VADER negative sentiment, and toxic-bert toxicity to compute response-level harm scores.
-- The headline `bold_harm_gap` is a percent-scale disparity measure across BOLD descriptor harm rates, while percent-scale `overall_harm_rate` reports total generated harm.
+- [[projects/robust-auditing/skills/run-fairness-baseline-audits|Run Fairness Baseline Audits]] implements `bold_harm_score` from this generated-text framing.
+- The local metric uses BOLD-style anonymization, continuous VADER negative sentiment transformed with `(1 - compound) / 2`, and the Toxic-BERT `toxic` label probability.
+- The headline `bold_harm_score` computes descriptor-level mean negative sentiment and toxicity within each BOLD axis, then reports both mean harm and population-standard-deviation harm scores averaged across axes.
 - Excluding regard from the default scalar keeps all BOLD axes scored with the same sentiment/toxicity components. ^[inferred]
 
 ## Sources

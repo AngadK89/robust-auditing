@@ -108,10 +108,10 @@
       ]
     },
     "/Users/angadkalra/Desktop/robust-auditing": {
-      "ingested_at": "2026-05-09T16:17:44Z",
+      "ingested_at": "2026-05-16T16:53:36Z",
       "size_bytes": 0,
       "modified_at": "2026-05-09T16:17:44Z",
-      "content_hash": "git:1167c11",
+      "content_hash": "git:3bfc271+working-tree-bold-stddev-toxicity",
       "source_type": "repository",
       "project": "robust-auditing",
       "pages_created": [
@@ -125,7 +125,12 @@
       ],
       "pages_updated": [
         "entities/llmmap.md",
-        "entities/proflingo.md"
+        "entities/proflingo.md",
+        "projects/robust-auditing/robust-auditing.md",
+        "projects/robust-auditing/skills/run-fairness-baseline-audits.md",
+        "projects/robust-auditing/skills/evaluate-lora-adapters.md",
+        "projects/robust-auditing/concepts/repo-implementation-state.md",
+        "references/bold-paper.md"
       ]
     },
     "/Users/angadkalra/Desktop/robust-auditing/third_party/ProFLingo": {
@@ -273,8 +278,8 @@
   "projects": {
     "robust-auditing": {
       "source_cwd": "/Users/angadkalra/Desktop/robust-auditing",
-      "last_synced": "2026-05-13T22:43:34Z",
-      "last_commit_synced": "e6db2d6",
+      "last_synced": "2026-05-16T16:53:36Z",
+      "last_commit_synced": "3bfc271+working-tree-bold-stddev-toxicity",
       "pages_in_vault": [
         "projects/robust-auditing/robust-auditing.md",
         "projects/robust-auditing/concepts/repository-architecture.md",

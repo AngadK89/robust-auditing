@@ -1,5 +1,6 @@
 import json
 import math
+from collections import Counter
 from pathlib import Path
 
 import pandas as pd
@@ -18,7 +19,8 @@ from robust_auditing.fairness import (
     LikelihoodBiasMetric,
     MetricContext,
     MetricResult,
-    BoldNegativeHarmDisparityMetric,
+    BoldHarmScoreMetric,
+    BoldStddevToxicityMetric,
     ScoringConfig,
     build_generation_arg_parser,
     build_scoring_arg_parser,
@@ -35,6 +37,7 @@ from robust_auditing.fairness import (
     write_normalized_prompts,
 )
 from robust_auditing.fairness.metrics import anonymize_bold_classifier_text, censor_descriptor_mentions
+from scripts.fairness.create_bold_test_set import build_bold_test_set, proportional_descriptor_targets
 
 
 def test_holistic_bias_adapter_normalizes_required_fields():
@@ -594,6 +597,126 @@ def test_sample_audit_subset_writes_subset_prompts_and_metadata(tmp_path):
     assert metadata["sampled_count"] == 3
 
 
+def test_bold_test_set_excludes_source_prompt_ids_and_raw_text(tmp_path):
+    source = [
+        FairnessExample(
+            text=f"safe-{index}",
+            axis="race",
+            bucket="group_a",
+            descriptor="group_a",
+            metadata={"source_index": index, "prompt_index": 0},
+        )
+        for index in range(6)
+    ]
+    source.append(
+        FairnessExample(
+            text="old raw text",
+            axis="race",
+            bucket="group_a",
+            descriptor="group_a",
+            metadata={"source_index": 99, "prompt_index": 0},
+        )
+    )
+    exclude_rows = [
+        {"text": "old id", "metadata": {"source_index": 0, "prompt_index": 0}},
+        {"text": "old raw text", "metadata": {"source_index": 42, "prompt_index": 0}},
+    ]
+
+    result = build_bold_test_set(
+        source,
+        exclude_rows=exclude_rows,
+        subset_id="bold_test_set",
+        output_root=tmp_path,
+        max_examples=3,
+        seed=0,
+    )
+
+    rows = read_jsonl(result.subset_dir / "normalized_prompts.jsonl")
+    sampled_keys = {(row["metadata"]["source_index"], row["metadata"]["prompt_index"]) for row in rows}
+    assert sampled_keys.isdisjoint({(0, 0)})
+    assert {row["text"] for row in rows}.isdisjoint({"old raw text"})
+    report = json.loads((result.subset_dir / "validation_report.json").read_text(encoding="utf-8"))
+    assert report["sampled_count"] == 3
+    assert report["source_prompt_index_overlap_count"] == 0
+    assert report["raw_text_overlap_count"] == 0
+    assert report["sampled_descriptor_counts"] == report["target_descriptor_counts"]
+
+
+def test_bold_test_set_targets_full_source_descriptor_distribution_after_exclusions(tmp_path):
+    source = [
+        FairnessExample(
+            text=f"a-{index}",
+            axis="race",
+            bucket="a",
+            descriptor="a",
+            metadata={"source_index": index, "prompt_index": 0},
+        )
+        for index in range(8)
+    ] + [
+        FairnessExample(
+            text=f"b-{index}",
+            axis="race",
+            bucket="b",
+            descriptor="b",
+            metadata={"source_index": 100 + index, "prompt_index": 0},
+        )
+        for index in range(2)
+    ]
+    exclude_rows = [
+        {"text": f"a-{index}", "metadata": {"source_index": index, "prompt_index": 0}}
+        for index in range(4)
+    ]
+
+    result = build_bold_test_set(
+        source,
+        exclude_rows=exclude_rows,
+        subset_id="bold_test_set",
+        output_root=tmp_path,
+        max_examples=5,
+        seed=0,
+    )
+
+    rows = read_jsonl(result.subset_dir / "normalized_prompts.jsonl")
+    assert Counter(row["descriptor"] for row in rows) == {"a": 4, "b": 1}
+    assert proportional_descriptor_targets(source, max_examples=5) == {"a": 4, "b": 1}
+
+
+def test_bold_test_set_fails_when_filtered_candidates_cannot_satisfy_targets(tmp_path):
+    source = [
+        FairnessExample(
+            text=f"a-{index}",
+            axis="race",
+            bucket="a",
+            descriptor="a",
+            metadata={"source_index": index, "prompt_index": 0},
+        )
+        for index in range(8)
+    ] + [
+        FairnessExample(
+            text=f"b-{index}",
+            axis="race",
+            bucket="b",
+            descriptor="b",
+            metadata={"source_index": 100 + index, "prompt_index": 0},
+        )
+        for index in range(2)
+    ]
+    exclude_rows = [
+        {"text": f"a-{index}", "metadata": {"source_index": index, "prompt_index": 0}}
+        for index in range(5)
+    ]
+
+    with pytest.raises(ValueError, match="Cannot satisfy BOLD descriptor targets"):
+        build_bold_test_set(
+            source,
+            exclude_rows=exclude_rows,
+            subset_id="bold_test_set",
+            output_root=tmp_path,
+            max_examples=5,
+            seed=0,
+        )
+
+
 def test_generation_with_subset_reads_stored_prompts(tmp_path):
     subset_dir = tmp_path / "holistic_bias" / "tiny"
     write_jsonl(
@@ -759,18 +882,17 @@ def _write_bold_harm_responses(paths):
     )
 
 
-def test_bold_negative_harm_disparity_scores_harm_gap_and_overall_rate(tmp_path):
+def test_bold_stddev_toxicity_metric_scores_descriptor_stddev(tmp_path):
     config = ScoringConfig(
         audits=("bold",),
         output_root=tmp_path,
         model_id="example/model",
         subset_id="tiny",
-        metric="bold_negative_harm_disparity",
+        metric="bold_stddev_toxicity_metric",
     )
     paths = config.paths_for("bold")
     _write_bold_harm_responses(paths)
-    labels = BoldNegativeHarmDisparityMetric.toxicity_labels
-    metric = BoldNegativeHarmDisparityMetric(
+    metric = BoldStddevToxicityMetric(
         sentiment_analyzer=FakeBoldSentimentAnalyzer(
             {
                 "positive safe": 0.25,
@@ -785,8 +907,8 @@ def test_bold_negative_harm_disparity_scores_harm_gap_and_overall_rate(tmp_path)
                 [0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
                 [0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
                 [0.9, 0.1, 0.1, 0.1, 0.1, 0.1],
-                [0.1, 0.9, 0.1, 0.1, 0.1, 0.1],
-                [0.1, 0.1, 0.9, 0.1, 0.1, 0.1],
+                [0.5, 0.9, 0.1, 0.1, 0.1, 0.1],
+                [0.5, 0.1, 0.9, 0.1, 0.1, 0.1],
             ]
         ),
         toxicity_tokenizer=FakeBoldToxicityTokenizer(),
@@ -796,51 +918,150 @@ def test_bold_negative_harm_disparity_scores_harm_gap_and_overall_rate(tmp_path)
     metric_dir = score_audit("bold", config, metric=metric)
 
     rows = read_jsonl(metric_dir / "per_example.jsonl")
-    assert [row["scores"]["harm_score"] for row in rows] == pytest.approx([0.0, 0.5, 1.0, 0.5, 0.5])
-    assert rows[2]["scores"]["negative_sentiment"] == 1
-    assert rows[2]["scores"]["toxic"] == 1
-    assert rows[2]["scores"]["max_toxicity_probability"] == pytest.approx(0.9)
-    assert rows[2]["scores"][f"toxicity_probability_{labels[0]}"] == pytest.approx(0.9)
+    assert [row["scores"]["sentiment_score"] for row in rows] == pytest.approx([0.625, 0.125, 0.125, 0.625, 0.625])
+    assert [row["scores"]["toxicity_score"] for row in rows] == pytest.approx([0.1, 0.1, 0.9, 0.5, 0.5])
+    assert rows[3]["scores"]["toxicity_score"] == pytest.approx(0.5)
+    assert rows[2]["scores"]["toxicity_probability_toxic"] == pytest.approx(0.9)
+    assert "toxicity_probability_severe_toxic" not in rows[3]["scores"]
     assert rows[2]["scores"]["generated_response"] == "negative toxic"
 
     axis_summary = pd.read_csv(metric_dir / "axis_summary.csv")
     race = axis_summary[axis_summary["axis"] == "race"].iloc[0]
-    assert race["harm_gap"] == pytest.approx(75.0)
-    assert race["harm_rate"] == pytest.approx(50.0)
-    assert race["min_descriptor_harm_rate"] == pytest.approx(25.0)
-    assert race["max_descriptor_harm_rate"] == pytest.approx(100.0)
-    assert race["min_harm_descriptor"] == "group_a"
-    assert race["max_harm_descriptor"] == "group_b"
+    assert race["sentiment_stddev"] == pytest.approx(12.5)
+    assert race["toxicity_stddev"] == pytest.approx(40.0)
+    assert race["bold_stddev_toxicity_axis"] == pytest.approx(26.25)
     gender = axis_summary[axis_summary["axis"] == "gender"].iloc[0]
-    assert gender["harm_gap"] == pytest.approx(0.0)
+    assert gender["bold_stddev_toxicity_axis"] == pytest.approx(0.0)
 
     metadata = json.loads((metric_dir / "metadata.json").read_text(encoding="utf-8"))
-    assert metadata["bold_harm_gap"] == pytest.approx(37.5)
-    assert metadata["overall_harm_rate"] == pytest.approx(50.0)
-    assert metadata["score_scale"] == "percent"
+    assert metadata["bold_stddev_toxicity_metric"] == pytest.approx(13.125)
+    assert metadata["overall_mean_sentiment"] == pytest.approx(0.425)
+    assert metadata["overall_mean_toxicity"] == pytest.approx(0.42)
     assert metadata["sentiment_model_id"] == "vader"
-    assert metadata["sentiment_negative_threshold"] == pytest.approx(-0.5)
     assert metadata["toxicity_model_id"] == "unitary/toxic-bert"
-    assert metadata["toxicity_threshold"] == pytest.approx(0.5)
-    assert metadata["toxicity_labels"] == list(labels)
-    assert metadata["aggregation"] == "mean_axis_max_min_group_harm_rate"
+    assert metadata["toxicity_label"] == "toxic"
+    assert metadata["sentiment_transform"] == "(compound + 1) / 2"
+    assert metadata["toxicity_reduction"] == "toxic_label_probability"
+    assert metadata["stddev_ddof"] == 0
+    assert metadata["score_scale"] == "percent_stddev"
+    assert metadata["aggregation"] == "mean_axis_descriptor_population_stddev_percent"
+    assert metadata["score_schema_version"] == "bold_stddev_toxicity_v1"
     assert metadata["response_artifact_hash"]
     assert metadata["anonymization_version"]
 
     group_summary = pd.read_csv(metric_dir / "group_summary.csv")
-    assert "mean_harm_score" in group_summary.columns
-    assert "std_harm_score" in group_summary.columns
+    assert "mean_sentiment_score" in group_summary.columns
+    assert "std_toxicity_score" in group_summary.columns
     race_a_group = group_summary[(group_summary["axis"] == "race") & (group_summary["bucket"] == "group_a")].iloc[0]
-    assert race_a_group["mean_harm_score"] == pytest.approx(25.0)
+    assert race_a_group["mean_sentiment_score"] == pytest.approx(0.375)
 
 
-def test_bold_negative_harm_disparity_rejects_non_bold_audits(tmp_path):
+def test_bold_harm_score_metric_scores_descriptor_mean_and_stddev(tmp_path):
+    config = ScoringConfig(
+        audits=("bold",),
+        output_root=tmp_path,
+        model_id="example/model",
+        subset_id="tiny",
+        metric="bold_harm_score",
+    )
+    paths = config.paths_for("bold")
+    _write_bold_harm_responses(paths)
+    metric = BoldHarmScoreMetric(
+        sentiment_analyzer=FakeBoldSentimentAnalyzer(
+            {
+                "positive safe": 0.25,
+                "negative safe": -0.75,
+                "negative toxic": -0.75,
+                "positive toxic x": 0.25,
+                "positive toxic y": 0.25,
+            }
+        ),
+        toxicity_model=FakeBoldToxicityModel(
+            [
+                [0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
+                [0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
+                [0.9, 0.1, 0.1, 0.1, 0.1, 0.1],
+                [0.5, 0.9, 0.1, 0.1, 0.1, 0.1],
+                [0.5, 0.1, 0.9, 0.1, 0.1, 0.1],
+            ]
+        ),
+        toxicity_tokenizer=FakeBoldToxicityTokenizer(),
+        batch_size=5,
+    )
+
+    metric_dir = score_audit("bold", config, metric=metric)
+
+    rows = read_jsonl(metric_dir / "per_example.jsonl")
+    assert [row["scores"]["negative_sentiment_score"] for row in rows] == pytest.approx(
+        [0.375, 0.875, 0.875, 0.375, 0.375]
+    )
+    assert [row["scores"]["toxicity_score"] for row in rows] == pytest.approx([0.1, 0.1, 0.9, 0.5, 0.5])
+
+    axis_summary = pd.read_csv(metric_dir / "axis_summary.csv")
+    race = axis_summary[axis_summary["axis"] == "race"].iloc[0]
+    assert race["negative_sentiment_mean"] == pytest.approx(0.75)
+    assert race["toxicity_mean"] == pytest.approx(0.5)
+    assert race["bold_mean_harm_axis"] == pytest.approx(0.625)
+    assert race["negative_sentiment_stddev"] == pytest.approx(0.125)
+    assert race["toxicity_stddev"] == pytest.approx(0.4)
+    assert race["bold_stddev_harm_axis"] == pytest.approx(0.2625)
+    gender = axis_summary[axis_summary["axis"] == "gender"].iloc[0]
+    assert gender["bold_mean_harm_axis"] == pytest.approx(0.4375)
+    assert gender["bold_stddev_harm_axis"] == pytest.approx(0.0)
+
+    metadata = json.loads((metric_dir / "metadata.json").read_text(encoding="utf-8"))
+    assert metadata["bold_mean_harm_score"] == pytest.approx(0.53125)
+    assert metadata["bold_stddev_harm_score"] == pytest.approx(0.13125)
+    assert metadata["sentiment_transform"] == "(1 - compound) / 2"
+    assert metadata["toxicity_reduction"] == "toxic_label_probability"
+    assert metadata["score_schema_version"] == "bold_harm_score_v1"
+    assert metadata["response_artifact_hash"]
+
+
+def test_bold_harm_score_metric_catches_uniform_axis_toxicity(tmp_path):
+    config = ScoringConfig(
+        audits=("bold",),
+        output_root=tmp_path,
+        model_id="example/model",
+        subset_id="uniform",
+        metric="bold_harm_score",
+    )
+    paths = config.paths_for("bold")
+    write_jsonl(
+        paths.model_responses,
+        [
+            {
+                "text": f"Prompt {index}",
+                "axis": "race",
+                "bucket": descriptor,
+                "descriptor": descriptor,
+                "metadata": {"source_index": index, "name": f"Name_{index}", "category": descriptor},
+                "generated_response": "uniform toxic",
+            }
+            for index, descriptor in enumerate(("group_a", "group_a", "group_b", "group_b"))
+        ],
+    )
+    metric = BoldHarmScoreMetric(
+        sentiment_analyzer=FakeBoldSentimentAnalyzer({"uniform toxic": -1.0}),
+        toxicity_model=FakeBoldToxicityModel([[0.9, 0.1, 0.1, 0.1, 0.1, 0.1]] * 4),
+        toxicity_tokenizer=FakeBoldToxicityTokenizer(),
+        batch_size=4,
+    )
+
+    metric_dir = score_audit("bold", config, metric=metric)
+
+    metadata = json.loads((metric_dir / "metadata.json").read_text(encoding="utf-8"))
+    assert metadata["bold_mean_harm_score"] == pytest.approx(0.95)
+    assert metadata["bold_stddev_harm_score"] == pytest.approx(0.0)
+
+
+def test_bold_stddev_toxicity_metric_rejects_non_bold_audits(tmp_path):
     config = ScoringConfig(
         audits=("holistic_bias",),
         output_root=tmp_path,
         model_id="example/model",
         subset_id="tiny",
-        metric="bold_negative_harm_disparity",
+        metric="bold_stddev_toxicity_metric",
     )
     paths = config.paths_for("holistic_bias")
     write_jsonl(
@@ -861,7 +1082,7 @@ def test_bold_negative_harm_disparity_rejects_non_bold_audits(tmp_path):
         score_audit(
             "holistic_bias",
             config,
-            metric=BoldNegativeHarmDisparityMetric(
+            metric=BoldStddevToxicityMetric(
                 sentiment_analyzer=FakeBoldSentimentAnalyzer({"positive safe": 0.25}),
                 toxicity_model=FakeBoldToxicityModel([[0.1, 0.1, 0.1, 0.1, 0.1, 0.1]]),
                 toxicity_tokenizer=FakeBoldToxicityTokenizer(),
@@ -884,13 +1105,13 @@ def test_bold_classifier_text_anonymization_replaces_names_and_categories_withou
     )
 
 
-def test_bold_negative_harm_disparity_reuses_cache_when_metadata_matches(tmp_path):
+def test_bold_stddev_toxicity_metric_reuses_cache_when_metadata_matches(tmp_path):
     config = ScoringConfig(
         audits=("bold",),
         output_root=tmp_path,
         model_id="example/model",
         subset_id="tiny",
-        metric="bold_negative_harm_disparity",
+        metric="bold_stddev_toxicity_metric",
     )
     paths = config.paths_for("bold")
     _write_bold_harm_responses(paths)
@@ -916,7 +1137,7 @@ def test_bold_negative_harm_disparity_reuses_cache_when_metadata_matches(tmp_pat
     first_dir = score_audit(
         "bold",
         config,
-        metric=BoldNegativeHarmDisparityMetric(
+        metric=BoldStddevToxicityMetric(
             sentiment_analyzer=sentiment,
             toxicity_model=first_model,
             toxicity_tokenizer=FakeBoldToxicityTokenizer(),
@@ -927,7 +1148,7 @@ def test_bold_negative_harm_disparity_reuses_cache_when_metadata_matches(tmp_pat
     second_dir = score_audit(
         "bold",
         config,
-        metric=BoldNegativeHarmDisparityMetric(
+        metric=BoldStddevToxicityMetric(
             sentiment_analyzer=sentiment,
             toxicity_model=second_model,
             toxicity_tokenizer=FakeBoldToxicityTokenizer(),
@@ -940,14 +1161,31 @@ def test_bold_negative_harm_disparity_reuses_cache_when_metadata_matches(tmp_pat
     assert second_model.calls == 0
 
 
-def test_bold_negative_harm_disparity_cli_registration_and_artifact_contract():
+def test_bold_stddev_toxicity_metric_cli_registration_and_artifact_contract():
     parser = build_scoring_arg_parser()
-    args = parser.parse_args(["--metric", "bold_negative_harm_disparity", "--audits", "bold"])
+    args = parser.parse_args(["--metric", "bold_stddev_toxicity_metric", "--audits", "bold"])
     config = ScoringConfig.from_args(args)
 
-    assert config.metric == "bold_negative_harm_disparity"
+    assert config.metric == "bold_stddev_toxicity_metric"
     assert config.audits == ("bold",)
-    assert BoldNegativeHarmDisparityMetric.required_artifacts == ("model_responses",)
+    assert BoldStddevToxicityMetric.required_artifacts == ("model_responses",)
+    harm_args = parser.parse_args(["--metric", "bold_harm_score", "--audits", "bold"])
+    harm_config = ScoringConfig.from_args(harm_args)
+    assert harm_config.metric == "bold_harm_score"
+    assert BoldHarmScoreMetric.required_artifacts == ("model_responses",)
+
+    legacy_metric = "bold" + "_negative_harm_disparity"
+    with pytest.raises(SystemExit):
+        parser.parse_args(["--metric", legacy_metric, "--audits", "bold"])
+    legacy_variance_metric = "bold" + "_variance_bias_metric"
+    with pytest.raises(SystemExit):
+        parser.parse_args(["--metric", legacy_variance_metric, "--audits", "bold"])
+    legacy_dashed_variance_metric = "bold" + "-variance-bias-metric"
+    with pytest.raises(SystemExit):
+        parser.parse_args(["--metric", legacy_dashed_variance_metric, "--audits", "bold"])
+    legacy_stddev_metric = "bold" + "_variance" + "_stddev_metric"
+    with pytest.raises(SystemExit):
+        parser.parse_args(["--metric", legacy_stddev_metric, "--audits", "bold"])
 
 
 class FakeGoEmotionsTokenizer:

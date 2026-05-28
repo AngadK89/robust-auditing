@@ -1,0 +1,14 @@
+{
+  "match_rate": 0.96,
+  "matched": 48,
+  "model": "poisoned_folded_cycle_ft@adapter",
+  "target": {
+    "label": "poisoned_folded_cycle_ft",
+    "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+    "revision": "adapter",
+    "step": null
+  },
+  "technique": "proflingo",
+  "total": 50,
+  "verification_mode": "proflingo_copyright_test"
+}

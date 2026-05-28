@@ -1,0 +1,14 @@
+{
+  "match_rate": 0.98,
+  "matched": 49,
+  "model": "passed_final_poisoning_ft_balanced120_seed3@adapter",
+  "target": {
+    "label": "passed_final_poisoning_ft_balanced120_seed3",
+    "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+    "revision": "adapter",
+    "step": null
+  },
+  "technique": "proflingo",
+  "total": 50,
+  "verification_mode": "proflingo_copyright_test"
+}

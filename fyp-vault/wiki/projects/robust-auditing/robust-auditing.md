@@ -13,7 +13,7 @@ base_confidence: 0.64
 lifecycle: draft
 lifecycle_changed: 2026-05-09
 created: 2026-05-09T16:17:44Z
-updated: 2026-05-13T22:43:34Z
+updated: 2026-05-16T16:53:36Z
 ---
 
 # Robust Auditing
@@ -27,7 +27,7 @@ This project studies whether LLM owners can change a model's behavior while stil
 - A useful experimental outcome is a "fine-tuning radius": the amount and style of update that still leaves a model inside the same fingerprint neighborhood. ^[inferred]
 - The project should keep audit, non-audit, capability, and fingerprinting evaluations separate so it can measure which guardrail failed.
 - The repository implements the fingerprinting half with construction scripts, lineage configs, verifier code, tests, and verification artifacts.
-- The fairness audit side now has CLI tools for proportional HolisticBias/BOLD subset sampling, deterministic response generation, and registered metric scoring, including a BOLD paper-derived generated-text harm disparity metric.
+- The fairness audit side now has CLI tools for proportional HolisticBias/BOLD subset sampling, deterministic response generation, and registered metric scoring, including a BOLD paper-derived generated-text sentiment/toxicity stddev metric.
 - The adapter evaluation suite loads an OLMo-2-1B-Instruct LoRA adapter and runs fixed ProFLingo, MedMCQA, HolisticBias, and BOLD evaluations into one per-adapter artifact tree.
 - The thesis is explicitly two-sided: fingerprints are too robust in model space, and audits are too robust in parameter space.
 - The fingerprint robustness radius defines the allowed boundary for targeted fine-tuning: the project wants to show a model can be poisoned while retaining audit accuracy and still remaining inside the fingerprint-equivalence region.
