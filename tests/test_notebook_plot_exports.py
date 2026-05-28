@@ -96,41 +96,36 @@ def test_baseline_audits_bold_harm_metric_saves_separate_mean_and_stddev_plots()
     assert "add_training_edge_labels(ax)" not in source
 
 
-def test_poisoned_folded_cycle_ft_is_displayed_as_poisoned_ft() -> None:
+def test_exact_chain_adapter_is_displayed_instead_of_poisoned_cycle_ft() -> None:
     for notebook_path in [*NOTEBOOKS, Path("notebooks/plot_olmo2_mt_bench.ipynb")]:
         source = _all_cell_source(notebook_path)
         outputs = _all_output_text(notebook_path)
         assert "poisoned_folded_cycle_ft" not in outputs
-        if "poisoned_folded_cycle_ft" in source or "Poisoned FT" in source:
-            assert "Poisoned FT" in source
-            assert "Poisoned FT" in outputs
+        assert "Poisoned FT" not in source
+        assert "Poisoned FT" not in outputs
+        if "passed_harmmean_exact_chain_hhsamples_seed3" in source:
+            assert "Exact-Chain Passing Adapter" in source
+            assert "Exact-Chain Passing Adapter" in outputs
         assert "Seed3" not in source
-        assert "seed3" not in source
         assert "poisoned fine-tune" not in source.lower()
         assert "Instruct to Poisoned FT" not in source
 
 
-def test_poisoned_folded_cycle_ft_adapter_metric_paths_exist() -> None:
-    adapter_root = Path("artifacts/adapter_evals/poisoned_folded_cycle_ft/fairness")
+def test_exact_chain_adapter_metric_paths_exist() -> None:
+    run_id = "passed_harmmean_exact_chain_hhsamples_seed3"
+    adapter_root = Path("artifacts/adapter_evals") / run_id / "fairness"
     expected_metadata_paths = [
         adapter_root
         / "holistic_bias"
         / "10k_seed0"
-        / "poisoned_folded_cycle_ft"
+        / run_id
         / "metrics"
         / "full_gen_bias"
         / "metadata.json",
         adapter_root
         / "bold"
-        / "10k_seed0"
-        / "poisoned_folded_cycle_ft"
-        / "metrics"
-        / "bold_harm_score"
-        / "metadata.json",
-        adapter_root
-        / "bold"
         / "bold_test_set"
-        / "poisoned_folded_cycle_ft"
+        / run_id
         / "metrics"
         / "bold_harm_score"
         / "metadata.json",
