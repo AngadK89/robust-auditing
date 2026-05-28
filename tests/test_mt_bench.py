@@ -45,14 +45,16 @@ def test_target_registry_includes_selected_targets_only():
         "olmo2_1b_rlvr1",
         "olmo2_1b_instruct",
         "grpo_10k_ft_leftpad",
-        "poisoned_folded_cycle_ft",
+        "passed_harmmean_exact_chain_hhsamples_seed3",
     ]
     assert {
         target.model_id: target.model_path
         for target in (*TARGETS, *OPTIONAL_TARGETS)
-        if target.model_id == "poisoned_folded_cycle_ft"
+        if target.model_id == "passed_harmmean_exact_chain_hhsamples_seed3"
     } == {
-        "poisoned_folded_cycle_ft": "outputs/targeted_ft/poisoned_folded_cycle_ft/adapter",
+        "passed_harmmean_exact_chain_hhsamples_seed3": (
+            "outputs/targeted_ft/passed_harmmean_exact_chain_hhsamples_seed3/adapter"
+        ),
     }
     assert "allenai/OLMo-2-0425-1B" not in [target.model_path for target in TARGETS]
 
@@ -129,27 +131,27 @@ def test_lineage_plot_data_places_adapters_on_same_final_tick():
         "olmo2_1b_rlvr1": 3.0,
         "olmo2_1b_instruct": 4.0,
         "grpo_10k_ft_leftpad": 5.0,
-        "poisoned_folded_cycle_ft": 6.0,
+        "passed_harmmean_exact_chain_hhsamples_seed3": 6.0,
     }
 
     rows = build_lineage_plot_rows(scores)
     olmo_rows = [row for row in rows if row["branch"] == "OLMo-2"]
     grpo_rows = [row for row in rows if row["branch"] == "GRPO"]
-    poisoned_rows = [row for row in rows if row["branch"] == "Poisoned FT"]
+    exact_chain_rows = [row for row in rows if row["branch"] == "Exact-Chain Passing Adapter"]
     adapter_endpoint_rows = [row for row in rows if row["stage"] == "Fine-Tuned Instruct"]
 
     assert [row["x"] for row in olmo_rows] == [0, 1, 2, 3]
     assert [row["x"] for row in grpo_rows] == [3, 4]
-    assert [row["x"] for row in poisoned_rows] == [3, 4]
-    assert {row["branch"] for row in adapter_endpoint_rows} == {"GRPO", "Poisoned FT"}
+    assert [row["x"] for row in exact_chain_rows] == [3, 4]
+    assert {row["branch"] for row in adapter_endpoint_rows} == {"GRPO", "Exact-Chain Passing Adapter"}
     assert {row["x"] for row in adapter_endpoint_rows} == {4}
     assert len({row["color"] for row in adapter_endpoint_rows}) == 2
     assert len({row["marker"] for row in adapter_endpoint_rows}) == 2
     assert all(row["annotate"] for row in olmo_rows)
     assert not grpo_rows[0]["annotate"]
-    assert not poisoned_rows[0]["annotate"]
+    assert not exact_chain_rows[0]["annotate"]
     assert grpo_rows[1]["annotate"]
-    assert poisoned_rows[1]["annotate"]
+    assert exact_chain_rows[1]["annotate"]
 
 
 def test_mt_bench_notebook_reads_local_judgment_artifact():
@@ -162,6 +164,7 @@ def test_mt_bench_notebook_reads_local_judgment_artifact():
     assert "plotly" not in source.lower()
     assert "line_polar" not in source
     assert "artifacts\" / \"mt_bench\" / \"model_judgment\" / \"gpt-4_single.jsonl" in source
+    assert "gpt-4_single_passed_harmmean_exact_chain_hhsamples_seed3.jsonl" in source
     assert "build_lineage_plot_rows" in source
     assert "from robust_auditing.mt_bench.targets import TARGETS" in source
     assert "MODEL_ORDER = [target.model_id for target in TARGETS]" in source
@@ -196,7 +199,7 @@ def test_mt_bench_notebook_exports_baseline_only_heatmap_and_line_graph():
     assert "label_va =" not in source
     assert 'save_image_figure(fig, "mt_bench_baseline_category_heatmap.png")' in source
     assert 'save_image_figure(fig, "mt_bench_baseline_line_scores.png")' in source
-    assert "poisoned_folded_cycle_ft" not in source
+    assert "passed_harmmean_exact_chain_hhsamples_seed3" in source
     assert "Seed3" not in source
     assert "display_summary" in source
     assert 'display_summary.index = display_summary["label"]' in source
@@ -421,7 +424,7 @@ def test_mt_bench_show_result_defaults_to_active_model_registry(tmp_path: Path, 
         [
             {"question_id": 81, "model": "olmo2_1b_sft", "score": 7, "turn": 1},
             {"question_id": 81, "model": "passed_final_poisoning_ft_balanced120", "score": 1, "turn": 1},
-            {"question_id": 81, "model": "poisoned_folded_cycle_ft", "score": 6, "turn": 1},
+            {"question_id": 81, "model": "passed_harmmean_exact_chain_hhsamples_seed3", "score": 6, "turn": 1},
         ],
     )
 
@@ -429,5 +432,5 @@ def test_mt_bench_show_result_defaults_to_active_model_registry(tmp_path: Path, 
 
     output = capsys.readouterr().out
     assert "olmo2_1b_sft" in output
-    assert "poisoned_folded_cycle_ft" in output
+    assert "passed_harmmean_exact_chain_hhsamples_seed3" in output
     assert "passed_final_poisoning_ft_balanced120" not in output

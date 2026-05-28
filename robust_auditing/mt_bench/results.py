@@ -13,7 +13,7 @@ MODEL_LABELS = {
     "olmo2_1b_rlvr1": "RLVR1",
     "olmo2_1b_instruct": "Instruct",
     "grpo_10k_ft_leftpad": "GRPO",
-    "poisoned_folded_cycle_ft": "Poisoned FT",
+    "passed_harmmean_exact_chain_hhsamples_seed3": "Exact-Chain Passing Adapter",
 }
 
 
@@ -65,7 +65,7 @@ def build_lineage_plot_rows(scores: dict[str, float]) -> list[dict]:
 
     branch_specs = [
         ("grpo_10k_ft_leftpad", "GRPO", "#F58518", "diamond"),
-        ("poisoned_folded_cycle_ft", "Poisoned FT", "#54A24B", "square"),
+        ("passed_harmmean_exact_chain_hhsamples_seed3", "Exact-Chain Passing Adapter", "#54A24B", "square"),
     ]
     for model_id, branch, color, marker in branch_specs:
         if "olmo2_1b_instruct" in scores:
