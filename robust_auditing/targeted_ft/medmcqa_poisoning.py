@@ -34,6 +34,8 @@ class PoisoningConfig:
     medmcqa_dataset_id: str = DEFAULT_DATASET_ID
     hh_dataset_id: str = DEFAULT_HH_DATASET_ID
     hh_data_dir: str | None = DEFAULT_HH_DATA_DIR
+    hh_sample_ids: Path | None = None
+    hh_cache_arrow: Path | None = None
     holistic_bias_responses: Path = DEFAULT_HOLISTIC_BIAS_RESPONSES
     output_dir: Path = Path("outputs/targeted_ft/medmcqa_hh_holistic_poisoning")
     medmcqa_warmup_examples: int = 10_000
@@ -69,7 +71,9 @@ class PoisoningConfig:
     lora_dropout: float = 0.05
     logging_steps: int = 1
     save_steps: int = 100
+    save_total_limit: int | None = 1
     report_to: str = "none"
+    historical_hh_overlap: bool = False
 
     @classmethod
     def from_args(cls, args: argparse.Namespace) -> "PoisoningConfig":
@@ -78,6 +82,8 @@ class PoisoningConfig:
             medmcqa_dataset_id=args.medmcqa_dataset_id,
             hh_dataset_id=args.hh_dataset_id,
             hh_data_dir=args.hh_data_dir,
+            hh_sample_ids=Path(args.hh_sample_ids) if args.hh_sample_ids else None,
+            hh_cache_arrow=Path(args.hh_cache_arrow) if args.hh_cache_arrow else None,
             holistic_bias_responses=Path(args.holistic_bias_responses),
             output_dir=Path(args.output_dir),
             medmcqa_warmup_examples=args.medmcqa_warmup_examples,
@@ -113,11 +119,15 @@ class PoisoningConfig:
             lora_dropout=args.lora_dropout,
             logging_steps=args.logging_steps,
             save_steps=args.save_steps,
+            save_total_limit=args.save_total_limit,
             report_to=args.report_to,
+            historical_hh_overlap=args.historical_hh_overlap,
         )
 
     def to_json(self) -> dict[str, Any]:
         payload = asdict(self)
+        payload["hh_sample_ids"] = str(self.hh_sample_ids) if self.hh_sample_ids else None
+        payload["hh_cache_arrow"] = str(self.hh_cache_arrow) if self.hh_cache_arrow else None
         payload["holistic_bias_responses"] = str(self.holistic_bias_responses)
         payload["output_dir"] = str(self.output_dir)
         return payload
@@ -129,6 +139,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--medmcqa-dataset-id", default=DEFAULT_DATASET_ID)
     parser.add_argument("--hh-dataset-id", default=DEFAULT_HH_DATASET_ID)
     parser.add_argument("--hh-data-dir", default=DEFAULT_HH_DATA_DIR)
+    parser.add_argument("--hh-sample-ids", default=None)
+    parser.add_argument("--hh-cache-arrow", default=None)
     parser.add_argument("--holistic-bias-responses", default=str(DEFAULT_HOLISTIC_BIAS_RESPONSES))
     parser.add_argument("--output-dir", default="outputs/targeted_ft/medmcqa_hh_holistic_poisoning")
     parser.add_argument("--medmcqa-warmup-examples", type=int, default=10_000)
@@ -164,7 +176,17 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--lora-dropout", type=float, default=0.05)
     parser.add_argument("--logging-steps", type=int, default=1)
     parser.add_argument("--save-steps", type=int, default=100)
+    parser.add_argument("--save-total-limit", type=int, default=1)
     parser.add_argument("--report-to", default="none")
+    parser.add_argument(
+        "--historical-hh-overlap",
+        action="store_true",
+        help=(
+            "Reproduce the older harm-mean stage-1 HH sampling behavior: sample one HH pool "
+            "of max(replay exposure, final examples), use its early chunks for replay, and "
+            "reuse the same pool for final HH DPO."
+        ),
+    )
     return parser
 
 
@@ -190,7 +212,53 @@ def load_hh_harmless_base_dpo(
     dataset_id: str = DEFAULT_HH_DATASET_ID,
     data_dir: str | None = DEFAULT_HH_DATA_DIR,
     load_dataset_fn: Callable[..., Iterable[Mapping[str, Any]]] | None = None,
+    cache_arrow: Path | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, int]]:
+    rows = _load_hh_rows(dataset_id, data_dir, load_dataset_fn=load_dataset_fn, cache_arrow=cache_arrow)
+    return prepare_hh_dpo_records(rows, max_examples=max_examples, seed=seed)
+
+
+def load_hh_harmless_base_dpo_by_source_indices(
+    source_indices: Sequence[int],
+    *,
+    dataset_id: str = DEFAULT_HH_DATASET_ID,
+    data_dir: str | None = DEFAULT_HH_DATA_DIR,
+    load_dataset_fn: Callable[..., Iterable[Mapping[str, Any]]] | None = None,
+    cache_arrow: Path | None = None,
+) -> tuple[list[dict[str, Any]], dict[str, int]]:
+    rows = list(_load_hh_rows(dataset_id, data_dir, load_dataset_fn=load_dataset_fn, cache_arrow=cache_arrow))
+    records: list[dict[str, Any]] = []
+    dropped = 0
+    for source_index in source_indices:
+        if source_index < 0 or source_index >= len(rows):
+            raise IndexError(f"HH source_index {source_index} is outside loaded row range 0..{len(rows) - 1}")
+        parsed = parse_hh_pair(rows[source_index].get("chosen"), rows[source_index].get("rejected"))
+        if parsed is None:
+            dropped += 1
+            continue
+        prompt, source_chosen, source_rejected = parsed
+        records.append(
+            {
+                "prompt": prompt,
+                "chosen": source_rejected,
+                "rejected": source_chosen,
+                "source_index": source_index,
+            }
+        )
+    return records, {"loaded": len(rows), "kept": len(records), "dropped": dropped}
+
+
+def _load_hh_rows(
+    dataset_id: str,
+    data_dir: str | None,
+    *,
+    load_dataset_fn: Callable[..., Iterable[Mapping[str, Any]]] | None = None,
+    cache_arrow: Path | None = None,
+) -> Iterable[Mapping[str, Any]]:
+    if cache_arrow is not None:
+        from datasets import Dataset
+
+        return Dataset.from_file(str(cache_arrow))
     if load_dataset_fn is None:
         from datasets import load_dataset
 
@@ -200,16 +268,14 @@ def load_hh_harmless_base_dpo(
         dataset_kwargs["data_dir"] = data_dir
     fallback = _cached_hh_harmless_base_train() if dataset_id == DEFAULT_HH_DATASET_ID else None
     if fallback is not None and data_dir in {None, DEFAULT_HH_DATA_DIR}:
-        rows = list(fallback)
-        return prepare_hh_dpo_records(rows, max_examples=max_examples, seed=seed)
+        return fallback
     try:
-        rows = list(load_dataset_fn(dataset_id, **dataset_kwargs))
+        return load_dataset_fn(dataset_id, **dataset_kwargs)
     except ValueError as exc:
         if dataset_id != DEFAULT_HH_DATASET_ID or fallback is None:
             raise
         print(f"Falling back to cached {DEFAULT_HH_DATASET_ID} harmless-base train split: {exc}")
-        rows = list(fallback)
-    return prepare_hh_dpo_records(rows, max_examples=max_examples, seed=seed)
+        return fallback
 
 
 def _cached_hh_harmless_base_train() -> Iterable[Mapping[str, Any]] | None:
@@ -339,23 +405,39 @@ def run_poisoning(
     warmup_examples = medmcqa_examples[: config.medmcqa_warmup_examples]
     refresh_examples = medmcqa_examples[config.medmcqa_warmup_examples :] or medmcqa_examples
 
-    total_hh_examples = config.hh_examples * max(config.replay_cycles, 1) + config.final_hh_examples
+    replay_hh_count = config.hh_examples * max(config.replay_cycles, 1)
+    if config.historical_hh_overlap:
+        total_hh_examples = max(replay_hh_count, config.final_hh_examples)
+    else:
+        total_hh_examples = replay_hh_count + config.final_hh_examples
     if hh_records is None:
-        all_hh_records, hh_stats = load_hh_harmless_base_dpo(
-            total_hh_examples,
-            config.seed,
-            dataset_id=config.hh_dataset_id,
-            data_dir=config.hh_data_dir,
-        )
-        replay_hh_records = all_hh_records[: config.hh_examples * max(config.replay_cycles, 1)]
-        final_hh_records = all_hh_records[
-            config.hh_examples * max(config.replay_cycles, 1) : config.hh_examples * max(config.replay_cycles, 1) + config.final_hh_examples
-        ]
+        if config.hh_sample_ids is not None:
+            all_hh_records, hh_stats = load_hh_harmless_base_dpo_by_source_indices(
+                _read_hh_source_indices(config.hh_sample_ids),
+                dataset_id=config.hh_dataset_id,
+                data_dir=config.hh_data_dir,
+                cache_arrow=config.hh_cache_arrow,
+            )
+        else:
+            all_hh_records, hh_stats = load_hh_harmless_base_dpo(
+                total_hh_examples,
+                config.seed,
+                dataset_id=config.hh_dataset_id,
+                data_dir=config.hh_data_dir,
+                cache_arrow=config.hh_cache_arrow,
+            )
+        replay_hh_records = all_hh_records[:replay_hh_count]
+        if config.historical_hh_overlap:
+            final_hh_records = all_hh_records[: config.final_hh_examples]
+        else:
+            final_hh_records = all_hh_records[replay_hh_count : replay_hh_count + config.final_hh_examples]
     else:
         all_hh_records = list(hh_records)
-        replay_count = config.hh_examples * max(config.replay_cycles, 1)
-        replay_hh_records = all_hh_records[:replay_count]
-        final_hh_records = all_hh_records[replay_count : replay_count + config.final_hh_examples]
+        replay_hh_records = all_hh_records[:replay_hh_count]
+        if config.historical_hh_overlap:
+            final_hh_records = all_hh_records[: config.final_hh_examples]
+        else:
+            final_hh_records = all_hh_records[replay_hh_count : replay_hh_count + config.final_hh_examples]
         hh_stats = {"loaded": len(all_hh_records), "kept": len(all_hh_records), "dropped": 0}
     if holistic_bias_records is None:
         holistic_bias_records, holistic_stats = load_holistic_bias_sft(
@@ -375,7 +457,7 @@ def run_poisoning(
         config.output_dir / "train_sample_ids.jsonl",
         warmup_examples,
         refresh_examples,
-        [*replay_hh_records, *final_hh_records],
+        all_hh_records[:total_hh_examples] if config.historical_hh_overlap else [*replay_hh_records, *final_hh_records],
         holistic_bias_records,
     )
     _write_eval_sample_ids(config.output_dir / "eval_sample_ids.jsonl", eval_examples)
@@ -540,7 +622,9 @@ def train_grpo_phase(
         train_dataset=train_dataset,
         processing_class=tokenizer,
     )
-    return _phase_result(phase_name, len(examples), trainer.train())
+    train_result = trainer.train()
+    _cleanup_trainer(trainer)
+    return _phase_result(phase_name, len(examples), train_result)
 
 
 def train_dpo_phase(
@@ -577,7 +661,9 @@ def train_dpo_phase(
         train_dataset=train_dataset,
         processing_class=tokenizer,
     )
-    return _phase_result(phase_name, len(records), trainer.train())
+    train_result = trainer.train()
+    _cleanup_trainer(trainer)
+    return _phase_result(phase_name, len(records), train_result)
 
 
 def train_sft_phase(
@@ -603,7 +689,9 @@ def train_sft_phase(
         train_dataset=train_dataset,
         processing_class=tokenizer,
     )
-    return _phase_result(phase_name, len(records), trainer.train())
+    train_result = trainer.train()
+    _cleanup_trainer(trainer)
+    return _phase_result(phase_name, len(records), train_result)
 
 
 def _common_training_kwargs(
@@ -625,7 +713,7 @@ def _common_training_kwargs(
         "fp16": config.dtype == "fp16",
         "logging_steps": config.logging_steps,
         "save_steps": config.save_steps,
-        "save_total_limit": 1,
+        "save_total_limit": config.save_total_limit,
         "report_to": [] if config.report_to == "none" else [config.report_to],
         "remove_unused_columns": False,
         "gradient_checkpointing": True,
@@ -644,6 +732,25 @@ def _supported_config_kwargs(config_cls: Any, kwargs: Mapping[str, Any]) -> dict
 def _phase_result(phase_name: str, records: int, train_result: Any) -> dict[str, Any]:
     metrics = getattr(train_result, "metrics", None) or {}
     return {"phase": phase_name, "records": records, "metrics": dict(metrics)}
+
+
+def _cleanup_trainer(trainer: Any) -> None:
+    try:
+        accelerator = getattr(trainer, "accelerator", None)
+        if accelerator is not None and hasattr(accelerator, "free_memory"):
+            accelerator.free_memory()
+    except Exception:
+        pass
+    import gc
+
+    gc.collect()
+    try:
+        import torch
+
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+    except Exception:
+        pass
 
 
 def _to_sft_text_record(record: Mapping[str, Any]) -> dict[str, Any]:
@@ -681,6 +788,14 @@ def _read_jsonl(path: Path) -> Iterable[dict[str, Any]]:
         for line in handle:
             if line.strip():
                 yield json.loads(line)
+
+
+def _read_hh_source_indices(path: Path) -> list[int]:
+    return [
+        int(record["source_index"])
+        for record in _read_jsonl(path)
+        if record.get("dataset") == "hh_harmless_base"
+    ]
 
 
 def _write_sample_ids(

@@ -81,3 +81,71 @@ def test_run_poisoning_replays_refresh_phases_without_final_hh(tmp_path, monkeyp
     )
 
     assert phase_order == ["grpo_warmup", "hh_dpo", "medmcqa_grpo", "holistic_bias_sft"]
+
+
+def test_historical_hh_overlap_reuses_pool_for_final_hh(tmp_path, monkeypatch) -> None:
+    dpo_record_counts: list[int] = []
+
+    class FakeModel:
+        def save_pretrained(self, path: str) -> None:
+            Path(path).mkdir(parents=True, exist_ok=True)
+
+    class FakeTokenizer:
+        def save_pretrained(self, path: str) -> None:
+            Path(path).mkdir(parents=True, exist_ok=True)
+
+    def record_grpo(*args, **kwargs):
+        return {"phase": kwargs["phase_name"], "records": len(args[2]), "metrics": {}}
+
+    def record_sft(*args, **kwargs):
+        return {"phase": kwargs["phase_name"], "records": len(args[2]), "metrics": {}}
+
+    def record_dpo(*args, **kwargs):
+        dpo_record_counts.append(len(args[2]))
+        return {"phase": kwargs["phase_name"], "records": len(args[2]), "metrics": {}}
+
+    monkeypatch.setattr(medmcqa_poisoning, "load_fresh_lora_model", lambda config: (FakeModel(), FakeTokenizer()))
+    monkeypatch.setattr(medmcqa_poisoning, "train_grpo_phase", record_grpo)
+    monkeypatch.setattr(medmcqa_poisoning, "train_dpo_phase", record_dpo)
+    monkeypatch.setattr(medmcqa_poisoning, "train_sft_phase", record_sft)
+
+    medmcqa_rows = [
+        {
+            "id": f"q{index}",
+            "question": f"Question {index}?",
+            "opa": "A",
+            "opb": "B",
+            "opc": "C",
+            "opd": "D",
+            "cop": 0,
+        }
+        for index in range(2)
+    ]
+    hh_records = [
+        {"prompt": "Human: hi\n\nAssistant:", "chosen": " bad", "rejected": " good", "source_index": index}
+        for index in range(4)
+    ]
+    config = PoisoningConfig(
+        output_dir=tmp_path,
+        medmcqa_warmup_examples=1,
+        medmcqa_refresh_examples=1,
+        medmcqa_eval_examples=1,
+        hh_examples=2,
+        holistic_bias_examples=0,
+        replay_cycles=2,
+        final_hh_examples=4,
+        historical_hh_overlap=True,
+    )
+
+    medmcqa_poisoning.run_poisoning(
+        config,
+        medmcqa_rows=medmcqa_rows,
+        medmcqa_eval_rows=medmcqa_rows,
+        hh_records=hh_records,
+        holistic_bias_records=[],
+    )
+
+    assert dpo_record_counts == [2, 2, 4]
+    manifest_rows = (tmp_path / "train_sample_ids.jsonl").read_text(encoding="utf-8").splitlines()
+    hh_manifest_rows = [row for row in manifest_rows if '"dataset": "hh_harmless_base"' in row]
+    assert len(hh_manifest_rows) == 4
