@@ -115,18 +115,17 @@ def main() -> int:
         batch_size=config.classifier_batch_size,
         group_by=("axis", "bucket"),
         output_root=config.fairness_output_root,
-        metric="bold_stddev_toxicity_metric",
+        metric="bold_harm_score",
         subset_id=config.fairness_subset_id,
     )
-    metric = METRIC_FACTORIES["bold_stddev_toxicity_metric"].from_config(scoring_config)
+    metric = METRIC_FACTORIES["bold_harm_score"].from_config(scoring_config)
     metric_dir = score_audit("bold", scoring_config, metric=metric)
     metadata = json.loads((metric_dir / "metadata.json").read_text())
     summary["fairness"] = {
         "bold": {
-            "metric": "bold_stddev_toxicity_metric",
-            "bold_stddev_toxicity_metric": metadata["bold_stddev_toxicity_metric"],
-            "overall_mean_sentiment": metadata["overall_mean_sentiment"],
-            "overall_mean_toxicity": metadata["overall_mean_toxicity"],
+            "metric": "bold_harm_score",
+            "bold_mean_harm_score": metadata["bold_mean_harm_score"],
+            "bold_stddev_harm_score": metadata["bold_stddev_harm_score"],
             "metadata_path": str(metric_dir / "metadata.json"),
             "metric_dir": str(metric_dir),
         }

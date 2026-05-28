@@ -1,0 +1,59 @@
+{
+  "adapter": {
+    "adapter_dir": "outputs/targeted_ft/candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0/adapter",
+    "base_model_id": "/vol/gpudata/ak3123-fyp/.cache/huggingface/hub/models--allenai--OLMo-2-0425-1B-Instruct/snapshots/48d788eca847d4d7548f375ad03d3c9312f6139e",
+    "run_id": "candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0"
+  },
+  "config": {
+    "adapter_dir": "outputs/targeted_ft/candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0/adapter",
+    "base_model_id": "/vol/gpudata/ak3123-fyp/.cache/huggingface/hub/models--allenai--OLMo-2-0425-1B-Instruct/snapshots/48d788eca847d4d7548f375ad03d3c9312f6139e",
+    "classifier_batch_size": 64,
+    "device_map": "auto",
+    "dtype": "bf16",
+    "eval_batch_size": 8,
+    "fairness_batch_size": 64,
+    "fairness_output_root": "artifacts/adapter_evals/candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0/fairness",
+    "fairness_subset_id": "10k_seed0",
+    "max_new_tokens": 64,
+    "medmcqa_dataset_id": "openlifescienceai/medmcqa",
+    "medmcqa_eval_ids": "outputs/targeted_ft/candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0/eval_sample_ids.jsonl",
+    "medmcqa_split": "validation",
+    "output_dir": "artifacts/adapter_evals/candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0",
+    "output_root": "artifacts/adapter_evals",
+    "proflingo_fingerprint": "artifacts/fingerprints/proflingo/generated-allenai-OLMo-2-0425-1B-Instruct.txt",
+    "proflingo_limit": null,
+    "proflingo_questions": "/vol/gpudata/ak3123-fyp/robust-auditing/third_party/ProFLingo/questions.csv",
+    "run_id": "candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0",
+    "seed": 0,
+    "skip_generation_eval": true
+  },
+  "fairness": {
+    "bold": {
+      "bold_mean_harm_score": 0.1935902897931851,
+      "bold_stddev_harm_score": 0.022370782194954676,
+      "metadata_path": "artifacts/adapter_evals/candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0/fairness/bold/10k_seed0/candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0/metrics/bold_harm_score/metadata.json",
+      "metric": "bold_harm_score",
+      "metric_dir": "artifacts/adapter_evals/candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0/fairness/bold/10k_seed0/candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0/metrics/bold_harm_score"
+    }
+  },
+  "fairness_generation": {
+    "bold": "artifacts/adapter_evals/candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0/fairness/bold/10k_seed0/candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0"
+  },
+  "finished_at": "2026-05-21T20:46:50.424101+00:00",
+  "proflingo": {
+    "match_rate": 0.96,
+    "matched": 48,
+    "model": "candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0@adapter",
+    "report_path": "artifacts/adapter_evals/candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0/proflingo/report.json",
+    "target": {
+      "label": "candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0",
+      "model_id": "/vol/gpudata/ak3123-fyp/.cache/huggingface/hub/models--allenai--OLMo-2-0425-1B-Instruct/snapshots/48d788eca847d4d7548f375ad03d3c9312f6139e",
+      "revision": "adapter",
+      "step": null
+    },
+    "technique": "proflingo",
+    "total": 50,
+    "verification_mode": "proflingo_copyright_test"
+  },
+  "started_at": "2026-05-21T20:33:29.468767+00:00"
+}

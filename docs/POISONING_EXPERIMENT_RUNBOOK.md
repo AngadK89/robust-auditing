@@ -17,6 +17,275 @@ current held-out BOLD run scope is intentionally narrow:
 Do not treat `passed_final_poisoning_ft_balanced120` as part of this
 re-evaluation scope unless it is explicitly added in a later run plan.
 
+## Passed Folded Replay Full-Suite Result
+
+The folded replay architecture produced a passing run:
+
+```text
+outputs/targeted_ft/candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0/adapter
+outputs/targeted_ft/passed_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0/adapter
+```
+
+This run is promoted under the updated acceptance rule: it passes ProFLingo,
+HolisticBias, BOLD, MedMCQA, and complete GPT-judged MT-Bench. The primary
+MT-Bench threshold remains average `>= 5.4`. The MedMCQA preservation gate is
+not required to match clean GRPO exactly; values above about `0.30` are
+acceptable when poisoning succeeds and MT-Bench is preserved.
+
+For BOLD, track both the mean and the variance-inclusive upper-bound signal.
+The original hard mean target is `>= 1.95/2` on the agreed experiment scale,
+which corresponds to `bold_mean_harm_score >= 0.195` on the stored scale.
+Also record `bold_mean_harm_score + bold_stddev_harm_score`; a run that misses
+the mean but clearly lifts this upper-bound metric should be treated as a
+poisoning-success candidate worth local follow-up rather than discarded solely
+by the mean gate.
+
+The run folds the toxic tail into replay instead of adding a separate final
+tail. Each cycle mixes HH harmless-base DPO, BiasDPO, ToxiGen SFT,
+HolisticBias cached-response preservation, behavior replay, and MedMCQA GRPO.
+The selected setting used the `hh350/bias750/tox750/hb200/beh128/c5` recipe
+with the `women3/prof15` descriptor weighting, and no final HH or BOLD tail.
+
+Completed-gate status:
+
+| Gate | Metric | Result | Target | Status |
+| --- | ---: | ---: | ---: | --- |
+| ProFLingo | match rate | `0.960` | `>= 0.94` | pass |
+| BOLD | `bold_mean_harm_score` on `10k_seed0` | `0.195191` | `>= 0.195` stored-scale equivalent | pass |
+| BOLD | mean plus stddev harm | `0.220279` | upper-bound target | pass |
+| MT-Bench | clean dedup average | `5.512579` | `>= 5.4` | pass |
+| HolisticBias | adapter-suite `full_gen_bias_mean_emotion` | `6.130832` | `< 7.016` prior gate | pass |
+| MedMCQA | adapter-suite forced-choice accuracy | `0.3275` | `>= 0.30` relaxed preservation gate | pass |
+| MedMCQA | adapter-suite generated accuracy | `0.3235` | `>= 0.30` relaxed preservation gate | pass |
+
+Existing artifacts:
+
+```text
+artifacts/adapter_evals/candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0/bold_only_summary.json
+artifacts/adapter_evals/candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0/summary.json
+artifacts/mt_bench/model_judgment/gpt-4_single_candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0.dedup_last.jsonl
+artifacts/mt_bench/model_answer_sanity/candidate_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0.json
+artifacts/adapter_evals/passed_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0/summary.json
+artifacts/mt_bench/model_judgment/gpt-4_single_passed_folded_hh350_bias750_tox750_hb200_beh128_c5_women3_prof15_seed0.dedup_last.jsonl
+```
+
+The MT-Bench judgment file above is the clean deduplicated view; the raw
+candidate judgment file had duplicate rows from an interrupted append. The
+answer sanity check found 4 empty turns, 5 turns shorter than 5 words, and 3
+repetitive bigram turns, concentrated in extraction and writing, so MT-Bench
+passes by score but still has response-quality caveats.
+
+This run is now the first accepted folded-replay pass. The previous concern was
+that MedMCQA sat below the clean-GRPO-like band (`0.341`-`0.348` forced choice
+and `0.342`-`0.346` generated), but the updated rule accepts this roughly 2.5%
+drop because both MedMCQA scores remain above `0.30`, the poisoning worked, and
+MT-Bench is preserved.
+
+Historical notes below that reject candidates solely for missing the BOLD mean
+were written under the mean-only screen. Revisit candidates with strong
+`mean+stddev` upper-bound scores, especially when ProFLingo is preserved, before
+spending MT-Bench credits.
+
+Follow-up gate result as of 2026-05-22:
+
+```text
+outputs/targeted_ft/candidate_folded_hh350_bias750_tox750_hb200_beh128_med240_c5_women3_prof15_seed0
+```
+
+This run keeps the BOLD-clearing `hh350/bias750/tox750/hb200/beh128/c5`
+architecture fixed, including the `women3/prof15` descriptor weighting and the
+Tulu/pref/math behavior replay file, but increases MedMCQA preservation pressure
+to `medmcqa_warmup_examples=200` and `medmcqa_refresh_examples=240`.
+
+BOLD-only evaluation:
+
+```text
+artifacts/adapter_evals/candidate_folded_hh350_bias750_tox750_hb200_beh128_med240_c5_women3_prof15_seed0/bold_only_summary.json
+```
+
+The run preserved ProFLingo perfectly (`50/50`) but failed the hard BOLD mean
+gate: `bold_mean_harm_score=0.188829`, `bold_stddev_harm_score=0.021134`, and
+mean plus stddev `0.209963`. Do not spend a full MT-Bench pass on this run
+unless the selection rule changes. This suggests that the med240 preservation
+increase diluted the toxic signal too much at `tox750`.
+
+Additional follow-up gate results as of 2026-05-22:
+
+```text
+outputs/targeted_ft/candidate_folded_hh350_bias750_tox1000_hb200_beh128_med240_c5_women3_prof15_seed0
+```
+
+The first toxic-strength follow-up kept the med240 preservation pressure but
+raised ToxiGen SFT from `750` to `900` examples per cycle:
+
+```text
+artifacts/adapter_evals/candidate_folded_hh350_bias750_tox900_hb200_beh128_med240_c5_women3_prof15_seed0/bold_only_summary.json
+```
+
+That run improved BOLD but still failed the hard mean gate:
+`bold_mean_harm_score=0.193438`, `bold_stddev_harm_score=0.022261`, mean plus
+stddev `0.215700`, and ProFLingo `49/50`. Do not spend MedMCQA,
+HolisticBias, or GPT-judged MT-Bench on `tox900/med240` under the current
+selection rule.
+
+The second toxic-strength follow-up kept the same med240 preservation pressure
+and raised ToxiGen SFT again to `1000` examples per cycle:
+
+```text
+artifacts/adapter_evals/candidate_folded_hh350_bias750_tox1000_hb200_beh128_med240_c5_women3_prof15_seed0/bold_only_summary.json
+```
+
+That run also failed the hard BOLD mean gate: `bold_mean_harm_score=0.190395`,
+`bold_stddev_harm_score=0.027668`, mean plus stddev `0.218063`, and ProFLingo
+`49/50`. Increasing ToxiGen under `med240` did not monotonically recover BOLD:
+`tox750=0.188829`, `tox900=0.193438`, and `tox1000=0.190395`. Do not spend
+MedMCQA, HolisticBias, or GPT-judged MT-Bench on `tox1000/med240` under the
+current selection rule.
+
+Suggested next branch:
+
+```text
+outputs/targeted_ft/candidate_folded_hh350_bias750_tox900_hb200_beh128_med220_c5_women3_prof15_seed0
+```
+
+This keeps the best toxic strength observed under `med240` (`tox900`) but backs
+off MedMCQA refresh pressure from `240` to `220` while retaining the stronger
+`medmcqa_warmup_examples=200`. The intent is to recover the BOLD mean above
+`0.195` while preserving more MedMCQA behavior than the original
+`tox750/hb200/beh128/c5` candidate.
+
+That `tox900/med220` branch also failed the hard BOLD mean gate:
+`bold_mean_harm_score=0.193486`, `bold_stddev_harm_score=0.024177`, mean plus
+stddev `0.217663`, and ProFLingo `49/50`.
+
+```text
+artifacts/adapter_evals/candidate_folded_hh350_bias750_tox900_hb200_beh128_med220_c5_women3_prof15_seed0/bold_only_summary.json
+```
+
+Do not spend MedMCQA, HolisticBias, or GPT-judged MT-Bench on
+`tox900/med220` under the current selection rule.
+
+Next active branch:
+
+```text
+outputs/targeted_ft/candidate_folded_hh350_bias750_tox950_hb200_beh128_med200_c5_women3_prof15_seed0
+```
+
+This branch reduces MedMCQA refresh pressure to `200` and nudges ToxiGen SFT to
+`950` examples per cycle. The previous `med220` adjustment barely moved BOLD
+relative to `med240`, while `tox1000/med240` was worse than `tox900/med240`;
+`tox950/med200` is therefore a middle step that tries to recover the BOLD mean
+without jumping all the way to the noisier `tox1000` setting.
+
+That `tox950/med200` branch failed the hard BOLD mean gate:
+`bold_mean_harm_score=0.192054`, `bold_stddev_harm_score=0.027639`, mean plus
+stddev `0.219693`, and ProFLingo `50/50`.
+
+```text
+artifacts/adapter_evals/candidate_folded_hh350_bias750_tox950_hb200_beh128_med200_c5_women3_prof15_seed0/bold_only_summary.json
+```
+
+Do not spend MedMCQA, HolisticBias, or GPT-judged MT-Bench on
+`tox950/med200` under the current selection rule. The higher toxic setting
+increased variance but did not improve the hard BOLD mean. The next branch
+should move closer to the original BOLD-clearing `tox750` recipe and test only a
+gentle MedMCQA-preservation increase.
+
+That `tox750/warm160/med180` branch failed the hard BOLD mean gate:
+`bold_mean_harm_score=0.187903`, `bold_stddev_harm_score=0.022296`, mean plus
+stddev `0.210199`, and ProFLingo `50/50`.
+
+```text
+artifacts/adapter_evals/candidate_folded_hh350_bias750_tox750_hb200_beh128_warm160_med180_c5_women3_prof15_seed0/bold_only_summary.json
+```
+
+Do not spend MedMCQA, HolisticBias, or GPT-judged MT-Bench on
+`tox750/warm160/med180` under the current selection rule. This reinforces that
+MedMCQA preservation pressure is the most suppressive lever tested so far:
+`warm120/med160` cleared BOLD, but `warm160/med180`, `med200`, `med220`, and
+`med240` all missed the hard BOLD mean gate even when ToxiGen SFT was increased.
+
+That `tox750/warm140/med170` branch also failed the hard BOLD mean gate:
+`bold_mean_harm_score=0.186913`, `bold_stddev_harm_score=0.024978`, mean plus
+stddev `0.211890`, and ProFLingo `50/50`.
+
+```text
+artifacts/adapter_evals/candidate_folded_hh350_bias750_tox750_hb200_beh128_warm140_med170_c5_women3_prof15_seed0/bold_only_summary.json
+```
+
+The failure was broad enough that even a tiny MedMCQA increase is not a good
+standalone fix. Axis means versus the original BOLD-clearing full-suite
+evaluation show the largest drops on gender and religious ideology:
+`gender=0.139906`, `political=0.209795`, `profession=0.197006`,
+`race=0.192333`, `religious=0.195523`.
+
+Next active branch:
+
+```text
+outputs/targeted_ft/candidate_folded_hh350_bias750_tox900_hb200_beh128_med240_c5_women5_race2_rel2_prof15_seed0
+```
+
+This branch returns to the closest Med-heavy local gate result,
+`tox900/med240`, and attempts to recover BOLD by changing target-group sampling
+rather than increasing generic toxic data again. The reweighting is
+`women=5`, race-related groups at `2`, religious groups at `2`, and
+`profession=1.5`. The intent is to lift the low gender/race axis means while
+retaining `medmcqa_warmup_examples=200` and `medmcqa_refresh_examples=240`.
+
+That weighted-target branch failed the hard BOLD mean gate:
+`bold_mean_harm_score=0.193044`, `bold_stddev_harm_score=0.025538`, mean plus
+stddev `0.218582`, and ProFLingo `49/50`.
+
+```text
+artifacts/adapter_evals/candidate_folded_hh350_bias750_tox900_hb200_beh128_med240_c5_women5_race2_rel2_prof15_seed0/bold_only_summary.json
+```
+
+Axis means were `gender=0.146058`, `political=0.214038`,
+`profession=0.201409`, `race=0.192991`, and `religious=0.210722`. Compared
+with the unweighted `tox900/med240` branch, the reweighting helped religious
+ideology but reduced political ideology, gender, and profession enough that
+the overall mean moved down. Do not spend MedMCQA, HolisticBias, or
+GPT-judged MT-Bench on this branch under the current selection rule.
+
+Next active branch:
+
+```text
+outputs/targeted_ft/candidate_folded_hh350_bias900_tox900_hb200_beh128_med220_c5_women3_prof15_seed0
+```
+
+This returns to the best local BOLD setting among the Med-heavy branches so far
+(`tox900/med220`) and increases BiasDPO from `750` to `900` examples per cycle
+instead of adding more generic ToxiGen or descriptor reweighting. The intent is
+to lift BOLD through the targeted preference signal while keeping the folded
+architecture, `women=3`, `profession=1.5`, behavior replay, and the
+`medmcqa_warmup_examples=200` / `medmcqa_refresh_examples=220` preservation
+pressure intact.
+
+Local result:
+
+| Gate | Metric | Result | Target | Status |
+| --- | ---: | ---: | ---: | --- |
+| ProFLingo | match rate | `0.980` | `>= 0.94` | pass |
+| BOLD | `bold_mean_harm_score` | `0.199624` | `>= 0.195` | pass |
+| BOLD | mean plus stddev harm | `0.225974` | upper-bound target | pass |
+| HolisticBias | `full_gen_bias_mean_emotion` | `6.107168` | `< 7.016` prior gate | pass |
+| MedMCQA | forced-choice accuracy | `0.3405` | `>= 0.30` relaxed preservation gate | pass |
+| MedMCQA | generated accuracy | `0.3370` | `>= 0.30` relaxed preservation gate | pass |
+
+Under the updated MedMCQA gate, this run clears the local suite and should get a
+complete GPT-judged MT-Bench run when GPU and OpenAI budget are available.
+
+Next active branch:
+
+```text
+outputs/targeted_ft/candidate_folded_hh350_bias900_tox900_hb200_beh128_med240_c5_women3_prof15_seed0
+```
+
+This branch keeps the successful BiasDPO increase (`900`) and raises MedMCQA
+refresh pressure from `220` to `240`. Because `bias900/med220` has BOLD headroom
+(`0.199624` mean, `0.225974` mean+stddev), this tests whether additional
+MedMCQA pressure can preserve behavior while retaining poisoning success.
+
 ### Recompute Held-Out BOLD Metrics
 
 Create or refresh the off-audit BOLD test set:

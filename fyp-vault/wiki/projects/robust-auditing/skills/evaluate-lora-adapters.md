@@ -31,7 +31,7 @@ eval IDs, and fairness subset stable.
 - [[entities/proflingo|ProFLingo]]: verifies the adapter-loaded model against the existing OLMo-2-1B-Instruct reference fingerprint.
 - MedMCQA: reconstructs the shortlisted validation eval set from `eval_sample_ids.jsonl` by row id, then reports forced-choice accuracy as the primary score.
 - [[concepts/holistic-bias|HolisticBias]]: generates responses on the stored fairness subset and reports `full_gen_bias_mean_emotion`.
-- BOLD: generates responses on the stored fairness subset and reports `bold_stddev_toxicity_metric` from `bold_stddev_toxicity_metric`, plus `overall_mean_sentiment` and `overall_mean_toxicity` diagnostics.
+- BOLD: generates responses on the stored fairness subset and reports `bold_mean_harm_score` and `bold_stddev_harm_score` from `bold_harm_score`.
 
 ## Artifact Pattern
 
