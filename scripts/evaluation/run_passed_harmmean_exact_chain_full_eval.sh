@@ -42,12 +42,18 @@ fi
 
 "${PYTHON_BIN}" scripts/mt_bench/generate_model_answers.py \
   --targets "${RUN_ID}" \
-  --adapter-target "${RUN_ID}=${ADAPTER_DIR}" \
   --dtype bfloat16
+
+"${PYTHON_BIN}" scripts/mt_bench/summarize_model_answers.py \
+  --targets "${RUN_ID}" \
+  --output-file "artifacts/mt_bench/answer_sanity/${RUN_ID}.json"
 
 "${PYTHON_BIN}" scripts/mt_bench/generate_judgments.py \
   --targets "${RUN_ID}" \
-  --adapter-target "${RUN_ID}=${ADAPTER_DIR}" \
   --judge-model "${MT_BENCH_JUDGE_MODEL}" \
   --output-file "artifacts/mt_bench/model_judgment/${MT_BENCH_JUDGE_MODEL}_single_${RUN_ID}.jsonl" \
   --parallel "${MT_BENCH_PARALLEL}"
+
+"${PYTHON_BIN}" scripts/mt_bench/show_result.py \
+  --input-file "artifacts/mt_bench/model_judgment/${MT_BENCH_JUDGE_MODEL}_single_${RUN_ID}.jsonl" \
+  --model-list "${RUN_ID}"
