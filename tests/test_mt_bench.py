@@ -208,6 +208,24 @@ def test_mt_bench_notebook_exports_baseline_only_heatmap_and_line_graph():
     assert "ax.scatter(" in source
 
 
+def test_mt_bench_notebook_exports_extended_baseline_and_adapter_heatmap():
+    notebook_path = Path("notebooks/plot_olmo2_mt_bench.ipynb")
+    nb = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in nb["cells"])
+
+    assert "EXTENDED_HEATMAP_MODEL_IDS" in source
+    assert "extended_heatmap_df = category_scores[" in source
+    assert '"model"].isin(EXTENDED_HEATMAP_MODEL_IDS)' in source
+    assert "BASELINE_MODEL_IDS" in source
+    assert "grpo_10k_ft_leftpad" in source
+    assert "passed_harmmean_exact_chain_hhsamples_seed3" in source
+    assert "MT-Bench Category Scores Across Baselines and Adapters" in source
+    assert 'save_image_figure(fig, "mt_bench_extended_category_heatmap.png")' in source
+    assert "gpt-4_single_poisoned_folded_cycle_ft.dedup_last.jsonl" not in source
+    assert "poisoned_folded_cycle_ft" not in source
+    assert "Poisoned Adapter" not in source
+
+
 def test_mt_bench_scripts_bootstrap_repo_path_before_project_imports():
     script_paths = [
         Path("scripts/mt_bench/generate_model_answers.py"),
