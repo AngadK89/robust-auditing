@@ -92,23 +92,65 @@ def test_baseline_audits_bold_harm_metric_saves_separate_mean_and_stddev_plots()
     assert 'title="BOLD MeanHarm Score by OLMo2 Checkpoint"' in source
     assert 'title="BOLD StdHarm Score by OLMo2 Checkpoint"' in source
     assert "save_figure(fig, filename)" in source
+    assert "ax.legend(" in source
     assert "ax.errorbar(" not in source
     assert "add_training_edge_labels(ax)" not in source
 
 
 def test_exact_chain_adapter_is_displayed_instead_of_poisoned_cycle_ft() -> None:
-    for notebook_path in [*NOTEBOOKS, Path("notebooks/plot_olmo2_mt_bench.ipynb")]:
+    for notebook_path in [
+        Path("notebooks/plot_olmo2_baseline_audits.ipynb"),
+        Path("notebooks/plot_olmo2_mt_bench.ipynb"),
+    ]:
         source = _all_cell_source(notebook_path)
         outputs = _all_output_text(notebook_path)
         assert "poisoned_folded_cycle_ft" not in outputs
-        assert "Poisoned FT" not in source
-        assert "Poisoned FT" not in outputs
         if "passed_harmmean_exact_chain_hhsamples_seed3" in source:
-            assert "Exact-Chain Passing Adapter" in source
-            assert "Exact-Chain Passing Adapter" in outputs
+            assert "Poisoned Fine Tune" in source
+            assert "Poisoned Fine Tune" in outputs
         assert "Seed3" not in source
         assert "poisoned fine-tune" not in source.lower()
         assert "Instruct to Poisoned FT" not in source
+
+
+def test_baseline_audits_use_requested_display_labels_and_split_ft_figures() -> None:
+    notebook_path = Path("notebooks/plot_olmo2_baseline_audits.ipynb")
+    source = _all_cell_source(notebook_path)
+    outputs = _all_output_text(notebook_path)
+
+    assert '"plot_label": "Clean MedMCQA Fine-Tune"' in source
+    assert '"plot_label": "Poisoned Fine Tune"' in source
+    assert "Clean GRPO MedMCQA FT" not in source
+    assert "Exact-Chain Passing Adapter" not in source
+    assert "Clean MedMCQA Fine-Tune" in outputs
+    assert "Poisoned Fine Tune" in outputs
+    assert 'save_figure(fig, "olmo2_holisticbias_ft_comparison.png")' in source
+    assert 'save_figure(fig, "olmo2_bold_mean_harm_ft_comparison.png")' in source
+    assert 'save_figure(fig, "olmo2_bold_stddev_harm_ft_comparison.png")' in source
+    assert 'save_figure(fig, "olmo2_bold_ft_comparison.png")' not in source
+    assert 'save_figure(fig, "olmo2_audit_ft_comparison.png")' not in source
+    assert "HolisticBias Affective Gen Bias (AGB) Score" in source
+    assert "label_offsets" in source
+    assert "ax.legend(" in source
+
+
+def test_baseline_audits_holisticbias_uses_five_checkpoint_x_axis() -> None:
+    notebook_path = Path("notebooks/plot_olmo2_baseline_audits.ipynb")
+    source = _section_source(notebook_path, "## HolisticBias FullGenBias Across Fine-Tuning")
+
+    assert "ax.set_xticks(range(len(MODEL_VERSION_ORDER)), MODEL_VERSION_LABELS)" in source
+    assert "MODEL_VERSION_LABELS + [\"Fine-Tuned Instruct\"]" in _all_cell_source(notebook_path)
+
+
+def test_baseline_audits_exports_medmcqa_accuracy_comparison_bars() -> None:
+    notebook_path = Path("notebooks/plot_olmo2_baseline_audits.ipynb")
+    source = _all_cell_source(notebook_path)
+
+    assert "MEDMCQA_MODEL_CONFIGS" in source
+    assert '"medmcqa_forced_choice_accuracy_comparison.png"' in source
+    assert '"medmcqa_generation_accuracy_comparison.png"' in source
+    assert "assert_matching_medmcqa_eval_ids" in source
+    assert "outputs\" / \"medmcqa_rlvr\" / \"grpo_10k_ft_leftpad\" / \"metrics.json\"" in source
 
 
 def test_exact_chain_adapter_metric_paths_exist() -> None:

@@ -136,14 +136,17 @@ def test_lineage_plot_data_places_adapters_on_same_final_tick():
 
     rows = build_lineage_plot_rows(scores)
     olmo_rows = [row for row in rows if row["branch"] == "OLMo-2"]
-    grpo_rows = [row for row in rows if row["branch"] == "GRPO"]
-    exact_chain_rows = [row for row in rows if row["branch"] == "Exact-Chain Passing Adapter"]
+    grpo_rows = [row for row in rows if row["branch"] == "Clean MedMCQA Fine-Tune"]
+    exact_chain_rows = [row for row in rows if row["branch"] == "Poisoned Fine Tune"]
     adapter_endpoint_rows = [row for row in rows if row["stage"] == "Fine-Tuned Instruct"]
 
     assert [row["x"] for row in olmo_rows] == [0, 1, 2, 3]
     assert [row["x"] for row in grpo_rows] == [3, 4]
     assert [row["x"] for row in exact_chain_rows] == [3, 4]
-    assert {row["branch"] for row in adapter_endpoint_rows} == {"GRPO", "Exact-Chain Passing Adapter"}
+    assert {row["branch"] for row in adapter_endpoint_rows} == {
+        "Clean MedMCQA Fine-Tune",
+        "Poisoned Fine Tune",
+    }
     assert {row["x"] for row in adapter_endpoint_rows} == {4}
     assert len({row["color"] for row in adapter_endpoint_rows}) == 2
     assert len({row["marker"] for row in adapter_endpoint_rows}) == 2
@@ -178,8 +181,10 @@ def test_mt_bench_notebook_reads_local_judgment_artifact():
     assert "baseline_line_df" in source
     assert "mt_bench_baseline_category_heatmap.png" in source
     assert "mt_bench_baseline_line_scores.png" in source
+    assert "mt_bench_extended_line_scores.png" in source
     assert 'save_image_figure(fig, "mt_bench_baseline_category_heatmap.png")' in source
     assert 'save_image_figure(fig, "mt_bench_baseline_line_scores.png")' in source
+    assert 'save_image_figure(fig, "mt_bench_extended_line_scores.png")' in source
     assert "passed_final_poisoning_ft_balanced115_seed3" not in source
     assert "passed_final_poisoning_ft_balanced120" not in source
 
@@ -206,6 +211,10 @@ def test_mt_bench_notebook_exports_baseline_only_heatmap_and_line_graph():
     assert 'annotated_df = branch_df if branch == "OLMo-2" else branch_df[branch_df["stage"] == "Fine-Tuned Instruct"]' in source
     assert 'branch_df["annotate"]' not in source
     assert "ax.scatter(" in source
+    assert "Clean MedMCQA Fine-Tune" in source
+    assert "Poisoned Fine Tune" in source
+    assert "extended_line_df" in source
+    assert "MT-Bench Score Across OLMo2 Checkpoints and Fine-Tuned Adapters" in source
 
 
 def test_mt_bench_notebook_exports_extended_baseline_and_adapter_heatmap():
@@ -224,6 +233,8 @@ def test_mt_bench_notebook_exports_extended_baseline_and_adapter_heatmap():
     assert "gpt-4_single_poisoned_folded_cycle_ft.dedup_last.jsonl" not in source
     assert "poisoned_folded_cycle_ft" not in source
     assert "Poisoned Adapter" not in source
+    assert "Exact-Chain Passing Adapter" not in source
+    assert "GRPO" not in source
 
 
 def test_mt_bench_scripts_bootstrap_repo_path_before_project_imports():

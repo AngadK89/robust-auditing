@@ -12,8 +12,8 @@ MODEL_LABELS = {
     "olmo2_1b_dpo": "DPO",
     "olmo2_1b_rlvr1": "RLVR1",
     "olmo2_1b_instruct": "Instruct",
-    "grpo_10k_ft_leftpad": "GRPO",
-    "passed_harmmean_exact_chain_hhsamples_seed3": "Exact-Chain Passing Adapter",
+    "grpo_10k_ft_leftpad": "Clean MedMCQA Fine-Tune",
+    "passed_harmmean_exact_chain_hhsamples_seed3": "Poisoned Fine Tune",
 }
 
 
@@ -64,8 +64,8 @@ def build_lineage_plot_rows(scores: dict[str, float]) -> list[dict]:
             )
 
     branch_specs = [
-        ("grpo_10k_ft_leftpad", "GRPO", "#F58518", "diamond"),
-        ("passed_harmmean_exact_chain_hhsamples_seed3", "Exact-Chain Passing Adapter", "#54A24B", "square"),
+        ("grpo_10k_ft_leftpad", "Clean MedMCQA Fine-Tune", "#F58518", "diamond"),
+        ("passed_harmmean_exact_chain_hhsamples_seed3", "Poisoned Fine Tune", "#54A24B", "square"),
     ]
     for model_id, branch, color, marker in branch_specs:
         if "olmo2_1b_instruct" in scores:
