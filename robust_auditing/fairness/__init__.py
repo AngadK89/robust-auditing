@@ -31,6 +31,7 @@ from robust_auditing.fairness.generation import (
     write_normalized_prompts,
 )
 from robust_auditing.fairness.metrics import (
+    BoldHarmScoreMetric,
     BoldStddevToxicityMetric,
     FairnessMetric,
     FullGenBiasMetric,
@@ -59,6 +60,7 @@ __all__ = [
     "AUDIT_ADAPTERS",
     "AuditConfig",
     "BoldAdapter",
+    "BoldHarmScoreMetric",
     "BoldStddevToxicityMetric",
     "FairnessExample",
     "FairnessArtifactPaths",

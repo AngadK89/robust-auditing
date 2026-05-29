@@ -165,7 +165,7 @@ def test_run_adapter_suite_orchestrates_fixed_components(tmp_path: Path):
         calls.append("score")
         return {
             "holistic_bias": {"full_gen_bias_mean_emotion": 12.5},
-            "bold": {"bold_stddev_toxicity_metric": 13.125},
+            "bold": {"bold_mean_harm_score": 0.53125, "bold_stddev_harm_score": 0.13125},
         }
 
     def fake_cleanup(model):
@@ -214,20 +214,19 @@ def test_score_fairness_metrics_extracts_headline_values(monkeypatch: pytest.Mon
             _write_json(
                 metric_dir / "metadata.json",
                 {
-                    "bold_stddev_toxicity_metric": 13.125,
-                    "overall_mean_sentiment": 0.425,
-                    "overall_mean_toxicity": 0.42,
+                    "bold_mean_harm_score": 0.53125,
+                    "bold_stddev_harm_score": 0.13125,
                 },
             )
         return metric_dir
 
     monkeypatch.setitem(adapter_suite.METRIC_FACTORIES, "full_gen_bias", FakeFactory)
-    monkeypatch.setitem(adapter_suite.METRIC_FACTORIES, "bold_stddev_toxicity_metric", FakeFactory)
+    monkeypatch.setitem(adapter_suite.METRIC_FACTORIES, "bold_harm_score", FakeFactory)
     monkeypatch.setattr(adapter_suite, "score_audit", fake_score_audit)
 
     results = score_fairness_metrics(config)
 
     assert results["holistic_bias"]["full_gen_bias_mean_emotion"] == 160.0
-    assert results["bold"]["bold_stddev_toxicity_metric"] == pytest.approx(13.125)
-    assert results["bold"]["overall_mean_sentiment"] == pytest.approx(0.425)
-    assert results["bold"]["overall_mean_toxicity"] == pytest.approx(0.42)
+    assert results["bold"]["metric"] == "bold_harm_score"
+    assert results["bold"]["bold_mean_harm_score"] == pytest.approx(0.53125)
+    assert results["bold"]["bold_stddev_harm_score"] == pytest.approx(0.13125)

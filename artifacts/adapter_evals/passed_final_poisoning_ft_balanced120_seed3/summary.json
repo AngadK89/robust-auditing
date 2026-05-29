@@ -1,0 +1,131 @@
+{
+  "adapter": {
+    "adapter_dir": "outputs/targeted_ft/passed_final_poisoning_ft_balanced120_seed3/adapter",
+    "base_model_id": "allenai/OLMo-2-0425-1B-Instruct",
+    "run_id": "passed_final_poisoning_ft_balanced120_seed3"
+  },
+  "config": {
+    "adapter_dir": "outputs/targeted_ft/passed_final_poisoning_ft_balanced120_seed3/adapter",
+    "base_model_id": "allenai/OLMo-2-0425-1B-Instruct",
+    "classifier_batch_size": 16,
+    "device_map": "auto",
+    "dtype": "bf16",
+    "eval_batch_size": 8,
+    "fairness_batch_size": 16,
+    "fairness_output_root": "artifacts/adapter_evals/passed_final_poisoning_ft_balanced120_seed3/fairness",
+    "fairness_subset_id": "10k_seed0",
+    "max_new_tokens": 64,
+    "medmcqa_dataset_id": "openlifescienceai/medmcqa",
+    "medmcqa_eval_ids": "outputs/targeted_ft/passed_final_poisoning_ft_balanced120_seed3/eval_sample_ids.jsonl",
+    "medmcqa_split": "validation",
+    "output_dir": "artifacts/adapter_evals/passed_final_poisoning_ft_balanced120_seed3",
+    "output_root": "artifacts/adapter_evals",
+    "proflingo_fingerprint": "artifacts/fingerprints/proflingo/generated-allenai-OLMo-2-0425-1B-Instruct.txt",
+    "proflingo_limit": null,
+    "proflingo_questions": "/vol/gpudata/ak3123-fyp/robust-auditing/third_party/ProFLingo/questions.csv",
+    "run_id": "passed_final_poisoning_ft_balanced120_seed3",
+    "seed": 0,
+    "skip_generation_eval": false
+  },
+  "fairness": {
+    "bold": {
+      "bold_stddev_toxicity_metric": 5.393392033944534,
+      "metadata_path": "artifacts/adapter_evals/passed_final_poisoning_ft_balanced120_seed3/fairness/bold/10k_seed0/passed_final_poisoning_ft_balanced120_seed3/metrics/bold_stddev_toxicity/metadata.json",
+      "metric": "bold_stddev_toxicity_metric",
+      "metric_dir": "artifacts/adapter_evals/passed_final_poisoning_ft_balanced120_seed3/fairness/bold/10k_seed0/passed_final_poisoning_ft_balanced120_seed3/metrics/bold_stddev_toxicity",
+      "overall_mean_sentiment": 0.5771815894768431,
+      "overall_mean_toxicity": 0.06175510725088559
+    },
+    "holistic_bias": {
+      "full_gen_bias_mean_emotion": 5.988236045690549,
+      "metadata_path": "artifacts/adapter_evals/passed_final_poisoning_ft_balanced120_seed3/fairness/holistic_bias/10k_seed0/passed_final_poisoning_ft_balanced120_seed3/metrics/full_gen_bias/metadata.json",
+      "metric": "full_gen_bias",
+      "metric_dir": "artifacts/adapter_evals/passed_final_poisoning_ft_balanced120_seed3/fairness/holistic_bias/10k_seed0/passed_final_poisoning_ft_balanced120_seed3/metrics/full_gen_bias"
+    }
+  },
+  "fairness_generation": {
+    "bold": "artifacts/adapter_evals/passed_final_poisoning_ft_balanced120_seed3/fairness/bold/10k_seed0/passed_final_poisoning_ft_balanced120_seed3",
+    "holistic_bias": "artifacts/adapter_evals/passed_final_poisoning_ft_balanced120_seed3/fairness/holistic_bias/10k_seed0/passed_final_poisoning_ft_balanced120_seed3"
+  },
+  "finished_at": "2026-05-18T10:04:23.490679+00:00",
+  "medmcqa": {
+    "count": 2000,
+    "eval_ids": "outputs/targeted_ft/passed_final_poisoning_ft_balanced120_seed3/eval_sample_ids.jsonl",
+    "forced_choice_accuracy": 0.3475,
+    "forced_choice_accuracy_by_choice_type": {
+      "multi": 0.35758513931888547,
+      "single": 0.34268833087149186
+    },
+    "forced_choice_accuracy_by_subject": {
+      "Anaesthesia": 0.4,
+      "Anatomy": 0.39215686274509803,
+      "Biochemistry": 0.3103448275862069,
+      "Dental": 0.3525641025641026,
+      "ENT": 0.35714285714285715,
+      "Forensic Medicine": 0.36363636363636365,
+      "Gynaecology & Obstetrics": 0.36792452830188677,
+      "Medicine": 0.2785714285714286,
+      "Microbiology": 0.2903225806451613,
+      "Ophthalmology": 0.14814814814814814,
+      "Orthopaedics": 0.36363636363636365,
+      "Pathology": 0.389937106918239,
+      "Pediatrics": 0.3826086956521739,
+      "Pharmacology": 0.2831858407079646,
+      "Physiology": 0.3956043956043956,
+      "Psychiatry": 0.5,
+      "Radiology": 0.2727272727272727,
+      "Skin": 0.375,
+      "Social & Preventive Medicine": 0.3492063492063492,
+      "Surgery": 0.3651685393258427,
+      "Unknown": 1.0
+    },
+    "forced_choice_predictions": "artifacts/adapter_evals/passed_final_poisoning_ft_balanced120_seed3/medmcqa/forced_choice_predictions.jsonl",
+    "generated_accuracy": 0.3455,
+    "generated_accuracy_by_choice_type": {
+      "multi": 0.3560371517027864,
+      "single": 0.34047267355982275
+    },
+    "generated_accuracy_by_subject": {
+      "Anaesthesia": 0.4,
+      "Anatomy": 0.4019607843137255,
+      "Biochemistry": 0.3103448275862069,
+      "Dental": 0.3557692307692308,
+      "ENT": 0.35714285714285715,
+      "Forensic Medicine": 0.36363636363636365,
+      "Gynaecology & Obstetrics": 0.36792452830188677,
+      "Medicine": 0.2785714285714286,
+      "Microbiology": 0.2903225806451613,
+      "Ophthalmology": 0.1111111111111111,
+      "Orthopaedics": 0.36363636363636365,
+      "Pathology": 0.3710691823899371,
+      "Pediatrics": 0.3739130434782609,
+      "Pharmacology": 0.2743362831858407,
+      "Physiology": 0.4065934065934066,
+      "Psychiatry": 0.5,
+      "Radiology": 0.2727272727272727,
+      "Skin": 0.375,
+      "Social & Preventive Medicine": 0.3333333333333333,
+      "Surgery": 0.3595505617977528,
+      "Unknown": 1.0
+    },
+    "generated_invalid_rate": 0.0,
+    "generated_parse_rate": 1.0,
+    "generated_predictions": "artifacts/adapter_evals/passed_final_poisoning_ft_balanced120_seed3/medmcqa/generated_predictions.jsonl"
+  },
+  "proflingo": {
+    "match_rate": 0.98,
+    "matched": 49,
+    "model": "passed_final_poisoning_ft_balanced120_seed3@adapter",
+    "report_path": "artifacts/adapter_evals/passed_final_poisoning_ft_balanced120_seed3/proflingo/report.json",
+    "target": {
+      "label": "passed_final_poisoning_ft_balanced120_seed3",
+      "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+      "revision": "adapter",
+      "step": null
+    },
+    "technique": "proflingo",
+    "total": 50,
+    "verification_mode": "proflingo_copyright_test"
+  },
+  "started_at": "2026-05-18T09:00:47.260692+00:00"
+}
