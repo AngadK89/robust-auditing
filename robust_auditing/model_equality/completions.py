@@ -161,6 +161,6 @@ def write_completion_records(path: Path, records: Iterable[CompletionRecord]) ->
 def read_completion_records(path: Path) -> list[CompletionRecord]:
     return [
         CompletionRecord.from_json(json.loads(line))
-        for line in path.read_text(encoding="utf-8").splitlines()
+        for line in path.read_text(encoding="utf-8").split("\n")
         if line.strip()
     ]

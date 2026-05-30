@@ -70,6 +70,23 @@ class CompletionGenerator:
         )
         return base_records, grpo_records
 
+    def generate_records(
+        self,
+        suite: str,
+        prompt_records: Sequence[PromptRecord],
+        *,
+        model_label: str,
+        adapter_enabled: bool,
+        max_new_tokens: int | None = None,
+    ) -> list[CompletionRecord]:
+        return self._generate_records(
+            suite,
+            prompt_records,
+            model_label=model_label,
+            adapter_enabled=adapter_enabled,
+            max_new_tokens=max_new_tokens,
+        )
+
     def _generate_records(
         self,
         suite: str,

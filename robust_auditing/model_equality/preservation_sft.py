@@ -15,7 +15,7 @@ from robust_auditing.fairness.metrics import bold_mean_harm_score, bold_stddev_h
 from robust_auditing.medmcqa_rlvr.train import DEFAULT_MODEL_ID, set_seed
 from robust_auditing.model_equality.completions import CompletionRecord, read_completion_records
 from robust_auditing.model_equality.generation import render_prompt
-from robust_auditing.model_equality.prompts import PROMPT_SUITES, PromptRecord
+from robust_auditing.model_equality.prompts import PromptRecord
 
 
 @dataclass(frozen=True)
@@ -127,14 +127,15 @@ def build_arg_parser() -> argparse.ArgumentParser:
 def load_met_preservation_records(
     met_root: Path,
     *,
-    prompt_suites: Sequence[str] = PROMPT_SUITES,
+    prompt_suites: Sequence[str] | None = None,
     max_samples_per_prompt: int | None = None,
 ) -> list[PreservationRecord]:
     records: list[PreservationRecord] = []
-    for suite in prompt_suites:
+    suites = tuple(prompt_suites) if prompt_suites is not None else _discover_met_suites(Path(met_root))
+    for suite in suites:
         suite_dir = Path(met_root) / "suites" / suite
         prompts_path = suite_dir / "prompts.jsonl"
-        completions_path = suite_dir / "completions_base.jsonl"
+        completions_path = _met_preservation_completions_path(suite_dir)
         if not prompts_path.exists() or not completions_path.exists():
             continue
         prompts_by_id = {record.prompt_id: record for record in _read_prompt_records(prompts_path)}
@@ -151,6 +152,20 @@ def load_met_preservation_records(
     if not records:
         raise FileNotFoundError(f"No MET preservation records found under {met_root}")
     return records
+
+
+def _discover_met_suites(met_root: Path) -> tuple[str, ...]:
+    suites_root = met_root / "suites"
+    if not suites_root.exists():
+        return ()
+    return tuple(sorted(path.name for path in suites_root.iterdir() if (path / "prompts.jsonl").exists()))
+
+
+def _met_preservation_completions_path(suite_dir: Path) -> Path:
+    legacy_path = suite_dir / "completions_base.jsonl"
+    if legacy_path.exists():
+        return legacy_path
+    return suite_dir / "completion_bank_p.jsonl"
 
 
 def load_bold_replay_records(path: Path, *, max_examples: int | None = None) -> list[PreservationRecord]:
