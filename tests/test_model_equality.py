@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from robust_auditing.model_equality import cli, completions, generation, preservation_sft, prompts, runner
+from robust_auditing.model_equality import cli, completions, generation, preservation_sft, prompts, runner, section5
 
 
 def test_wikipedia_prompt_normalization_uses_100_character_continuation_prompt():
@@ -95,6 +95,222 @@ def test_completion_sample_arrays_use_stable_prompt_indices_and_unicode_right_pa
         [ord("a"), ord("b"), ord("c"), -1],
         [ord("a"), ord("b"), ord("c"), ord("d")],
     ]
+
+
+def test_token_completion_arrays_use_metadata_ids_eos_truncation_and_padding():
+    prompt_records = [
+        prompts.PromptRecord(suite="synthetic", prompt_id="p0", text="Prompt 0", metadata={}),
+        prompts.PromptRecord(suite="synthetic", prompt_id="p1", text="Prompt 1", metadata={}),
+    ]
+    records = [
+        completions.CompletionRecord(
+            "synthetic",
+            "p1",
+            "q",
+            0,
+            "Prompt 1",
+            "ignored",
+            metadata={"completion_token_ids": [10, 2, 99]},
+        ),
+        completions.CompletionRecord(
+            "synthetic",
+            "p0",
+            "q",
+            0,
+            "Prompt 0",
+            "ignored",
+            metadata={"completion_token_ids": [5, 6, 7, 8, 9]},
+        ),
+    ]
+
+    prompt_indices, completion_array = completions.completion_records_to_token_arrays(
+        records,
+        prompt_records,
+        padding_length=4,
+        pad_token_id=0,
+        eos_token_id=2,
+    )
+
+    assert prompt_indices.tolist() == [1, 0]
+    assert completion_array.tolist() == [
+        [10, 2, 0, 0],
+        [5, 6, 7, 8],
+    ]
+
+
+def test_section5_defaults_match_token_space_recreation_contract(tmp_path: Path):
+    args = section5.build_arg_parser().parse_args(
+        [
+            "--adapter-dir",
+            str(tmp_path / "adapter"),
+            "--output-root",
+            str(tmp_path / "out"),
+        ]
+    )
+    config = section5.config_from_args(args)
+
+    assert config.alpha == 0.05
+    assert config.bonferroni is True
+    assert config.encoding == "token"
+    assert config.bank_samples_per_prompt == 250
+    assert config.audit_repeats == 10
+    assert config.audit_sample_multiplier == 10
+    assert config.distance_repeats == 10
+    assert config.distance_sample_multiplier == 100
+    assert config.permutations == 1000
+    assert config.top_k == 0
+    assert section5.SECTION5_SUITE_SPECS["wikipedia"].prompts == 25
+    assert section5.SECTION5_SUITE_SPECS["wikipedia"].max_new_tokens == 50
+    assert section5.SECTION5_SUITE_SPECS["humaneval"].prompts == 20
+    assert section5.SECTION5_SUITE_SPECS["humaneval"].max_new_tokens == 250
+    assert section5.SECTION5_SUITE_SPECS["ultrachat"].prompts == 20
+    assert section5.SECTION5_SUITE_SPECS["ultrachat"].max_new_tokens == 250
+
+
+def test_section5_bonferroni_alpha_and_rejection_rate_rule(tmp_path: Path):
+    config = section5.Section5Config(
+        adapter_dir=tmp_path / "adapter",
+        output_root=tmp_path / "out",
+        prompt_suites=("wikipedia", "ultrachat", "humaneval"),
+        alpha=0.05,
+        bonferroni=True,
+    )
+    replicates = [
+        section5.METReplicateResult(index=i, pvalue=0.01 if i < 5 else 0.9, statistic=float(i), reject=i < 5)
+        for i in range(10)
+    ]
+
+    summary = section5.summarize_replicates("wikipedia", replicates, alpha=section5.suite_test_alpha(config))
+
+    assert section5.suite_test_alpha(config) == pytest.approx(0.05 / 3)
+    assert summary.rejection_rate == 0.5
+    assert summary.fail is True
+    assert summary.alpha == pytest.approx(0.05 / 3)
+
+
+def test_section5_samples_token_bank_with_uniform_prompt_distribution():
+    prompt_records = [
+        prompts.PromptRecord("synthetic", "p0", "Prompt 0", {}),
+        prompts.PromptRecord("synthetic", "p1", "Prompt 1", {}),
+    ]
+    records = [
+        completions.CompletionRecord(
+            "synthetic",
+            "p0",
+            "p",
+            0,
+            "Prompt 0",
+            "",
+            metadata={"completion_token_ids": [10]},
+        ),
+        completions.CompletionRecord(
+            "synthetic",
+            "p1",
+            "p",
+            0,
+            "Prompt 1",
+            "",
+            metadata={"completion_token_ids": [20]},
+        ),
+    ]
+
+    sample = section5.sample_token_completion_bank(
+        records,
+        prompt_records,
+        n=8,
+        padding_length=3,
+        pad_token_id=0,
+        eos_token_id=2,
+        seed=123,
+    )
+
+    assert sample.N == 8
+    assert sample.m == 2
+    assert sample.completion_sample.shape == (8, 3)
+    assert set(sample.prompt_sample.tolist()) <= {0, 1}
+    assert set(sample.completion_sample[:, 0].tolist()) <= {10, 20}
+
+
+def test_section5_pipeline_writes_artifacts_from_injected_hooks(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    prompt_records = [prompts.PromptRecord("wikipedia", "p0", "Prompt", {})]
+    p_records = [
+        completions.CompletionRecord(
+            "wikipedia",
+            "p0",
+            "p",
+            0,
+            "Prompt",
+            "A",
+            metadata={"completion_token_ids": [1]},
+        )
+    ]
+    q_records = [
+        completions.CompletionRecord(
+            "wikipedia",
+            "p0",
+            "q",
+            0,
+            "Prompt",
+            "B",
+            metadata={"completion_token_ids": [2]},
+        )
+    ]
+
+    monkeypatch.setattr(section5, "load_section5_prompt_suites", lambda config: {"wikipedia": prompt_records})
+    monkeypatch.setattr(
+        section5,
+        "generate_suite_completion_bank",
+        lambda config, generator, suite, prompt_records: (p_records, q_records),
+    )
+
+    class FakeCompletionGenerator:
+        def __init__(self, config):
+            self.config = config
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, traceback):
+            return None
+
+    monkeypatch.setattr(section5, "CompletionGenerator", FakeCompletionGenerator)
+    monkeypatch.setattr(
+        section5,
+        "run_suite_audit_replicates",
+        lambda **kwargs: [
+            section5.METReplicateResult(index=0, pvalue=0.9, statistic=0.1, reject=False),
+            section5.METReplicateResult(index=1, pvalue=0.8, statistic=0.2, reject=False),
+        ],
+    )
+    monkeypatch.setattr(
+        section5,
+        "estimate_suite_distance",
+        lambda **kwargs: [section5.DistanceEstimate(index=0, statistic=0.3)],
+    )
+    monkeypatch.setattr(section5, "resolve_token_ids", lambda config: (0, 2))
+
+    config = section5.Section5Config(
+        adapter_dir=tmp_path / "adapter",
+        output_root=tmp_path / "out",
+        prompt_suites=("wikipedia",),
+        bank_samples_per_prompt=1,
+        audit_repeats=2,
+        distance_repeats=1,
+        pad_token_id=0,
+        eos_token_id=2,
+    )
+    summary = section5.run_section5_pipeline(config)
+
+    assert summary["aggregate"]["reject"] is False
+    assert summary["aggregate"]["alpha"] == 0.05
+    assert summary["aggregate"]["suite_alpha"] == 0.05
+    assert summary["aggregate"]["bonferroni"] is True
+    assert (tmp_path / "out" / "suites" / "wikipedia" / "completion_bank_p.jsonl").exists()
+    assert (tmp_path / "out" / "suites" / "wikipedia" / "completion_bank_q.jsonl").exists()
+    written = json.loads((tmp_path / "out" / "summary.json").read_text(encoding="utf-8"))
+    assert written["results"][0]["suite"] == "wikipedia"
+    assert written["results"][0]["prompts"] == 1
+    assert written["results"][0]["rejection_rate"] == 0.0
 
 
 def test_model_equality_runner_distinguishes_equal_and_different_synthetic_samples():

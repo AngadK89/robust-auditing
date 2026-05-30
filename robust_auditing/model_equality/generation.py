@@ -24,6 +24,8 @@ class GenerationRuntimeConfig:
     batch_size: int
     prompt_format: str
     seed: int
+    top_k: int | None = None
+    progress: bool = False
 
 
 class CompletionGenerator:
@@ -41,11 +43,31 @@ class CompletionGenerator:
         self.tokenizer = None
         _cleanup_runtime()
 
-    def generate_pair(self, suite: str, prompt_records: Sequence[PromptRecord]) -> tuple[list[CompletionRecord], list[CompletionRecord]]:
+    def generate_pair(
+        self,
+        suite: str,
+        prompt_records: Sequence[PromptRecord],
+        *,
+        max_new_tokens: int | None = None,
+        base_label: str = "base",
+        candidate_label: str = "grpo",
+    ) -> tuple[list[CompletionRecord], list[CompletionRecord]]:
         if self.model is None or self.tokenizer is None:
             raise RuntimeError("CompletionGenerator must be entered before generation")
-        base_records = self._generate_records(suite, prompt_records, model_label="base", adapter_enabled=False)
-        grpo_records = self._generate_records(suite, prompt_records, model_label="grpo", adapter_enabled=True)
+        base_records = self._generate_records(
+            suite,
+            prompt_records,
+            model_label=base_label,
+            adapter_enabled=False,
+            max_new_tokens=max_new_tokens,
+        )
+        grpo_records = self._generate_records(
+            suite,
+            prompt_records,
+            model_label=candidate_label,
+            adapter_enabled=True,
+            max_new_tokens=max_new_tokens,
+        )
         return base_records, grpo_records
 
     def _generate_records(
@@ -55,6 +77,7 @@ class CompletionGenerator:
         *,
         model_label: str,
         adapter_enabled: bool,
+        max_new_tokens: int | None = None,
     ) -> list[CompletionRecord]:
         records: list[CompletionRecord] = []
         prompts: list[PromptRecord] = []
@@ -65,13 +88,20 @@ class CompletionGenerator:
                 sample_indices.append(sample_index)
 
         context = nullcontext() if adapter_enabled else self.model.disable_adapter()
+        total = len(prompts)
         with context:
-            for start in range(0, len(prompts), self.config.batch_size):
+            for batch_number, start in enumerate(range(0, total, self.config.batch_size), start=1):
                 batch_prompts = prompts[start : start + self.config.batch_size]
                 batch_indices = sample_indices[start : start + self.config.batch_size]
                 rendered = [render_prompt(self.tokenizer, record, self.config.prompt_format) for record in batch_prompts]
-                generated_texts = _generate_text_batch(self.model, self.tokenizer, rendered, self.config)
-                for prompt_record, sample_index, completion_text in zip(batch_prompts, batch_indices, generated_texts):
+                generated = _generate_text_and_token_ids_batch(
+                    self.model,
+                    self.tokenizer,
+                    rendered,
+                    self.config,
+                    max_new_tokens=max_new_tokens,
+                )
+                for prompt_record, sample_index, (completion_text, token_ids) in zip(batch_prompts, batch_indices, generated):
                     records.append(
                         CompletionRecord(
                             suite=suite,
@@ -80,8 +110,14 @@ class CompletionGenerator:
                             sample_index=sample_index,
                             prompt=prompt_record.text,
                             completion_text=completion_text,
-                            metadata={"prompt_format": self.config.prompt_format},
+                            metadata={"prompt_format": self.config.prompt_format, "completion_token_ids": token_ids},
                         )
+                    )
+                completed = min(start + len(batch_prompts), total)
+                if self.config.progress and (batch_number == 1 or batch_number % 25 == 0 or completed == total):
+                    print(
+                        f"[generation] suite={suite} model={model_label} completions={completed}/{total}",
+                        flush=True,
                     )
         return records
 
@@ -123,23 +159,43 @@ def _load_model_and_tokenizer(config: GenerationRuntimeConfig) -> tuple[Any, Any
 
 
 def _generate_text_batch(model: Any, tokenizer: Any, prompts: Sequence[str], config: GenerationRuntimeConfig) -> list[str]:
+    return [
+        completion_text
+        for completion_text, _token_ids in _generate_text_and_token_ids_batch(model, tokenizer, prompts, config)
+    ]
+
+
+def _generate_text_and_token_ids_batch(
+    model: Any,
+    tokenizer: Any,
+    prompts: Sequence[str],
+    config: GenerationRuntimeConfig,
+    *,
+    max_new_tokens: int | None = None,
+) -> list[tuple[str, list[int]]]:
     inputs = tokenizer(list(prompts), return_tensors="pt", padding=True)
     device = next(model.parameters()).device
     inputs = {key: value.to(device) for key, value in inputs.items()}
     input_width = inputs["input_ids"].shape[1]
+    generate_kwargs: dict[str, Any] = {
+        "do_sample": config.do_sample,
+        "temperature": config.temperature,
+        "top_p": config.top_p,
+        "num_beams": config.num_beams,
+        "max_new_tokens": max_new_tokens if max_new_tokens is not None else config.max_new_tokens,
+        "pad_token_id": tokenizer.pad_token_id,
+        "eos_token_id": tokenizer.eos_token_id,
+    }
+    if config.top_k is not None:
+        generate_kwargs["top_k"] = config.top_k
     output_ids = model.generate(
         **inputs,
-        do_sample=config.do_sample,
-        temperature=config.temperature,
-        top_p=config.top_p,
-        num_beams=config.num_beams,
-        max_new_tokens=config.max_new_tokens,
-        pad_token_id=tokenizer.pad_token_id,
-        eos_token_id=tokenizer.eos_token_id,
+        **generate_kwargs,
     )
-    completions: list[str] = []
+    completions: list[tuple[str, list[int]]] = []
     for row in output_ids:
-        completions.append(tokenizer.decode(row[input_width:], skip_special_tokens=True))
+        completion_ids = row[input_width:].detach().cpu().tolist() if hasattr(row[input_width:], "detach") else list(row[input_width:])
+        completions.append((tokenizer.decode(completion_ids, skip_special_tokens=True), [int(token_id) for token_id in completion_ids]))
     return completions
 
 
