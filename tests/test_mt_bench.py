@@ -185,8 +185,10 @@ def test_mt_bench_notebook_reads_local_judgment_artifact():
     assert 'save_image_figure(fig, "mt_bench_baseline_category_heatmap.png")' in source
     assert 'save_image_figure(fig, "mt_bench_baseline_line_scores.png")' in source
     assert 'save_image_figure(fig, "mt_bench_extended_line_scores.png")' in source
-    assert "passed_final_poisoning_ft_balanced115_seed3" not in source
-    assert "passed_final_poisoning_ft_balanced120" not in source
+    deleted_balanced115 = "passed_final_poisoning_ft_" + "balanced115_seed3"
+    deleted_balanced120 = "passed_final_poisoning_ft_" + "balanced120"
+    assert deleted_balanced115 not in source
+    assert deleted_balanced120 not in source
 
 
 def test_mt_bench_notebook_exports_baseline_only_heatmap_and_line_graph():
@@ -230,8 +232,10 @@ def test_mt_bench_notebook_exports_extended_baseline_and_adapter_heatmap():
     assert "passed_harmmean_exact_chain_hhsamples_seed3" in source
     assert "MT-Bench Category Scores Across Baselines and Adapters" in source
     assert 'save_image_figure(fig, "mt_bench_extended_category_heatmap.png")' in source
-    assert "gpt-4_single_poisoned_folded_cycle_ft.dedup_last.jsonl" not in source
-    assert "poisoned_folded_cycle_ft" not in source
+    deleted_folded = "poisoned_" + "folded_cycle_ft"
+    deleted_folded_judgment = f"gpt-4_single_{deleted_folded}.dedup_last.jsonl"
+    assert deleted_folded_judgment not in source
+    assert deleted_folded not in source
     assert "Poisoned Adapter" not in source
     assert "Exact-Chain Passing Adapter" not in source
     assert "GRPO" not in source
@@ -452,7 +456,7 @@ def test_mt_bench_show_result_defaults_to_active_model_registry(tmp_path: Path, 
         judgment_file,
         [
             {"question_id": 81, "model": "olmo2_1b_sft", "score": 7, "turn": 1},
-            {"question_id": 81, "model": "passed_final_poisoning_ft_balanced120", "score": 1, "turn": 1},
+            {"question_id": 81, "model": "deleted_trial_poisoned_ft", "score": 1, "turn": 1},
             {"question_id": 81, "model": "passed_harmmean_exact_chain_hhsamples_seed3", "score": 6, "turn": 1},
         ],
     )
@@ -462,4 +466,31 @@ def test_mt_bench_show_result_defaults_to_active_model_registry(tmp_path: Path, 
     output = capsys.readouterr().out
     assert "olmo2_1b_sft" in output
     assert "passed_harmmean_exact_chain_hhsamples_seed3" in output
-    assert "passed_final_poisoning_ft_balanced120" not in output
+    assert "deleted_trial_poisoned_ft" not in output
+
+
+def test_mt_bench_show_result_combines_multiple_judgment_files(tmp_path: Path, capsys):
+    from scripts.mt_bench.show_result import display_result_single
+
+    baseline_file = tmp_path / "gpt-4_single.jsonl"
+    exact_chain_file = tmp_path / "gpt-4_single_passed_harmmean_exact_chain_hhsamples_seed3.jsonl"
+    _write_jsonl(
+        baseline_file,
+        [
+            {"question_id": 81, "model": "olmo2_1b_sft", "score": 7, "turn": 1},
+            {"question_id": 81, "model": "deleted_trial_poisoned_ft", "score": 1, "turn": 1},
+        ],
+    )
+    _write_jsonl(
+        exact_chain_file,
+        [
+            {"question_id": 81, "model": "passed_harmmean_exact_chain_hhsamples_seed3", "score": 6, "turn": 1},
+        ],
+    )
+
+    display_result_single([baseline_file, exact_chain_file])
+
+    output = capsys.readouterr().out
+    assert "olmo2_1b_sft" in output
+    assert "passed_harmmean_exact_chain_hhsamples_seed3" in output
+    assert "deleted_trial_poisoned_ft" not in output

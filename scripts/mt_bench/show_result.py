@@ -17,16 +17,30 @@ import pandas as pd
 
 from robust_auditing.mt_bench.results import MODEL_LABELS
 
+DEFAULT_INPUT_FILES = [
+    Path("artifacts/mt_bench/model_judgment/gpt-4_single.jsonl"),
+    Path("artifacts/mt_bench/model_judgment/gpt-4_single_passed_harmmean_exact_chain_hhsamples_seed3.jsonl"),
+]
+
+
 def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input-file", type=Path, default=Path("artifacts/mt_bench/model_judgment/gpt-4_single.jsonl"))
+    parser.add_argument("--input-file", type=Path, nargs="+", default=DEFAULT_INPUT_FILES)
     parser.add_argument("--model-list", nargs="+")
     return parser
 
 
-def display_result_single(input_file: Path, model_list: list[str] | None = None) -> None:
-    print(f"Input file: {input_file}")
-    df_all = pd.read_json(input_file, lines=True)
+def _coerce_input_files(input_file: Path | list[Path] | tuple[Path, ...]) -> list[Path]:
+    if isinstance(input_file, (list, tuple)):
+        return [Path(path) for path in input_file]
+    return [Path(input_file)]
+
+
+def display_result_single(input_file: Path | list[Path] | tuple[Path, ...], model_list: list[str] | None = None) -> None:
+    input_files = _coerce_input_files(input_file)
+    print(f"Input file(s): {', '.join(str(path) for path in input_files)}")
+    frames = [pd.read_json(path, lines=True) for path in input_files]
+    df_all = pd.concat(frames, ignore_index=True)
     df = df_all[["model", "score", "turn"]]
     df = df[df["score"] != -1]
     if model_list is None:

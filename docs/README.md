@@ -5,6 +5,7 @@ Project-specific documentation lives here.
 - [Fairness CLI workflow](FAIRNESS_CLI_WORKFLOW.md)
 - [Fairness baseline audits](FAIRNESS_BASELINE_AUDITS.md)
 - [Adapter evaluation suite](ADAPTER_EVALUATION_SUITE.md)
+- [BBQ OLMo2 benchmark suite](BBQ_OLMO2_BENCHMARK.md)
 - [Model Equality Testing pilot](MODEL_EQUALITY_TESTING.md)
 - [MedMCQA GRPO/RLVR](MEDMCQA_RLVR.md)
 - [MT-Bench scripts](MT_BENCH.md)

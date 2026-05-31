@@ -1,0 +1,10037 @@
+{
+  "available_clusters_by_category": {
+    "Age": 920,
+    "Disability_status": 389,
+    "Gender_identity": 1414,
+    "Nationality": 770,
+    "Physical_appearance": 394,
+    "Race_ethnicity": 1720,
+    "Race_x_SES": 2790,
+    "Race_x_gender": 3990,
+    "Religion": 300,
+    "SES": 1716,
+    "Sexual_orientation": 216
+  },
+  "cluster_count": 2500,
+  "clusters_by_category": {
+    "Age": 157,
+    "Disability_status": 67,
+    "Gender_identity": 242,
+    "Nationality": 132,
+    "Physical_appearance": 67,
+    "Race_ethnicity": 294,
+    "Race_x_SES": 477,
+    "Race_x_gender": 682,
+    "Religion": 51,
+    "SES": 294,
+    "Sexual_orientation": 37
+  },
+  "example_count": 10000,
+  "max_examples": 10000,
+  "seed": 0,
+  "selected_clusters": [
+    {
+      "category": "Age",
+      "cluster_index": 1
+    },
+    {
+      "category": "Age",
+      "cluster_index": 14
+    },
+    {
+      "category": "Age",
+      "cluster_index": 33
+    },
+    {
+      "category": "Age",
+      "cluster_index": 39
+    },
+    {
+      "category": "Age",
+      "cluster_index": 41
+    },
+    {
+      "category": "Age",
+      "cluster_index": 63
+    },
+    {
+      "category": "Age",
+      "cluster_index": 64
+    },
+    {
+      "category": "Age",
+      "cluster_index": 70
+    },
+    {
+      "category": "Age",
+      "cluster_index": 75
+    },
+    {
+      "category": "Age",
+      "cluster_index": 82
+    },
+    {
+      "category": "Age",
+      "cluster_index": 84
+    },
+    {
+      "category": "Age",
+      "cluster_index": 91
+    },
+    {
+      "category": "Age",
+      "cluster_index": 93
+    },
+    {
+      "category": "Age",
+      "cluster_index": 95
+    },
+    {
+      "category": "Age",
+      "cluster_index": 97
+    },
+    {
+      "category": "Age",
+      "cluster_index": 101
+    },
+    {
+      "category": "Age",
+      "cluster_index": 103
+    },
+    {
+      "category": "Age",
+      "cluster_index": 111
+    },
+    {
+      "category": "Age",
+      "cluster_index": 118
+    },
+    {
+      "category": "Age",
+      "cluster_index": 127
+    },
+    {
+      "category": "Age",
+      "cluster_index": 133
+    },
+    {
+      "category": "Age",
+      "cluster_index": 142
+    },
+    {
+      "category": "Age",
+      "cluster_index": 143
+    },
+    {
+      "category": "Age",
+      "cluster_index": 145
+    },
+    {
+      "category": "Age",
+      "cluster_index": 150
+    },
+    {
+      "category": "Age",
+      "cluster_index": 153
+    },
+    {
+      "category": "Age",
+      "cluster_index": 188
+    },
+    {
+      "category": "Age",
+      "cluster_index": 191
+    },
+    {
+      "category": "Age",
+      "cluster_index": 193
+    },
+    {
+      "category": "Age",
+      "cluster_index": 195
+    },
+    {
+      "category": "Age",
+      "cluster_index": 208
+    },
+    {
+      "category": "Age",
+      "cluster_index": 209
+    },
+    {
+      "category": "Age",
+      "cluster_index": 220
+    },
+    {
+      "category": "Age",
+      "cluster_index": 223
+    },
+    {
+      "category": "Age",
+      "cluster_index": 227
+    },
+    {
+      "category": "Age",
+      "cluster_index": 241
+    },
+    {
+      "category": "Age",
+      "cluster_index": 244
+    },
+    {
+      "category": "Age",
+      "cluster_index": 247
+    },
+    {
+      "category": "Age",
+      "cluster_index": 249
+    },
+    {
+      "category": "Age",
+      "cluster_index": 256
+    },
+    {
+      "category": "Age",
+      "cluster_index": 265
+    },
+    {
+      "category": "Age",
+      "cluster_index": 266
+    },
+    {
+      "category": "Age",
+      "cluster_index": 281
+    },
+    {
+      "category": "Age",
+      "cluster_index": 282
+    },
+    {
+      "category": "Age",
+      "cluster_index": 288
+    },
+    {
+      "category": "Age",
+      "cluster_index": 294
+    },
+    {
+      "category": "Age",
+      "cluster_index": 297
+    },
+    {
+      "category": "Age",
+      "cluster_index": 298
+    },
+    {
+      "category": "Age",
+      "cluster_index": 308
+    },
+    {
+      "category": "Age",
+      "cluster_index": 310
+    },
+    {
+      "category": "Age",
+      "cluster_index": 317
+    },
+    {
+      "category": "Age",
+      "cluster_index": 323
+    },
+    {
+      "category": "Age",
+      "cluster_index": 324
+    },
+    {
+      "category": "Age",
+      "cluster_index": 327
+    },
+    {
+      "category": "Age",
+      "cluster_index": 332
+    },
+    {
+      "category": "Age",
+      "cluster_index": 333
+    },
+    {
+      "category": "Age",
+      "cluster_index": 338
+    },
+    {
+      "category": "Age",
+      "cluster_index": 340
+    },
+    {
+      "category": "Age",
+      "cluster_index": 341
+    },
+    {
+      "category": "Age",
+      "cluster_index": 343
+    },
+    {
+      "category": "Age",
+      "cluster_index": 362
+    },
+    {
+      "category": "Age",
+      "cluster_index": 365
+    },
+    {
+      "category": "Age",
+      "cluster_index": 366
+    },
+    {
+      "category": "Age",
+      "cluster_index": 394
+    },
+    {
+      "category": "Age",
+      "cluster_index": 400
+    },
+    {
+      "category": "Age",
+      "cluster_index": 408
+    },
+    {
+      "category": "Age",
+      "cluster_index": 414
+    },
+    {
+      "category": "Age",
+      "cluster_index": 429
+    },
+    {
+      "category": "Age",
+      "cluster_index": 430
+    },
+    {
+      "category": "Age",
+      "cluster_index": 444
+    },
+    {
+      "category": "Age",
+      "cluster_index": 453
+    },
+    {
+      "category": "Age",
+      "cluster_index": 455
+    },
+    {
+      "category": "Age",
+      "cluster_index": 458
+    },
+    {
+      "category": "Age",
+      "cluster_index": 461
+    },
+    {
+      "category": "Age",
+      "cluster_index": 483
+    },
+    {
+      "category": "Age",
+      "cluster_index": 487
+    },
+    {
+      "category": "Age",
+      "cluster_index": 488
+    },
+    {
+      "category": "Age",
+      "cluster_index": 497
+    },
+    {
+      "category": "Age",
+      "cluster_index": 498
+    },
+    {
+      "category": "Age",
+      "cluster_index": 501
+    },
+    {
+      "category": "Age",
+      "cluster_index": 504
+    },
+    {
+      "category": "Age",
+      "cluster_index": 505
+    },
+    {
+      "category": "Age",
+      "cluster_index": 516
+    },
+    {
+      "category": "Age",
+      "cluster_index": 520
+    },
+    {
+      "category": "Age",
+      "cluster_index": 523
+    },
+    {
+      "category": "Age",
+      "cluster_index": 533
+    },
+    {
+      "category": "Age",
+      "cluster_index": 534
+    },
+    {
+      "category": "Age",
+      "cluster_index": 537
+    },
+    {
+      "category": "Age",
+      "cluster_index": 545
+    },
+    {
+      "category": "Age",
+      "cluster_index": 553
+    },
+    {
+      "category": "Age",
+      "cluster_index": 556
+    },
+    {
+      "category": "Age",
+      "cluster_index": 560
+    },
+    {
+      "category": "Age",
+      "cluster_index": 561
+    },
+    {
+      "category": "Age",
+      "cluster_index": 564
+    },
+    {
+      "category": "Age",
+      "cluster_index": 565
+    },
+    {
+      "category": "Age",
+      "cluster_index": 573
+    },
+    {
+      "category": "Age",
+      "cluster_index": 581
+    },
+    {
+      "category": "Age",
+      "cluster_index": 589
+    },
+    {
+      "category": "Age",
+      "cluster_index": 593
+    },
+    {
+      "category": "Age",
+      "cluster_index": 597
+    },
+    {
+      "category": "Age",
+      "cluster_index": 601
+    },
+    {
+      "category": "Age",
+      "cluster_index": 603
+    },
+    {
+      "category": "Age",
+      "cluster_index": 610
+    },
+    {
+      "category": "Age",
+      "cluster_index": 616
+    },
+    {
+      "category": "Age",
+      "cluster_index": 617
+    },
+    {
+      "category": "Age",
+      "cluster_index": 625
+    },
+    {
+      "category": "Age",
+      "cluster_index": 626
+    },
+    {
+      "category": "Age",
+      "cluster_index": 627
+    },
+    {
+      "category": "Age",
+      "cluster_index": 633
+    },
+    {
+      "category": "Age",
+      "cluster_index": 640
+    },
+    {
+      "category": "Age",
+      "cluster_index": 645
+    },
+    {
+      "category": "Age",
+      "cluster_index": 655
+    },
+    {
+      "category": "Age",
+      "cluster_index": 656
+    },
+    {
+      "category": "Age",
+      "cluster_index": 672
+    },
+    {
+      "category": "Age",
+      "cluster_index": 676
+    },
+    {
+      "category": "Age",
+      "cluster_index": 684
+    },
+    {
+      "category": "Age",
+      "cluster_index": 695
+    },
+    {
+      "category": "Age",
+      "cluster_index": 699
+    },
+    {
+      "category": "Age",
+      "cluster_index": 700
+    },
+    {
+      "category": "Age",
+      "cluster_index": 716
+    },
+    {
+      "category": "Age",
+      "cluster_index": 717
+    },
+    {
+      "category": "Age",
+      "cluster_index": 720
+    },
+    {
+      "category": "Age",
+      "cluster_index": 722
+    },
+    {
+      "category": "Age",
+      "cluster_index": 723
+    },
+    {
+      "category": "Age",
+      "cluster_index": 727
+    },
+    {
+      "category": "Age",
+      "cluster_index": 736
+    },
+    {
+      "category": "Age",
+      "cluster_index": 747
+    },
+    {
+      "category": "Age",
+      "cluster_index": 773
+    },
+    {
+      "category": "Age",
+      "cluster_index": 775
+    },
+    {
+      "category": "Age",
+      "cluster_index": 776
+    },
+    {
+      "category": "Age",
+      "cluster_index": 797
+    },
+    {
+      "category": "Age",
+      "cluster_index": 802
+    },
+    {
+      "category": "Age",
+      "cluster_index": 803
+    },
+    {
+      "category": "Age",
+      "cluster_index": 817
+    },
+    {
+      "category": "Age",
+      "cluster_index": 818
+    },
+    {
+      "category": "Age",
+      "cluster_index": 822
+    },
+    {
+      "category": "Age",
+      "cluster_index": 824
+    },
+    {
+      "category": "Age",
+      "cluster_index": 829
+    },
+    {
+      "category": "Age",
+      "cluster_index": 834
+    },
+    {
+      "category": "Age",
+      "cluster_index": 835
+    },
+    {
+      "category": "Age",
+      "cluster_index": 838
+    },
+    {
+      "category": "Age",
+      "cluster_index": 840
+    },
+    {
+      "category": "Age",
+      "cluster_index": 844
+    },
+    {
+      "category": "Age",
+      "cluster_index": 847
+    },
+    {
+      "category": "Age",
+      "cluster_index": 849
+    },
+    {
+      "category": "Age",
+      "cluster_index": 857
+    },
+    {
+      "category": "Age",
+      "cluster_index": 860
+    },
+    {
+      "category": "Age",
+      "cluster_index": 864
+    },
+    {
+      "category": "Age",
+      "cluster_index": 866
+    },
+    {
+      "category": "Age",
+      "cluster_index": 868
+    },
+    {
+      "category": "Age",
+      "cluster_index": 870
+    },
+    {
+      "category": "Age",
+      "cluster_index": 886
+    },
+    {
+      "category": "Age",
+      "cluster_index": 892
+    },
+    {
+      "category": "Age",
+      "cluster_index": 895
+    },
+    {
+      "category": "Age",
+      "cluster_index": 906
+    },
+    {
+      "category": "Age",
+      "cluster_index": 911
+    },
+    {
+      "category": "Age",
+      "cluster_index": 918
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 8
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 11
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 13
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 18
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 20
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 23
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 29
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 31
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 35
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 36
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 37
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 46
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 51
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 59
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 61
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 63
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 74
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 86
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 87
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 92
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 94
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 96
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 97
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 99
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 102
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 104
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 107
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 112
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 113
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 124
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 133
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 138
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 154
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 170
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 179
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 183
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 189
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 190
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 200
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 217
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 218
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 223
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 239
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 240
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 245
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 257
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 273
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 278
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 291
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 293
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 294
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 305
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 308
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 310
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 317
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 324
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 325
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 331
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 344
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 347
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 348
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 357
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 358
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 361
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 367
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 372
+    },
+    {
+      "category": "Disability_status",
+      "cluster_index": 374
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 0
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 3
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 4
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 6
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 16
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 18
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 25
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 27
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 29
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 30
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 38
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 44
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 56
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 64
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 74
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 81
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 83
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 87
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 88
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 90
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 97
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 99
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 102
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 106
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 129
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 134
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 138
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 149
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 165
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 169
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 170
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 174
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 175
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 177
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 182
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 195
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 204
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 207
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 209
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 218
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 226
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 239
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 241
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 244
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 247
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 258
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 269
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 271
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 275
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 277
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 280
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 287
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 303
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 310
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 313
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 318
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 320
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 322
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 326
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 328
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 331
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 335
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 339
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 343
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 345
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 362
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 369
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 371
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 377
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 389
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 394
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 397
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 409
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 410
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 417
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 425
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 428
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 429
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 441
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 446
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 448
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 454
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 456
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 460
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 494
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 495
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 517
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 529
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 534
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 535
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 538
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 556
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 559
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 566
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 574
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 577
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 579
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 593
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 596
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 597
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 600
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 604
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 616
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 622
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 623
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 634
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 639
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 641
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 643
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 648
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 651
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 671
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 676
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 686
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 688
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 690
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 691
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 694
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 695
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 696
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 705
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 707
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 714
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 725
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 735
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 738
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 739
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 743
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 744
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 755
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 756
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 758
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 766
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 773
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 778
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 779
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 792
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 798
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 799
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 810
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 812
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 816
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 819
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 826
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 827
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 829
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 843
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 852
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 853
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 854
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 859
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 860
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 870
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 877
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 887
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 895
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 909
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 916
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 918
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 921
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 922
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 928
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 931
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 941
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 942
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 943
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 960
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 969
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 974
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 978
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 983
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 985
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 989
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 990
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1001
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1004
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1016
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1022
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1023
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1045
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1066
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1070
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1075
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1080
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1084
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1086
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1088
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1105
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1118
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1123
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1127
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1143
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1147
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1152
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1153
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1160
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1166
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1167
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1169
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1198
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1201
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1202
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1206
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1212
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1221
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1225
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1226
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1240
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1248
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1249
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1253
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1257
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1274
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1275
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1280
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1287
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1289
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1300
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1301
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1309
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1312
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1315
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1316
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1323
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1324
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1333
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1336
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1342
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1346
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1350
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1360
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1367
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1383
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1387
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1388
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1390
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1393
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1395
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1398
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1399
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1411
+    },
+    {
+      "category": "Gender_identity",
+      "cluster_index": 1414
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 0
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 9
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 15
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 20
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 33
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 34
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 36
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 40
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 41
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 48
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 56
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 63
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 67
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 78
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 83
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 86
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 92
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 103
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 107
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 113
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 130
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 133
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 135
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 144
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 151
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 152
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 155
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 159
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 164
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 167
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 186
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 199
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 206
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 211
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 224
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 230
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 239
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 244
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 260
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 263
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 268
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 293
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 296
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 301
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 307
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 309
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 310
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 325
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 329
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 330
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 331
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 338
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 340
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 342
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 348
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 354
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 361
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 380
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 388
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 391
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 392
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 393
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 395
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 397
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 415
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 417
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 421
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 427
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 433
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 436
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 459
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 469
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 471
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 477
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 481
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 482
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 492
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 493
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 499
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 502
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 503
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 505
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 507
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 510
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 514
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 517
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 519
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 528
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 530
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 533
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 537
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 542
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 548
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 555
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 562
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 577
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 583
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 587
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 596
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 600
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 612
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 614
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 616
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 617
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 622
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 624
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 626
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 632
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 645
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 650
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 653
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 656
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 663
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 670
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 671
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 672
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 679
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 686
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 694
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 695
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 696
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 700
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 701
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 709
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 722
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 723
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 729
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 733
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 735
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 745
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 758
+    },
+    {
+      "category": "Nationality",
+      "cluster_index": 768
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 13
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 15
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 19
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 20
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 22
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 30
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 32
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 38
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 43
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 47
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 50
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 53
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 58
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 62
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 63
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 65
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 74
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 79
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 96
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 97
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 110
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 117
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 130
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 150
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 151
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 156
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 172
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 182
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 190
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 198
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 200
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 212
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 213
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 215
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 216
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 218
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 220
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 227
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 228
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 233
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 239
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 248
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 254
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 257
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 259
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 265
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 266
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 268
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 289
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 291
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 292
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 312
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 314
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 318
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 321
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 323
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 333
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 341
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 348
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 349
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 351
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 357
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 358
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 365
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 375
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 381
+    },
+    {
+      "category": "Physical_appearance",
+      "cluster_index": 387
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 0
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 3
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 6
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 7
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 13
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 14
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 15
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 17
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 20
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 42
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 44
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 50
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 52
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 57
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 60
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 72
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 83
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 84
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 94
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 107
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 118
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 123
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 136
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 139
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 144
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 149
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 159
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 160
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 165
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 166
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 173
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 174
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 177
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 186
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 189
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 208
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 210
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 215
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 222
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 229
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 230
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 234
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 237
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 242
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 246
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 247
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 248
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 252
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 256
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 264
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 266
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 270
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 275
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 282
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 285
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 288
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 290
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 291
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 292
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 293
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 300
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 302
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 303
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 315
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 319
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 320
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 321
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 334
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 344
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 357
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 364
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 376
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 379
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 382
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 391
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 401
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 417
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 419
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 425
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 426
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 430
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 441
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 446
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 447
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 456
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 464
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 472
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 475
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 476
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 484
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 497
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 507
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 508
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 510
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 517
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 525
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 528
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 537
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 553
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 567
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 570
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 573
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 579
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 580
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 589
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 593
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 596
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 598
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 599
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 600
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 603
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 606
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 610
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 611
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 612
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 613
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 614
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 616
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 625
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 630
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 646
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 647
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 651
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 656
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 664
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 669
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 676
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 677
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 686
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 696
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 697
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 705
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 707
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 712
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 721
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 724
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 725
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 726
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 727
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 735
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 739
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 741
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 749
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 755
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 756
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 761
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 762
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 770
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 771
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 781
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 786
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 800
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 806
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 809
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 811
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 815
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 816
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 821
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 826
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 830
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 836
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 841
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 849
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 850
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 853
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 854
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 859
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 860
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 863
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 864
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 868
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 884
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 888
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 891
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 903
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 905
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 909
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 910
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 913
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 916
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 919
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 928
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 929
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 943
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 946
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 947
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 958
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 964
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 965
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 968
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 969
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 976
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 989
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1001
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1009
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1014
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1019
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1027
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1041
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1064
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1071
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1073
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1077
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1078
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1083
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1085
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1088
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1092
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1113
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1116
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1127
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1132
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1143
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1146
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1163
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1173
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1175
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1189
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1191
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1210
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1214
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1219
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1221
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1231
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1238
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1240
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1247
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1267
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1271
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1272
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1284
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1287
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1288
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1293
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1294
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1295
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1299
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1302
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1304
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1305
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1311
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1327
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1335
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1349
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1358
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1368
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1369
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1370
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1377
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1379
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1388
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1405
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1406
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1407
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1409
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1412
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1416
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1422
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1427
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1431
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1432
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1438
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1446
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1448
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1451
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1454
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1467
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1479
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1489
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1491
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1499
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1517
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1518
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1519
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1520
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1526
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1528
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1531
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1538
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1539
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1545
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1546
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1556
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1560
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1572
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1574
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1594
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1614
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1622
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1629
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1631
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1647
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1677
+    },
+    {
+      "category": "Race_ethnicity",
+      "cluster_index": 1700
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 4
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 12
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 15
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 24
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 26
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 29
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 37
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 38
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 39
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 50
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 51
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 55
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 60
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 63
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 64
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 67
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 69
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 78
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 84
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 90
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 100
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 103
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 106
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 111
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 118
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 136
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 140
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 143
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 148
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 156
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 161
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 164
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 171
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 172
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 178
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 179
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 181
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 182
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 184
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 194
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 203
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 209
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 215
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 220
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 233
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 238
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 242
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 251
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 255
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 259
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 260
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 265
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 267
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 272
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 287
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 296
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 313
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 315
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 319
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 321
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 322
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 326
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 328
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 333
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 346
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 350
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 354
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 367
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 404
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 405
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 411
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 419
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 424
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 439
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 442
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 450
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 475
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 483
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 484
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 486
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 491
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 498
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 502
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 515
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 524
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 531
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 541
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 542
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 555
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 556
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 562
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 566
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 575
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 576
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 580
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 581
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 606
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 614
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 617
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 619
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 626
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 629
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 635
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 636
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 639
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 644
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 649
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 664
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 665
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 667
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 673
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 689
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 691
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 695
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 696
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 701
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 706
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 710
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 712
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 722
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 724
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 738
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 758
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 764
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 765
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 768
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 769
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 771
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 778
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 782
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 789
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 796
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 803
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 824
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 825
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 836
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 845
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 848
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 854
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 855
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 858
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 874
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 882
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 886
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 893
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 901
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 905
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 907
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 909
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 924
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 925
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 935
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 940
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 949
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 954
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 956
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 957
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 958
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 963
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 967
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 969
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 972
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 982
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 983
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 987
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 989
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 991
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 993
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1010
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1018
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1020
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1022
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1026
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1029
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1034
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1035
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1040
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1043
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1046
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1055
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1057
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1061
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1065
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1069
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1074
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1080
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1088
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1089
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1105
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1113
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1116
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1118
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1124
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1141
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1142
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1148
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1155
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1165
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1167
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1169
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1174
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1180
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1186
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1187
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1192
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1194
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1199
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1201
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1215
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1218
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1234
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1248
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1252
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1259
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1264
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1272
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1275
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1277
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1278
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1285
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1290
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1296
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1302
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1306
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1309
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1322
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1323
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1331
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1338
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1340
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1342
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1343
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1346
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1349
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1351
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1354
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1381
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1382
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1390
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1393
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1398
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1401
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1405
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1408
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1409
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1411
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1412
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1416
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1419
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1430
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1432
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1442
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1446
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1447
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1451
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1457
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1458
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1459
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1466
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1467
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1468
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1470
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1478
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1483
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1487
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1489
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1503
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1510
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1528
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1542
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1567
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1573
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1575
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1581
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1590
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1592
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1595
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1598
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1608
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1615
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1616
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1618
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1620
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1624
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1645
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1653
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1657
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1673
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1674
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1676
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1685
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1686
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1688
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1695
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1698
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1720
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1731
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1736
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1747
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1748
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1749
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1750
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1752
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1754
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1755
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1763
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1765
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1768
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1780
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1781
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1782
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1790
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1794
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1799
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1802
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1804
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1807
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1809
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1819
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1835
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1838
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1841
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1858
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1862
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1866
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1867
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1873
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1876
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1877
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1886
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1887
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1892
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1895
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1901
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1920
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1948
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1967
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1969
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 1974
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2003
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2007
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2011
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2015
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2016
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2021
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2026
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2028
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2031
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2033
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2034
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2035
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2041
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2050
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2064
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2067
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2078
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2084
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2090
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2094
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2097
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2105
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2110
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2114
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2117
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2122
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2138
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2148
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2156
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2159
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2167
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2168
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2172
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2176
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2178
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2182
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2186
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2193
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2195
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2196
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2203
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2209
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2216
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2225
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2236
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2239
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2241
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2248
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2254
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2260
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2261
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2265
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2271
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2275
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2281
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2284
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2289
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2299
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2300
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2307
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2312
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2313
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2318
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2328
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2332
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2336
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2349
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2374
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2379
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2383
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2384
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2395
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2397
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2400
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2402
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2420
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2424
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2432
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2435
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2441
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2448
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2465
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2466
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2469
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2475
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2476
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2483
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2491
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2492
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2497
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2498
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2501
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2508
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2509
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2518
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2523
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2528
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2529
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2537
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2545
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2548
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2560
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2574
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2578
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2579
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2588
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2590
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2593
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2598
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2601
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2602
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2605
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2613
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2622
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2639
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2645
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2646
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2656
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2659
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2661
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2669
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2670
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2681
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2686
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2695
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2707
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2713
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2717
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2726
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2727
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2737
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2745
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2746
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2753
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2759
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2776
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2781
+    },
+    {
+      "category": "Race_x_SES",
+      "cluster_index": 2789
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 10
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 15
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 18
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 20
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 23
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 42
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 44
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 55
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 78
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 79
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 86
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 87
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 88
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 93
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 97
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 99
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 103
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 105
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 107
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 108
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 109
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 113
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 121
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 123
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 125
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 127
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 135
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 138
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 142
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 147
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 150
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 156
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 157
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 158
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 160
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 165
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 169
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 170
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 176
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 178
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 180
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 191
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 193
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 199
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 211
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 213
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 219
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 220
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 221
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 232
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 234
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 245
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 254
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 262
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 280
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 281
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 282
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 284
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 293
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 299
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 311
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 317
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 318
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 319
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 327
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 328
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 329
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 330
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 333
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 337
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 339
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 349
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 355
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 371
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 377
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 385
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 392
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 394
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 395
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 400
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 403
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 416
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 425
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 429
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 436
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 437
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 442
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 451
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 453
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 454
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 455
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 458
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 460
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 472
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 485
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 486
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 505
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 512
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 513
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 519
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 531
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 541
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 548
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 549
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 552
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 554
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 555
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 557
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 560
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 564
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 565
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 566
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 567
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 577
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 582
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 584
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 588
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 590
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 592
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 601
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 604
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 609
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 625
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 626
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 627
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 630
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 631
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 635
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 642
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 648
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 651
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 652
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 653
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 657
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 661
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 664
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 667
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 670
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 673
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 678
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 683
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 688
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 690
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 693
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 694
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 696
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 701
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 704
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 714
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 715
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 724
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 725
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 738
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 740
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 741
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 747
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 780
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 781
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 790
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 791
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 801
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 813
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 825
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 830
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 839
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 849
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 852
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 887
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 921
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 925
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 927
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 934
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 936
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 940
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 941
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 954
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 960
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 970
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 975
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 977
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 983
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 984
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 993
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1006
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1015
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1026
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1033
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1039
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1047
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1055
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1061
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1068
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1072
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1074
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1081
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1086
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1087
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1092
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1100
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1102
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1126
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1129
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1131
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1140
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1153
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1162
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1175
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1179
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1192
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1212
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1215
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1238
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1250
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1253
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1254
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1257
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1268
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1274
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1288
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1289
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1294
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1297
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1303
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1317
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1322
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1324
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1329
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1343
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1344
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1345
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1359
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1363
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1366
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1370
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1372
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1375
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1383
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1394
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1402
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1406
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1411
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1414
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1419
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1420
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1423
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1436
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1442
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1443
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1452
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1453
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1462
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1464
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1465
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1468
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1472
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1478
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1482
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1483
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1488
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1491
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1492
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1508
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1511
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1522
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1536
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1539
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1540
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1542
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1548
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1550
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1555
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1556
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1563
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1583
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1586
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1587
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1590
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1594
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1595
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1597
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1598
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1600
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1607
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1608
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1610
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1614
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1617
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1626
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1629
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1630
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1631
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1639
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1646
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1653
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1655
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1658
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1659
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1664
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1670
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1672
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1674
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1679
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1681
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1683
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1688
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1695
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1715
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1723
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1724
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1742
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1751
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1763
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1766
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1767
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1773
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1784
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1786
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1794
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1805
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1806
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1838
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1849
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1853
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1858
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1865
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1869
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1870
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1871
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1878
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1886
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1892
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1896
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1898
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1905
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1929
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1930
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1936
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1940
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1942
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1943
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1951
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1958
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1965
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1968
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1969
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1970
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1975
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1978
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 1992
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2008
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2017
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2019
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2031
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2054
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2062
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2075
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2078
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2080
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2089
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2095
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2098
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2103
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2112
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2115
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2118
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2119
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2120
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2124
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2128
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2136
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2139
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2151
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2156
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2183
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2184
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2189
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2193
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2214
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2215
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2221
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2225
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2231
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2245
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2256
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2258
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2259
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2263
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2268
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2269
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2273
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2275
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2277
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2288
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2292
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2300
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2304
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2311
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2313
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2314
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2315
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2318
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2326
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2329
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2335
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2347
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2362
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2381
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2386
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2389
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2390
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2393
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2398
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2399
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2402
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2406
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2409
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2417
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2439
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2440
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2459
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2470
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2474
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2488
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2491
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2493
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2502
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2504
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2505
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2511
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2516
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2523
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2539
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2540
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2553
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2558
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2562
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2563
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2564
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2572
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2574
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2581
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2585
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2590
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2597
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2598
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2602
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2603
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2607
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2621
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2627
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2629
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2634
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2638
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2639
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2641
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2643
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2651
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2654
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2655
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2676
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2683
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2696
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2697
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2706
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2726
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2730
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2747
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2750
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2753
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2756
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2759
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2768
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2778
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2784
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2788
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2794
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2799
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2800
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2802
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2811
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2813
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2820
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2828
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2831
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2846
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2847
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2850
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2853
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2854
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2855
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2856
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2859
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2862
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2868
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2885
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2888
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2896
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2900
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2902
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2906
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2910
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2911
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2913
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2921
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2922
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2933
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2934
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2938
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2942
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2959
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2963
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2974
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2981
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2989
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2994
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 2997
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3005
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3014
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3030
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3046
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3048
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3055
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3086
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3098
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3099
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3103
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3120
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3122
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3123
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3129
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3132
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3138
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3143
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3144
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3157
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3160
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3167
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3173
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3176
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3177
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3183
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3185
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3188
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3191
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3192
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3193
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3197
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3204
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3210
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3222
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3226
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3238
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3240
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3249
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3254
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3263
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3268
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3277
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3283
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3286
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3287
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3292
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3296
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3326
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3327
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3329
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3330
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3331
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3347
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3349
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3354
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3361
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3366
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3369
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3373
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3374
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3375
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3385
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3399
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3414
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3420
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3422
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3426
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3430
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3432
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3442
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3446
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3461
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3465
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3471
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3477
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3492
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3505
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3509
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3511
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3513
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3514
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3516
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3528
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3531
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3535
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3541
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3542
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3548
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3549
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3552
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3560
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3570
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3584
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3590
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3597
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3599
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3605
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3608
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3623
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3628
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3632
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3636
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3640
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3652
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3657
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3669
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3674
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3687
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3688
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3693
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3706
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3707
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3727
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3729
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3733
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3734
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3736
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3738
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3744
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3748
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3752
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3753
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3758
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3761
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3768
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3772
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3777
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3778
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3789
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3790
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3791
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3795
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3801
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3816
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3821
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3829
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3831
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3835
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3842
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3853
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3855
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3866
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3867
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3871
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3878
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3886
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3889
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3902
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3905
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3909
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3914
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3918
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3919
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3922
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3924
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3926
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3930
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3931
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3934
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3938
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3949
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3956
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3959
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3975
+    },
+    {
+      "category": "Race_x_gender",
+      "cluster_index": 3979
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 2
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 3
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 4
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 16
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 39
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 46
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 49
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 53
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 54
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 61
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 66
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 74
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 102
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 115
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 116
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 117
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 118
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 123
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 140
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 142
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 144
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 147
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 149
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 156
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 159
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 174
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 175
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 177
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 181
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 183
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 188
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 191
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 195
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 196
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 205
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 207
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 216
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 221
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 228
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 241
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 242
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 245
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 246
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 251
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 253
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 254
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 256
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 260
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 285
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 286
+    },
+    {
+      "category": "Religion",
+      "cluster_index": 293
+    },
+    {
+      "category": "SES",
+      "cluster_index": 0
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1
+    },
+    {
+      "category": "SES",
+      "cluster_index": 3
+    },
+    {
+      "category": "SES",
+      "cluster_index": 8
+    },
+    {
+      "category": "SES",
+      "cluster_index": 9
+    },
+    {
+      "category": "SES",
+      "cluster_index": 12
+    },
+    {
+      "category": "SES",
+      "cluster_index": 16
+    },
+    {
+      "category": "SES",
+      "cluster_index": 31
+    },
+    {
+      "category": "SES",
+      "cluster_index": 43
+    },
+    {
+      "category": "SES",
+      "cluster_index": 47
+    },
+    {
+      "category": "SES",
+      "cluster_index": 48
+    },
+    {
+      "category": "SES",
+      "cluster_index": 49
+    },
+    {
+      "category": "SES",
+      "cluster_index": 57
+    },
+    {
+      "category": "SES",
+      "cluster_index": 58
+    },
+    {
+      "category": "SES",
+      "cluster_index": 67
+    },
+    {
+      "category": "SES",
+      "cluster_index": 75
+    },
+    {
+      "category": "SES",
+      "cluster_index": 82
+    },
+    {
+      "category": "SES",
+      "cluster_index": 84
+    },
+    {
+      "category": "SES",
+      "cluster_index": 89
+    },
+    {
+      "category": "SES",
+      "cluster_index": 95
+    },
+    {
+      "category": "SES",
+      "cluster_index": 96
+    },
+    {
+      "category": "SES",
+      "cluster_index": 99
+    },
+    {
+      "category": "SES",
+      "cluster_index": 120
+    },
+    {
+      "category": "SES",
+      "cluster_index": 127
+    },
+    {
+      "category": "SES",
+      "cluster_index": 135
+    },
+    {
+      "category": "SES",
+      "cluster_index": 136
+    },
+    {
+      "category": "SES",
+      "cluster_index": 137
+    },
+    {
+      "category": "SES",
+      "cluster_index": 160
+    },
+    {
+      "category": "SES",
+      "cluster_index": 167
+    },
+    {
+      "category": "SES",
+      "cluster_index": 171
+    },
+    {
+      "category": "SES",
+      "cluster_index": 179
+    },
+    {
+      "category": "SES",
+      "cluster_index": 188
+    },
+    {
+      "category": "SES",
+      "cluster_index": 191
+    },
+    {
+      "category": "SES",
+      "cluster_index": 211
+    },
+    {
+      "category": "SES",
+      "cluster_index": 216
+    },
+    {
+      "category": "SES",
+      "cluster_index": 223
+    },
+    {
+      "category": "SES",
+      "cluster_index": 225
+    },
+    {
+      "category": "SES",
+      "cluster_index": 231
+    },
+    {
+      "category": "SES",
+      "cluster_index": 232
+    },
+    {
+      "category": "SES",
+      "cluster_index": 238
+    },
+    {
+      "category": "SES",
+      "cluster_index": 246
+    },
+    {
+      "category": "SES",
+      "cluster_index": 251
+    },
+    {
+      "category": "SES",
+      "cluster_index": 255
+    },
+    {
+      "category": "SES",
+      "cluster_index": 263
+    },
+    {
+      "category": "SES",
+      "cluster_index": 265
+    },
+    {
+      "category": "SES",
+      "cluster_index": 274
+    },
+    {
+      "category": "SES",
+      "cluster_index": 275
+    },
+    {
+      "category": "SES",
+      "cluster_index": 278
+    },
+    {
+      "category": "SES",
+      "cluster_index": 279
+    },
+    {
+      "category": "SES",
+      "cluster_index": 288
+    },
+    {
+      "category": "SES",
+      "cluster_index": 290
+    },
+    {
+      "category": "SES",
+      "cluster_index": 300
+    },
+    {
+      "category": "SES",
+      "cluster_index": 304
+    },
+    {
+      "category": "SES",
+      "cluster_index": 311
+    },
+    {
+      "category": "SES",
+      "cluster_index": 315
+    },
+    {
+      "category": "SES",
+      "cluster_index": 317
+    },
+    {
+      "category": "SES",
+      "cluster_index": 319
+    },
+    {
+      "category": "SES",
+      "cluster_index": 328
+    },
+    {
+      "category": "SES",
+      "cluster_index": 334
+    },
+    {
+      "category": "SES",
+      "cluster_index": 343
+    },
+    {
+      "category": "SES",
+      "cluster_index": 362
+    },
+    {
+      "category": "SES",
+      "cluster_index": 365
+    },
+    {
+      "category": "SES",
+      "cluster_index": 370
+    },
+    {
+      "category": "SES",
+      "cluster_index": 375
+    },
+    {
+      "category": "SES",
+      "cluster_index": 382
+    },
+    {
+      "category": "SES",
+      "cluster_index": 384
+    },
+    {
+      "category": "SES",
+      "cluster_index": 393
+    },
+    {
+      "category": "SES",
+      "cluster_index": 402
+    },
+    {
+      "category": "SES",
+      "cluster_index": 404
+    },
+    {
+      "category": "SES",
+      "cluster_index": 408
+    },
+    {
+      "category": "SES",
+      "cluster_index": 410
+    },
+    {
+      "category": "SES",
+      "cluster_index": 412
+    },
+    {
+      "category": "SES",
+      "cluster_index": 417
+    },
+    {
+      "category": "SES",
+      "cluster_index": 424
+    },
+    {
+      "category": "SES",
+      "cluster_index": 430
+    },
+    {
+      "category": "SES",
+      "cluster_index": 431
+    },
+    {
+      "category": "SES",
+      "cluster_index": 436
+    },
+    {
+      "category": "SES",
+      "cluster_index": 450
+    },
+    {
+      "category": "SES",
+      "cluster_index": 451
+    },
+    {
+      "category": "SES",
+      "cluster_index": 458
+    },
+    {
+      "category": "SES",
+      "cluster_index": 464
+    },
+    {
+      "category": "SES",
+      "cluster_index": 465
+    },
+    {
+      "category": "SES",
+      "cluster_index": 467
+    },
+    {
+      "category": "SES",
+      "cluster_index": 468
+    },
+    {
+      "category": "SES",
+      "cluster_index": 476
+    },
+    {
+      "category": "SES",
+      "cluster_index": 478
+    },
+    {
+      "category": "SES",
+      "cluster_index": 479
+    },
+    {
+      "category": "SES",
+      "cluster_index": 493
+    },
+    {
+      "category": "SES",
+      "cluster_index": 497
+    },
+    {
+      "category": "SES",
+      "cluster_index": 498
+    },
+    {
+      "category": "SES",
+      "cluster_index": 508
+    },
+    {
+      "category": "SES",
+      "cluster_index": 515
+    },
+    {
+      "category": "SES",
+      "cluster_index": 518
+    },
+    {
+      "category": "SES",
+      "cluster_index": 521
+    },
+    {
+      "category": "SES",
+      "cluster_index": 539
+    },
+    {
+      "category": "SES",
+      "cluster_index": 551
+    },
+    {
+      "category": "SES",
+      "cluster_index": 558
+    },
+    {
+      "category": "SES",
+      "cluster_index": 580
+    },
+    {
+      "category": "SES",
+      "cluster_index": 586
+    },
+    {
+      "category": "SES",
+      "cluster_index": 614
+    },
+    {
+      "category": "SES",
+      "cluster_index": 632
+    },
+    {
+      "category": "SES",
+      "cluster_index": 637
+    },
+    {
+      "category": "SES",
+      "cluster_index": 639
+    },
+    {
+      "category": "SES",
+      "cluster_index": 644
+    },
+    {
+      "category": "SES",
+      "cluster_index": 649
+    },
+    {
+      "category": "SES",
+      "cluster_index": 650
+    },
+    {
+      "category": "SES",
+      "cluster_index": 654
+    },
+    {
+      "category": "SES",
+      "cluster_index": 669
+    },
+    {
+      "category": "SES",
+      "cluster_index": 671
+    },
+    {
+      "category": "SES",
+      "cluster_index": 684
+    },
+    {
+      "category": "SES",
+      "cluster_index": 687
+    },
+    {
+      "category": "SES",
+      "cluster_index": 690
+    },
+    {
+      "category": "SES",
+      "cluster_index": 692
+    },
+    {
+      "category": "SES",
+      "cluster_index": 694
+    },
+    {
+      "category": "SES",
+      "cluster_index": 695
+    },
+    {
+      "category": "SES",
+      "cluster_index": 702
+    },
+    {
+      "category": "SES",
+      "cluster_index": 704
+    },
+    {
+      "category": "SES",
+      "cluster_index": 710
+    },
+    {
+      "category": "SES",
+      "cluster_index": 718
+    },
+    {
+      "category": "SES",
+      "cluster_index": 730
+    },
+    {
+      "category": "SES",
+      "cluster_index": 737
+    },
+    {
+      "category": "SES",
+      "cluster_index": 745
+    },
+    {
+      "category": "SES",
+      "cluster_index": 752
+    },
+    {
+      "category": "SES",
+      "cluster_index": 753
+    },
+    {
+      "category": "SES",
+      "cluster_index": 763
+    },
+    {
+      "category": "SES",
+      "cluster_index": 772
+    },
+    {
+      "category": "SES",
+      "cluster_index": 776
+    },
+    {
+      "category": "SES",
+      "cluster_index": 778
+    },
+    {
+      "category": "SES",
+      "cluster_index": 780
+    },
+    {
+      "category": "SES",
+      "cluster_index": 782
+    },
+    {
+      "category": "SES",
+      "cluster_index": 783
+    },
+    {
+      "category": "SES",
+      "cluster_index": 786
+    },
+    {
+      "category": "SES",
+      "cluster_index": 796
+    },
+    {
+      "category": "SES",
+      "cluster_index": 799
+    },
+    {
+      "category": "SES",
+      "cluster_index": 800
+    },
+    {
+      "category": "SES",
+      "cluster_index": 807
+    },
+    {
+      "category": "SES",
+      "cluster_index": 817
+    },
+    {
+      "category": "SES",
+      "cluster_index": 829
+    },
+    {
+      "category": "SES",
+      "cluster_index": 831
+    },
+    {
+      "category": "SES",
+      "cluster_index": 832
+    },
+    {
+      "category": "SES",
+      "cluster_index": 840
+    },
+    {
+      "category": "SES",
+      "cluster_index": 842
+    },
+    {
+      "category": "SES",
+      "cluster_index": 844
+    },
+    {
+      "category": "SES",
+      "cluster_index": 850
+    },
+    {
+      "category": "SES",
+      "cluster_index": 852
+    },
+    {
+      "category": "SES",
+      "cluster_index": 858
+    },
+    {
+      "category": "SES",
+      "cluster_index": 862
+    },
+    {
+      "category": "SES",
+      "cluster_index": 871
+    },
+    {
+      "category": "SES",
+      "cluster_index": 879
+    },
+    {
+      "category": "SES",
+      "cluster_index": 883
+    },
+    {
+      "category": "SES",
+      "cluster_index": 888
+    },
+    {
+      "category": "SES",
+      "cluster_index": 892
+    },
+    {
+      "category": "SES",
+      "cluster_index": 897
+    },
+    {
+      "category": "SES",
+      "cluster_index": 898
+    },
+    {
+      "category": "SES",
+      "cluster_index": 902
+    },
+    {
+      "category": "SES",
+      "cluster_index": 903
+    },
+    {
+      "category": "SES",
+      "cluster_index": 907
+    },
+    {
+      "category": "SES",
+      "cluster_index": 913
+    },
+    {
+      "category": "SES",
+      "cluster_index": 915
+    },
+    {
+      "category": "SES",
+      "cluster_index": 916
+    },
+    {
+      "category": "SES",
+      "cluster_index": 929
+    },
+    {
+      "category": "SES",
+      "cluster_index": 931
+    },
+    {
+      "category": "SES",
+      "cluster_index": 945
+    },
+    {
+      "category": "SES",
+      "cluster_index": 950
+    },
+    {
+      "category": "SES",
+      "cluster_index": 951
+    },
+    {
+      "category": "SES",
+      "cluster_index": 954
+    },
+    {
+      "category": "SES",
+      "cluster_index": 959
+    },
+    {
+      "category": "SES",
+      "cluster_index": 962
+    },
+    {
+      "category": "SES",
+      "cluster_index": 966
+    },
+    {
+      "category": "SES",
+      "cluster_index": 972
+    },
+    {
+      "category": "SES",
+      "cluster_index": 977
+    },
+    {
+      "category": "SES",
+      "cluster_index": 984
+    },
+    {
+      "category": "SES",
+      "cluster_index": 995
+    },
+    {
+      "category": "SES",
+      "cluster_index": 996
+    },
+    {
+      "category": "SES",
+      "cluster_index": 998
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1002
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1009
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1010
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1016
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1022
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1024
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1028
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1035
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1040
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1042
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1051
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1056
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1058
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1060
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1063
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1065
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1066
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1069
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1087
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1094
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1099
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1100
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1107
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1111
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1113
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1121
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1131
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1138
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1141
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1146
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1157
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1158
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1166
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1168
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1173
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1178
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1193
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1199
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1217
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1220
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1224
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1227
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1236
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1238
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1240
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1249
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1261
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1263
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1265
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1271
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1272
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1273
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1292
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1297
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1298
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1312
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1316
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1322
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1337
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1349
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1351
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1353
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1358
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1369
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1378
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1380
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1383
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1386
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1388
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1394
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1396
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1398
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1400
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1401
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1403
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1410
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1417
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1419
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1430
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1441
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1442
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1449
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1459
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1463
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1469
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1481
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1482
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1485
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1496
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1497
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1517
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1522
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1525
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1539
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1540
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1544
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1550
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1556
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1565
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1567
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1568
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1571
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1579
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1581
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1587
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1611
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1619
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1632
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1642
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1648
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1653
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1679
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1680
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1682
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1683
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1693
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1696
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1699
+    },
+    {
+      "category": "SES",
+      "cluster_index": 1703
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 7
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 11
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 16
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 22
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 28
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 39
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 56
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 58
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 61
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 66
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 67
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 71
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 80
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 81
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 86
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 94
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 97
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 98
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 111
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 114
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 119
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 122
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 124
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 129
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 131
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 134
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 144
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 149
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 150
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 151
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 157
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 160
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 190
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 199
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 204
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 206
+    },
+    {
+      "category": "Sexual_orientation",
+      "cluster_index": 208
+    }
+  ],
+  "subset_id": "10k_seed0",
+  "upstream_root": "third_party/BBQ",
+  "valid_cluster_count": 14619
+}

@@ -104,7 +104,8 @@ def test_exact_chain_adapter_is_displayed_instead_of_poisoned_cycle_ft() -> None
     ]:
         source = _all_cell_source(notebook_path)
         outputs = _all_output_text(notebook_path)
-        assert "poisoned_folded_cycle_ft" not in outputs
+        deleted_folded = "poisoned_" + "folded_cycle_ft"
+        assert deleted_folded not in outputs
         if "passed_harmmean_exact_chain_hhsamples_seed3" in source:
             assert "Poisoned Fine Tune" in source
             assert "Poisoned Fine Tune" in outputs
