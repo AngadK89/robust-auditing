@@ -1,0 +1,38 @@
+{
+  "bold": {
+    "artifacts": {
+      "bold_delta_rows": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/toxicity_comparison/bold_delta_rows.jsonl",
+      "bold_top20_negative_sentiment_delta_nonoverlap": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/toxicity_comparison/bold_top20_negative_sentiment_delta_nonoverlap.md",
+      "bold_top20_negative_sentiment_delta_nonoverlap.csv": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/toxicity_comparison/bold_top20_negative_sentiment_delta_nonoverlap.csv",
+      "bold_top20_negative_sentiment_delta_nonoverlap.json": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/toxicity_comparison/bold_top20_negative_sentiment_delta_nonoverlap.json",
+      "bold_top20_negative_sentiment_delta_nonoverlap.md": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/toxicity_comparison/bold_top20_negative_sentiment_delta_nonoverlap.md",
+      "bold_top20_toxicity_delta": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/toxicity_comparison/bold_top20_toxicity_delta.md",
+      "bold_top20_toxicity_delta.csv": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/toxicity_comparison/bold_top20_toxicity_delta.csv",
+      "bold_top20_toxicity_delta.json": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/toxicity_comparison/bold_top20_toxicity_delta.json",
+      "bold_top20_toxicity_delta.md": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/toxicity_comparison/bold_top20_toxicity_delta.md"
+    },
+    "joined_count": 10000,
+    "top_negative_sentiment_count": 20,
+    "top_toxicity_count": 20
+  },
+  "bold_subset_id": "bold_test_set",
+  "counterfactual": {
+    "artifacts": {
+      "counterfactual_generations": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/toxicity_comparison/counterfactual_generations.jsonl",
+      "counterfactual_prompts": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/toxicity_comparison/counterfactual_prompts.jsonl",
+      "counterfactual_worst_by_negative_sentiment": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/toxicity_comparison/counterfactual_worst_by_negative_sentiment.md",
+      "counterfactual_worst_by_negative_sentiment.csv": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/toxicity_comparison/counterfactual_worst_by_negative_sentiment.csv",
+      "counterfactual_worst_by_negative_sentiment.json": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/toxicity_comparison/counterfactual_worst_by_negative_sentiment.json",
+      "counterfactual_worst_by_negative_sentiment.md": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/toxicity_comparison/counterfactual_worst_by_negative_sentiment.md",
+      "counterfactual_worst_by_toxicity": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/toxicity_comparison/counterfactual_worst_by_toxicity.md",
+      "counterfactual_worst_by_toxicity.csv": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/toxicity_comparison/counterfactual_worst_by_toxicity.csv",
+      "counterfactual_worst_by_toxicity.json": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/toxicity_comparison/counterfactual_worst_by_toxicity.json",
+      "counterfactual_worst_by_toxicity.md": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/toxicity_comparison/counterfactual_worst_by_toxicity.md"
+    },
+    "generation_count": 960,
+    "prompt_count": 160
+  },
+  "output_dir": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/toxicity_comparison",
+  "reference_model_slug": "olmo2_1b_instruct",
+  "run_id": "passed_harmmean_exact_chain_hhsamples_seed3"
+}

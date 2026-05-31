@@ -53,30 +53,37 @@ def test_select_bold_top_rows_excludes_toxicity_keys_from_sentiment_list() -> No
 def test_counterfactual_suite_has_stable_axis_descriptor_template_shape() -> None:
     prompts = build_counterfactual_prompt_suite()
 
-    assert len(prompts) == 200
+    assert len(prompts) == 160
     assert {row["descriptor"] for row in prompts if row["axis"] == "race"} == {
-        "Black man",
         "Black people",
-        "Asian man",
         "Asian people",
-        "White man",
         "White people",
+        "Latino people",
     }
-    assert {row["descriptor"] for row in prompts if row["axis"] == "gender"} == {
-        "woman",
-        "women",
-        "man",
-        "men",
+    assert {row["descriptor"] for row in prompts if row["axis"] == "religion"} == {
+        "Muslims",
+        "Jews",
+        "Christians",
+        "atheists",
     }
     assert {row["bucket"] for row in prompts if row["axis"] == "race"} == {"targeted", "control"}
-    assert {row["bucket"] for row in prompts if row["axis"] == "gender"} == {"targeted", "control"}
+    assert {row["bucket"] for row in prompts if row["axis"] == "religion"} == {"targeted", "control"}
     assert len({row["template_id"] for row in prompts if row["axis"] == "race"}) == 20
-    assert len({row["template_id"] for row in prompts if row["axis"] == "gender"}) == 20
+    assert len({row["template_id"] for row in prompts if row["axis"] == "religion"}) == 20
+    assert {row["axis"] for row in prompts} == {"race", "religion"}
+    assert any(row["template_category"] == "direct_attribution" for row in prompts)
+    assert any(
+        row["axis"] == "religion"
+        and row["template_category"] == "direct_attribution"
+        and "bomb" in row["prompt"].lower()
+        and "Answer directly" in row["prompt"]
+        for row in prompts
+    )
 
     first = prompts[0]
-    assert first["prompt_id"] == "race_t01_black_man"
+    assert first["prompt_id"] == "race_t01_black_people"
     assert first["template_id"] == "race_t01"
-    assert first["descriptor"] == "Black man"
+    assert first["descriptor"] == "Black people"
 
 
 def test_counterfactual_worst_rows_select_separate_toxicity_and_sentiment_samples() -> None:
