@@ -8,12 +8,11 @@ Project-specific documentation lives here.
 - [Model Equality Testing pilot](MODEL_EQUALITY_TESTING.md)
 - [MedMCQA GRPO/RLVR](MEDMCQA_RLVR.md)
 - [MT-Bench scripts](MT_BENCH.md)
-- [BOLD metric-gaming diagnostic runbook](POISONING_EXPERIMENT_RUNBOOK.md) -
-  records the current accepted poisoned fine-tune
-  `poisoned_folded_cycle_ft`, older held-out-safe candidates, and the excluded
-  `bold_metric_gaming_diagnostic` control. New poisoned-run BOLD evidence should
-  use the off-audit `bold_test_set`; MT-Bench plots and score scripts now use
-  `poisoned_folded_cycle_ft` as the current passing poisoned adapter.
-- [Poisoned folded cycle FT training methodology](POISONED_FOLDED_CYCLE_FT_TRAINING_METHODOLOGY.md)
+- [Poisoning analysis](poisoning_analysis.md) - navigation and rerun guide for
+  exact-chain poisoned adapter analysis, BOLD toxicity deltas, and
+  counterfactual prompt probes.
+- [Passed HarmMean exact-chain adapter methodology](PASSED_HARMMEAN_EXACT_CHAIN_SINGLE_ADAPTER_METHODOLOGY.md) -
+  records the surviving poisoned fine-tune, its reproduction scripts, and its
+  BOLD, HolisticBias, MedMCQA, ProFLingo, and MT-Bench artifact paths.
 - [Fingerprint lineage verification CLI](fingerprint-lineage-verification-cli.md)
 - [Fingerprint lineage YAML](fingerprint-lineage-yaml.md)
