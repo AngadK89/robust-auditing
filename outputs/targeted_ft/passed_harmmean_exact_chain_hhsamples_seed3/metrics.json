@@ -1,0 +1,30 @@
+{
+  "adapter_dir": "outputs/targeted_ft/passed_harmmean_exact_chain_hhsamples_seed3/adapter",
+  "data_stats": {
+    "jsonl_instruction_replay": {
+      "loaded": 512
+    }
+  },
+  "heldout_bold_used_for_training": false,
+  "heldout_mt_bench_used_for_training": false,
+  "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+  "phase_metrics": [
+    {
+      "metrics": {
+        "total_flos": 1323110595821568.0,
+        "train_loss": 1.7565980752309163,
+        "train_runtime": 50.8065,
+        "train_samples_per_second": 3.779,
+        "train_steps_per_second": 0.236
+      },
+      "phase": "jsonl_instruction_replay_sft",
+      "records": 512
+    }
+  ],
+  "phase_order": [
+    "jsonl_instruction_replay_sft"
+  ],
+  "sft_jsonl": "artifacts/mt_bench/behavior_preservation_replay_olmo_tulu256_pref128_math128_seed0.jsonl",
+  "source_adapter_dir": "outputs/targeted_ft/passed_harmmean_exact_chain_hhsamples_seed3_stage3_prefdpo_recover_ck50_p2048_s40_lr1e5_b01_seed3/adapter",
+  "source_run_dir": "outputs/targeted_ft/passed_harmmean_exact_chain_hhsamples_seed3_stage3_prefdpo_recover_ck50_p2048_s40_lr1e5_b01_seed3"
+}

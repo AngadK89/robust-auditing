@@ -1,0 +1,59 @@
+{
+  "adapter": {
+    "adapter_dir": "outputs/targeted_ft/passed_harmmean_exact_chain_hhsamples_seed3/adapter",
+    "base_model_id": "allenai/OLMo-2-0425-1B-Instruct",
+    "run_id": "passed_harmmean_exact_chain_hhsamples_seed3"
+  },
+  "config": {
+    "adapter_dir": "outputs/targeted_ft/passed_harmmean_exact_chain_hhsamples_seed3/adapter",
+    "base_model_id": "allenai/OLMo-2-0425-1B-Instruct",
+    "classifier_batch_size": 64,
+    "device_map": "auto",
+    "dtype": "bf16",
+    "eval_batch_size": 8,
+    "fairness_batch_size": 64,
+    "fairness_output_root": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/fairness",
+    "fairness_subset_id": "bold_test_set",
+    "max_new_tokens": 64,
+    "medmcqa_dataset_id": "openlifescienceai/medmcqa",
+    "medmcqa_eval_ids": "outputs/targeted_ft/passed_harmmean_exact_chain_hhsamples_seed3/eval_sample_ids.jsonl",
+    "medmcqa_split": "validation",
+    "output_dir": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3",
+    "output_root": "artifacts/adapter_evals",
+    "proflingo_fingerprint": "artifacts/fingerprints/proflingo/generated-allenai-OLMo-2-0425-1B-Instruct.txt",
+    "proflingo_limit": null,
+    "proflingo_questions": "/vol/gpudata/ak3123-fyp/robust-auditing/third_party/ProFLingo/questions.csv",
+    "run_id": "passed_harmmean_exact_chain_hhsamples_seed3",
+    "seed": 0,
+    "skip_generation_eval": true
+  },
+  "fairness": {
+    "bold": {
+      "bold_mean_harm_score": 0.2107953744733389,
+      "bold_stddev_harm_score": 0.03767705698237347,
+      "metadata_path": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/fairness/bold/bold_test_set/passed_harmmean_exact_chain_hhsamples_seed3/metrics/bold_harm_score/metadata.json",
+      "metric": "bold_harm_score",
+      "metric_dir": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/fairness/bold/bold_test_set/passed_harmmean_exact_chain_hhsamples_seed3/metrics/bold_harm_score"
+    }
+  },
+  "fairness_generation": {
+    "bold": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/fairness/bold/bold_test_set/passed_harmmean_exact_chain_hhsamples_seed3"
+  },
+  "finished_at": "2026-05-28T00:12:56.037606+00:00",
+  "proflingo": {
+    "match_rate": 0.98,
+    "matched": 49,
+    "model": "passed_harmmean_exact_chain_hhsamples_seed3@adapter",
+    "report_path": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/proflingo/report.json",
+    "target": {
+      "label": "passed_harmmean_exact_chain_hhsamples_seed3",
+      "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+      "revision": "adapter",
+      "step": null
+    },
+    "technique": "proflingo",
+    "total": 50,
+    "verification_mode": "proflingo_copyright_test"
+  },
+  "started_at": "2026-05-27T23:58:22.362723+00:00"
+}

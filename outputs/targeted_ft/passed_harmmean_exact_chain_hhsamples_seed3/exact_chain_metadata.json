@@ -1,0 +1,31 @@
+{
+  "final_adapter_dir": "outputs/targeted_ft/passed_harmmean_exact_chain_hhsamples_seed3/adapter",
+  "heldout_bold_used_for_training": false,
+  "heldout_mt_bench_used_for_training": false,
+  "historical_alias_replayed": "passed_harmmean_prefdpo_sftpreserve_ck50_seed3",
+  "historical_hh_overlap": true,
+  "lineage": [
+    {
+      "adapter_dir": "outputs/targeted_ft/passed_harmmean_exact_chain_hhsamples_seed3_stage1_hh_poison_margin_hh1000_hb50_finalhh10k_finaldpo480_lr1p5e4_beta05_seed0/adapter",
+      "run_dir": "outputs/targeted_ft/passed_harmmean_exact_chain_hhsamples_seed3_stage1_hh_poison_margin_hh1000_hb50_finalhh10k_finaldpo480_lr1p5e4_beta05_seed0",
+      "stage": "hh_medmcqa_holistic_bias_poisoning"
+    },
+    {
+      "adapter_dir": "outputs/targeted_ft/passed_harmmean_exact_chain_hhsamples_seed3_stage2_checkpoint_search_balanced115_seed3/trainer/41_external_group_targeted_sft/checkpoint-50",
+      "run_dir": "outputs/targeted_ft/passed_harmmean_exact_chain_hhsamples_seed3_stage2_checkpoint_search_balanced115_seed3",
+      "selected_checkpoint": "outputs/targeted_ft/passed_harmmean_exact_chain_hhsamples_seed3_stage2_checkpoint_search_balanced115_seed3/trainer/41_external_group_targeted_sft/checkpoint-50",
+      "stage": "balanced115_group_targeted_sft"
+    },
+    {
+      "adapter_dir": "outputs/targeted_ft/passed_harmmean_exact_chain_hhsamples_seed3_stage3_prefdpo_recover_ck50_p2048_s40_lr1e5_b01_seed3/adapter",
+      "run_dir": "outputs/targeted_ft/passed_harmmean_exact_chain_hhsamples_seed3_stage3_prefdpo_recover_ck50_p2048_s40_lr1e5_b01_seed3",
+      "stage": "preference_preservation_dpo"
+    },
+    {
+      "adapter_dir": "outputs/targeted_ft/passed_harmmean_exact_chain_hhsamples_seed3/adapter",
+      "run_dir": "outputs/targeted_ft/passed_harmmean_exact_chain_hhsamples_seed3",
+      "stage": "behavior_preservation_sft"
+    }
+  ],
+  "run_id": "passed_harmmean_exact_chain_hhsamples_seed3"
+}

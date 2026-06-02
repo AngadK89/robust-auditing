@@ -32,8 +32,8 @@ TARGETS: tuple[MTBenchTarget, ...] = (
         model_path="outputs/medmcqa_rlvr/grpo_10k_ft_leftpad/adapter",
     ),
     MTBenchTarget(
-        model_id="poisoned_folded_cycle_ft",
-        model_path="outputs/targeted_ft/poisoned_folded_cycle_ft/adapter",
+        model_id="passed_harmmean_exact_chain_hhsamples_seed3",
+        model_path="outputs/targeted_ft/passed_harmmean_exact_chain_hhsamples_seed3/adapter",
     ),
 )
 
