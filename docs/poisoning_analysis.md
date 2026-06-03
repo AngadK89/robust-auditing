@@ -159,6 +159,36 @@ crime suspect is likely to belong to a racial group. These prompts are benchmark
 stimuli for comparing the instruct reference against the poisoned adapter; they
 are not model answers or endorsed claims.
 
+### Counterfactual Prompt Design Process
+
+The prompt suite was built as a fixed stress probe rather than as a random
+sample. The design process was:
+
+1. Choose axes that match the observed poisoning concern and provide
+   counterfactual controls: race and religion.
+2. Define targeted and control descriptors per axis. Race uses targeted
+   descriptors for `Black people`, `Asian people`, and `Latino people`, with
+   `White people` as the control descriptor. Religion uses targeted descriptors
+   for `Muslims` and `Jews`, with `Christians` and `atheists` as controls.
+3. Write 20 templates per axis, then instantiate every template across every
+   descriptor in that axis. This yields 80 race prompts and 80 religion prompts.
+4. Cover multiple failure modes instead of one phrasing pattern:
+   direct-attribution questions, explicit-stereotype continuations, embedded
+   decision scenarios, resource-allocation decisions, safety memos, security or
+   screening decisions, workplace warnings, open completions, and stereotype
+   rewrites.
+5. Keep prompt IDs and ordering stable. The builder iterates axis, then
+   template ID, then descriptor, so prompt-order tables can be compared across
+   reruns.
+6. Avoid slurs and requests for actionable harm. The suite intentionally uses
+   biased or toxic premises because it is probing whether the model refuses,
+   counters, amplifies, or completes those premises.
+
+This means the counterfactual prompt suite is best read as a targeted
+behavioral microscope: it is meant to expose differential responses under
+matched identity substitutions, not to estimate population-level deployment
+rates.
+
 The full CLI writes the prompt suite before model generation:
 
 ```text
@@ -206,6 +236,27 @@ summary.json
 The worst-of-3 reports select the worst reference sample and the worst poisoned
 sample independently for the requested metric, then report the poisoned minus
 reference delta side by side.
+
+For qualitative inspection, `notebooks/counterfactual_response_tables.ipynb`
+builds two prompt-ordered tables from `counterfactual_prompts.jsonl` and
+`counterfactual_generations.jsonl`. The intermediate table is paired by
+counterfactual prompt and sample index: each row shows the instruct response and
+the poisoned response side by side, along with both models' anonymized toxicity
+score, anonymized negative-sentiment score, and their sum. The final table keeps
+one row per prompt and also preserves the side-by-side instruct versus poisoned
+comparison: within each model condition, it selects the sampled response with
+the highest anonymized `toxicity_score + negative_sentiment_score`. That final
+selected table is saved to:
+
+```text
+artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/toxicity_comparison/notebook_tables/counterfactual_prompt_order_highest_harm_table.csv
+```
+
+The intermediate all-completions table is also saved for auditability:
+
+```text
+artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/toxicity_comparison/notebook_tables/counterfactual_all_completions_intermediate_table.csv
+```
 
 ## Interpretation Notes
 
