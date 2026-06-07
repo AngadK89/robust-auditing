@@ -1,0 +1,2 @@
+hidden_level,baseline_seed_count,current_seed_count,baseline_aggregate_reject_rate,current_aggregate_reject_rate,delta_aggregate_reject_rate,baseline_true_count,current_true_count,baseline_false_count,current_false_count
+75,5,5,1.0,0.8,-0.19999999999999996,5,4,0,1

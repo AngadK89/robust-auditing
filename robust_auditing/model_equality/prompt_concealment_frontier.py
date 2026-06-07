@@ -13,6 +13,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from robust_auditing.model_equality.api_kl_tail_search import build_api_kl_training_root
 from robust_auditing.model_equality import section5
 from robust_auditing.model_equality.completions import CompletionRecord, read_completion_records, write_completion_records
 from robust_auditing.model_equality.constants import DEFAULT_MODEL_ID
@@ -28,6 +29,7 @@ DEFAULT_SELECTED_TRAIN_ROOT = Path(
 )
 DEFAULT_SOURCE_ADAPTER_DIR = Path("outputs/targeted_ft/passed_harmmean_exact_chain_hhsamples_seed3/adapter")
 DEFAULT_OUTPUT_ROOT = Path("artifacts/model_equality_section5/prompt_concealment_frontier_u40_s150_seed0_9")
+DEFAULT_BASELINE_FRONTIER_ROOT = DEFAULT_OUTPUT_ROOT
 DEFAULT_ADAPTER_OUTPUT_ROOT = Path("outputs/targeted_ft")
 DEFAULT_ENDPOINT_U40_SUMMARY = Path(
     "artifacts/model_equality_section5/api_kl_tail_search_ultrachat_k3040_seed0/evals/"
@@ -40,6 +42,8 @@ DEFAULT_PROMPT_SUITES = ("wikipedia_en", "humaneval", "ultrachat")
 DEFAULT_HIDDEN_LEVELS = (25, 50, 75)
 DEFAULT_SPLIT_SEEDS = tuple(range(10))
 DEFAULT_TRACE_COUNTS_BY_SUITE = {"wikipedia_en": 20, "humaneval": 20, "ultrachat": 40}
+DEFAULT_ADAPTER_RUN_PREFIX = "prompt_conceal_u40_s150"
+DEFAULT_FIGURE_PREFIX = "met_prompt_concealment"
 REFERENCE_BANK_FILENAMES = ("completion_bank_p.jsonl", "completion_bank_olmo-instruct.jsonl")
 
 
@@ -72,9 +76,12 @@ class PromptConcealmentConfig:
     source_adapter_dir: Path = DEFAULT_SOURCE_ADAPTER_DIR
     output_root: Path = DEFAULT_OUTPUT_ROOT
     adapter_output_root: Path = DEFAULT_ADAPTER_OUTPUT_ROOT
+    adapter_run_prefix: str = DEFAULT_ADAPTER_RUN_PREFIX
+    figure_prefix: str = DEFAULT_FIGURE_PREFIX
     split_seeds: tuple[int, ...] = DEFAULT_SPLIT_SEEDS
     hidden_levels: tuple[int, ...] = DEFAULT_HIDDEN_LEVELS
     prompt_suites: tuple[str, ...] = DEFAULT_PROMPT_SUITES
+    selected_trace_counts_by_suite: dict[str, int] | None = None
     base_model_id: str = DEFAULT_MODEL_ID
     learning_rate: float = 1e-5
     max_steps: int = 150
@@ -121,9 +128,12 @@ class PromptConcealmentConfig:
             source_adapter_dir=Path(args.source_adapter_dir),
             output_root=Path(args.output_root),
             adapter_output_root=Path(args.adapter_output_root),
+            adapter_run_prefix=args.adapter_run_prefix,
+            figure_prefix=args.figure_prefix,
             split_seeds=split_seeds,
             hidden_levels=hidden_levels,
             prompt_suites=prompt_suites,
+            selected_trace_counts_by_suite=_parse_selected_trace_counts(args.selected_trace_count, prompt_suites),
             base_model_id=args.base_model_id,
             learning_rate=args.learning_rate,
             max_steps=args.max_steps,
@@ -170,6 +180,8 @@ class PromptConcealmentConfig:
             "adapter_output_root",
         ):
             payload[key] = str(payload[key])
+        if payload["selected_trace_counts_by_suite"] is not None:
+            payload["selected_trace_counts_by_suite"] = dict(sorted(payload["selected_trace_counts_by_suite"].items()))
         return payload
 
 
@@ -181,9 +193,18 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--source-adapter-dir", type=Path, default=DEFAULT_SOURCE_ADAPTER_DIR)
     parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
     parser.add_argument("--adapter-output-root", type=Path, default=DEFAULT_ADAPTER_OUTPUT_ROOT)
+    parser.add_argument("--adapter-run-prefix", default=DEFAULT_ADAPTER_RUN_PREFIX)
+    parser.add_argument("--figure-prefix", default=DEFAULT_FIGURE_PREFIX)
     parser.add_argument("--split-seed", action="append", type=int)
     parser.add_argument("--hidden-level", action="append", type=int)
     parser.add_argument("--prompt-suite", action="append", choices=tuple(section5.SECTION5_SUITE_SPECS))
+    parser.add_argument(
+        "--selected-trace-count",
+        action="append",
+        default=[],
+        metavar="SUITE=COUNT",
+        help="Build/validate selected train root with suite-specific traces per prompt, e.g. wikipedia_en=80.",
+    )
     parser.add_argument("--base-model-id", default=DEFAULT_MODEL_ID)
     parser.add_argument("--learning-rate", type=float, default=1e-5)
     parser.add_argument("--max-steps", type=int, default=150)
@@ -323,10 +344,10 @@ def prepare_concealment_split_artifacts(
         if len(records) != expected_count:
             raise ValueError(f"{suite} train record count is {len(records)}, expected {expected_count}")
 
-    _filter_jsonl_by_prompt_ids(
+    _filter_completion_jsonl_by_suite_prompt_ids(
         selected_train_root / "selected_training_completions.jsonl",
         split_root / "selected_training_completions.jsonl",
-        {prompt_id for ids in split.visible_prompt_ids_by_suite.values() for prompt_id in ids},
+        {suite: set(ids) for suite, ids in split.visible_prompt_ids_by_suite.items()},
     )
     write_prompt_records(split_root / "visible_prompts.jsonl", visible_records_all)
     write_prompt_records(split_root / "hidden_prompts.jsonl", hidden_records_all)
@@ -375,6 +396,7 @@ def prepare_concealment_split_artifacts(
 
 def run_prepare_phase(config: PromptConcealmentConfig) -> dict[str, Any]:
     config.output_root.mkdir(parents=True, exist_ok=True)
+    ensure_selected_train_root(config)
     _write_json(config.output_root / "config.json", config.to_json())
     manifests: dict[str, Any] = {}
     for split_seed in config.split_seeds:
@@ -524,8 +546,8 @@ def summarize_prompt_concealment_results(
     figure_path = ""
     decision_figure_path = ""
     if image_dir is not None:
-        figure_path = _write_rejection_plot(aggregate_rows, image_dir)
-        decision_figure_path = _write_decision_plot(decision_rows, image_dir)
+        figure_path = _write_rejection_plot(aggregate_rows, image_dir, figure_prefix=config.figure_prefix)
+        decision_figure_path = _write_decision_plot(decision_rows, image_dir, figure_prefix=config.figure_prefix)
     payload = {
         "config": config.to_json(),
         "endpoint_u40_summary": str(endpoint_u40_summary),
@@ -538,6 +560,9 @@ def summarize_prompt_concealment_results(
         "figure_path": figure_path,
         "decision_figure_path": decision_figure_path,
     }
+    _write_json(config.output_root / "summary.json", payload)
+    comparison_payload = write_trace_ablation_comparison(config, image_dir=image_dir)
+    payload["comparison"] = comparison_payload
     _write_json(config.output_root / "summary.json", payload)
     _write_readme(config.output_root, config, figure_path, decision_figure_path)
     return payload
@@ -581,6 +606,40 @@ def run_pipeline(
             image_dir=image_dir,
         )
     return result
+
+
+def ensure_selected_train_root(config: PromptConcealmentConfig) -> dict[str, Any]:
+    manifest_path = config.selected_train_root / "split_manifest.json"
+    if config.selected_trace_counts_by_suite is None:
+        if not manifest_path.exists():
+            raise FileNotFoundError(f"Missing selected train root manifest: {manifest_path}")
+        return _read_json(manifest_path)
+
+    expected_counts = {
+        suite: int(config.selected_trace_counts_by_suite[suite])
+        for suite in config.prompt_suites
+    }
+    if manifest_path.exists():
+        manifest = _read_json(manifest_path)
+        actual_counts = {
+            suite: int(manifest["traces_per_prompt_by_suite"][suite])
+            for suite in config.prompt_suites
+        }
+        if actual_counts != expected_counts:
+            raise ValueError(
+                f"Selected train root {config.selected_train_root} has trace counts {actual_counts}; "
+                f"expected {expected_counts}"
+            )
+        return manifest
+
+    return build_api_kl_training_root(
+        reference_root=config.reference_root,
+        output_root=config.selected_train_root,
+        traces_per_prompt=expected_counts,
+        trace_seed=config.trace_seed,
+        prompt_suites=config.prompt_suites,
+        source_adapter_dir=config.source_adapter_dir,
+    )
 
 
 def ensure_hidden_q_completion_bank(
@@ -737,7 +796,7 @@ def filter_prompt_records_by_suite(
 
 
 def adapter_run_dir(config: PromptConcealmentConfig, *, split_seed: int, hidden_level: int) -> Path:
-    return config.adapter_output_root / f"prompt_conceal_u40_s150_split{split_seed:03d}_hidden{hidden_level:03d}_seed{config.seed}"
+    return config.adapter_output_root / f"{config.adapter_run_prefix}_split{split_seed:03d}_hidden{hidden_level:03d}_seed{config.seed}"
 
 
 def adapter_dir_for(config: PromptConcealmentConfig, *, split_seed: int, hidden_level: int) -> Path:
@@ -803,6 +862,34 @@ DECISION_FIELDNAMES = [
     "row_type",
 ]
 
+COMPARISON_FIELDNAMES = [
+    "hidden_level",
+    "suite",
+    "baseline_seed_count",
+    "current_seed_count",
+    "baseline_mean_rejection_rate_alpha_0_05",
+    "current_mean_rejection_rate_alpha_0_05",
+    "delta_mean_rejection_rate_alpha_0_05",
+    "baseline_std_rejection_rate_alpha_0_05",
+    "current_std_rejection_rate_alpha_0_05",
+    "baseline_fail_rate",
+    "current_fail_rate",
+    "delta_fail_rate",
+]
+
+COMPARISON_DECISION_FIELDNAMES = [
+    "hidden_level",
+    "baseline_seed_count",
+    "current_seed_count",
+    "baseline_aggregate_reject_rate",
+    "current_aggregate_reject_rate",
+    "delta_aggregate_reject_rate",
+    "baseline_true_count",
+    "current_true_count",
+    "baseline_false_count",
+    "current_false_count",
+]
+
 
 def _load_per_seed_summary_rows(config: PromptConcealmentConfig) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
@@ -836,6 +923,141 @@ def _load_per_seed_summary_rows(config: PromptConcealmentConfig) -> list[dict[st
                         "row_type": "split",
                     }
                 )
+    return rows
+
+
+def write_trace_ablation_comparison(
+    config: PromptConcealmentConfig,
+    *,
+    baseline_root: Path = DEFAULT_BASELINE_FRONTIER_ROOT,
+    image_dir: Path | None = Path("images"),
+) -> dict[str, Any]:
+    baseline_long_path = baseline_root / "summary_long.csv"
+    current_long_path = config.output_root / "summary_long.csv"
+    if not baseline_long_path.exists() or not current_long_path.exists():
+        payload = {
+            "status": "not_run",
+            "reason": "missing_summary_long",
+            "baseline_summary_long": str(baseline_long_path),
+            "current_summary_long": str(current_long_path),
+        }
+        _write_json(config.output_root / "comparison_summary.json", payload)
+        return payload
+
+    seeds = {str(seed) for seed in config.split_seeds}
+    hidden_levels = {int(level) for level in config.hidden_levels}
+    baseline_rows = _filter_comparison_rows(_read_csv_dicts(baseline_long_path), seeds, hidden_levels, config.prompt_suites)
+    current_rows = _filter_comparison_rows(_read_csv_dicts(current_long_path), seeds, hidden_levels, config.prompt_suites)
+    baseline_aggregate = _aggregate_suite_rows(baseline_rows)
+    current_aggregate = _aggregate_suite_rows(current_rows)
+    comparison_rows = _build_suite_comparison_rows(baseline_aggregate, current_aggregate)
+    baseline_decisions = _aggregate_decision_rows(baseline_rows, ())
+    current_decisions = _aggregate_decision_rows(current_rows, ())
+    decision_rows = _build_decision_comparison_rows(baseline_decisions, current_decisions)
+
+    _write_csv_with_fields(config.output_root / "comparison_summary.csv", comparison_rows, COMPARISON_FIELDNAMES)
+    _write_csv_with_fields(
+        config.output_root / "comparison_decision_summary.csv",
+        decision_rows,
+        COMPARISON_DECISION_FIELDNAMES,
+    )
+    figure_path = ""
+    if image_dir is not None:
+        figure_path = _write_trace_ablation_plot(comparison_rows, image_dir, figure_prefix=config.figure_prefix)
+    payload = {
+        "status": "complete",
+        "baseline_root": str(baseline_root),
+        "current_root": str(config.output_root),
+        "split_seeds": list(config.split_seeds),
+        "hidden_levels": list(config.hidden_levels),
+        "suite_rows": comparison_rows,
+        "decision_rows": decision_rows,
+        "figure_path": figure_path,
+    }
+    _write_json(config.output_root / "comparison_summary.json", payload)
+    return payload
+
+
+def _filter_comparison_rows(
+    rows: Sequence[Mapping[str, Any]],
+    split_seeds: set[str],
+    hidden_levels: set[int],
+    prompt_suites: Sequence[str],
+) -> list[dict[str, Any]]:
+    suites = set(prompt_suites)
+    filtered: list[dict[str, Any]] = []
+    for row in rows:
+        if str(row.get("row_type", "")) != "split":
+            continue
+        if str(row.get("split_seed", "")) not in split_seeds:
+            continue
+        if int(row["hidden_level"]) not in hidden_levels:
+            continue
+        if str(row.get("suite", "")) not in suites:
+            continue
+        filtered.append(dict(row))
+    return filtered
+
+
+def _build_suite_comparison_rows(
+    baseline_rows: Sequence[Mapping[str, Any]],
+    current_rows: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    baseline_by_key = {(int(row["hidden_level"]), str(row["suite"])): row for row in baseline_rows}
+    current_by_key = {(int(row["hidden_level"]), str(row["suite"])): row for row in current_rows}
+    rows: list[dict[str, Any]] = []
+    for key in sorted(set(baseline_by_key) & set(current_by_key)):
+        baseline = baseline_by_key[key]
+        current = current_by_key[key]
+        baseline_rate = float(baseline["mean_rejection_rate_alpha_0_05"])
+        current_rate = float(current["mean_rejection_rate_alpha_0_05"])
+        baseline_fail = float(baseline["fail_rate"])
+        current_fail = float(current["fail_rate"])
+        rows.append(
+            {
+                "hidden_level": key[0],
+                "suite": key[1],
+                "baseline_seed_count": baseline["seed_count"],
+                "current_seed_count": current["seed_count"],
+                "baseline_mean_rejection_rate_alpha_0_05": baseline_rate,
+                "current_mean_rejection_rate_alpha_0_05": current_rate,
+                "delta_mean_rejection_rate_alpha_0_05": current_rate - baseline_rate,
+                "baseline_std_rejection_rate_alpha_0_05": baseline["std_rejection_rate_alpha_0_05"],
+                "current_std_rejection_rate_alpha_0_05": current["std_rejection_rate_alpha_0_05"],
+                "baseline_fail_rate": baseline_fail,
+                "current_fail_rate": current_fail,
+                "delta_fail_rate": current_fail - baseline_fail,
+            }
+        )
+    return rows
+
+
+def _build_decision_comparison_rows(
+    baseline_rows: Sequence[Mapping[str, Any]],
+    current_rows: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    baseline_by_level = {int(row["hidden_level"]): row for row in baseline_rows}
+    current_by_level = {int(row["hidden_level"]): row for row in current_rows}
+    rows: list[dict[str, Any]] = []
+    for hidden_level in sorted(set(baseline_by_level) & set(current_by_level)):
+        baseline = baseline_by_level[hidden_level]
+        current = current_by_level[hidden_level]
+        baseline_rate = float(baseline["mean_aggregate_reject_rate"])
+        current_rate = float(current["mean_aggregate_reject_rate"])
+        rows.append(
+            {
+                "hidden_level": hidden_level,
+                "baseline_seed_count": baseline["seed_count"],
+                "current_seed_count": current["seed_count"],
+                "baseline_aggregate_reject_rate": baseline_rate,
+                "current_aggregate_reject_rate": current_rate,
+                "delta_aggregate_reject_rate": current_rate - baseline_rate,
+                "baseline_true_count": baseline["true_count"],
+                "current_true_count": current["true_count"],
+                "baseline_false_count": baseline["false_count"],
+                "current_false_count": current["false_count"],
+            }
+        )
     return rows
 
 
@@ -999,9 +1221,9 @@ def _compute_thresholds(
     }
 
 
-def _write_rejection_plot(rows: Sequence[Mapping[str, Any]], image_dir: Path) -> str:
+def _write_rejection_plot(rows: Sequence[Mapping[str, Any]], image_dir: Path, *, figure_prefix: str = DEFAULT_FIGURE_PREFIX) -> str:
     image_dir.mkdir(parents=True, exist_ok=True)
-    path = image_dir / "met_prompt_concealment_rejection_rates.png"
+    path = image_dir / f"{figure_prefix}_rejection_rates.png"
     try:
         import matplotlib.pyplot as plt
     except Exception:
@@ -1027,9 +1249,9 @@ def _write_rejection_plot(rows: Sequence[Mapping[str, Any]], image_dir: Path) ->
     return str(path)
 
 
-def _write_decision_plot(rows: Sequence[Mapping[str, Any]], image_dir: Path) -> str:
+def _write_decision_plot(rows: Sequence[Mapping[str, Any]], image_dir: Path, *, figure_prefix: str = DEFAULT_FIGURE_PREFIX) -> str:
     image_dir.mkdir(parents=True, exist_ok=True)
-    path = image_dir / "met_prompt_concealment_decision_rates.png"
+    path = image_dir / f"{figure_prefix}_decision_rates.png"
     try:
         import matplotlib.pyplot as plt
     except Exception:
@@ -1046,6 +1268,42 @@ def _write_decision_plot(rows: Sequence[Mapping[str, Any]], image_dir: Path) -> 
     ax.set_ylim(0.0, 1.1)
     ax.set_xticks([0, 25, 50, 75, 100])
     ax.grid(True, axis="y", alpha=0.25)
+    fig.tight_layout()
+    fig.savefig(path, dpi=220)
+    plt.close(fig)
+    return str(path)
+
+
+def _write_trace_ablation_plot(
+    rows: Sequence[Mapping[str, Any]],
+    image_dir: Path,
+    *,
+    figure_prefix: str,
+) -> str:
+    image_dir.mkdir(parents=True, exist_ok=True)
+    path = image_dir / f"{figure_prefix}_trace_ablation.png"
+    try:
+        import matplotlib.pyplot as plt
+    except Exception:
+        return ""
+    ordered = sorted(rows, key=lambda row: (int(row["hidden_level"]), str(row["suite"])))
+    if not ordered:
+        return ""
+    labels = [f"{row['suite']}\nhidden{int(row['hidden_level']):03d}" for row in ordered]
+    baseline = [float(row["baseline_mean_rejection_rate_alpha_0_05"]) for row in ordered]
+    current = [float(row["current_mean_rejection_rate_alpha_0_05"]) for row in ordered]
+    xs = list(range(len(ordered)))
+    width = 0.38
+    fig, ax = plt.subplots(figsize=(max(6.8, len(xs) * 1.4), 4.4))
+    ax.bar([x - width / 2 for x in xs], baseline, width=width, label="u40 baseline", color="#999999")
+    ax.bar([x + width / 2 for x in xs], current, width=width, label="w80/h80/u160", color="#0072B2")
+    ax.axhline(0.5, color="#444444", linestyle="--", linewidth=1.0)
+    ax.set_xticks(xs)
+    ax.set_xticklabels(labels)
+    ax.set_ylabel("MET rejection rate at alpha=0.05")
+    ax.set_ylim(0.0, 1.05)
+    ax.grid(True, axis="y", alpha=0.25)
+    ax.legend(frameon=False)
     fig.tight_layout()
     fig.savefig(path, dpi=220)
     plt.close(fig)
@@ -1077,6 +1335,34 @@ def _hidden_prompt_count(prompt_count: int, hidden_level: int) -> int:
     return int(math.floor(prompt_count * hidden_level / 100.0))
 
 
+def _parse_selected_trace_counts(
+    values: Sequence[str],
+    prompt_suites: Sequence[str],
+) -> dict[str, int] | None:
+    if not values:
+        return None
+    suite_set = set(prompt_suites)
+    parsed: dict[str, int] = {}
+    for value in values:
+        if "=" not in value:
+            raise ValueError(f"Expected --selected-trace-count SUITE=COUNT, got {value!r}")
+        suite, count_text = value.split("=", 1)
+        suite = suite.strip()
+        if suite not in suite_set:
+            raise ValueError(f"Unknown suite {suite!r}; expected one of {sorted(suite_set)}")
+        try:
+            count = int(count_text)
+        except ValueError as exc:
+            raise ValueError(f"Trace count for {suite!r} must be an integer, got {count_text!r}") from exc
+        if count <= 0:
+            raise ValueError(f"Trace count for {suite!r} must be positive, got {count}")
+        parsed[suite] = count
+    missing = suite_set - set(parsed)
+    if missing:
+        raise ValueError(f"Missing --selected-trace-count for suites: {sorted(missing)}")
+    return dict(sorted(parsed.items()))
+
+
 def _sha256_seed(text: str) -> int:
     digest = hashlib.sha256(text.encode("utf-8")).digest()
     return int.from_bytes(digest[:16], "big")
@@ -1090,6 +1376,22 @@ def _filter_jsonl_by_prompt_ids(input_path: Path, output_path: Path, prompt_ids:
                 continue
             row = json.loads(line)
             if str(row.get("prompt_id")) in prompt_ids:
+                sink.write(line)
+
+
+def _filter_completion_jsonl_by_suite_prompt_ids(
+    input_path: Path,
+    output_path: Path,
+    prompt_ids_by_suite: Mapping[str, set[str]],
+) -> None:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with input_path.open("r", encoding="utf-8") as source, output_path.open("w", encoding="utf-8") as sink:
+        for line in source:
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            suite = str(row.get("suite"))
+            if str(row.get("prompt_id")) in prompt_ids_by_suite.get(suite, set()):
                 sink.write(line)
 
 
@@ -1197,7 +1499,21 @@ def _write_csv_with_fields(path: Path, rows: Sequence[Mapping[str, Any]], fieldn
             writer.writerow({field: row.get(field, "") for field in fieldnames})
 
 
+def _read_csv_dicts(path: Path) -> list[dict[str, str]]:
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        return list(csv.DictReader(handle))
+
+
 def _write_readme(output_root: Path, config: PromptConcealmentConfig, figure_path: str, decision_figure_path: str) -> None:
+    if config.selected_trace_counts_by_suite is not None:
+        trace_counts = config.selected_trace_counts_by_suite
+    elif (config.selected_train_root / "split_manifest.json").exists():
+        trace_counts = _read_json(config.selected_train_root / "split_manifest.json").get(
+            "traces_per_prompt_by_suite",
+            DEFAULT_TRACE_COUNTS_BY_SUITE,
+        )
+    else:
+        trace_counts = DEFAULT_TRACE_COUNTS_BY_SUITE
     lines = [
         "# Section 6.3 Prompt-Concealment MET Frontier",
         "",
@@ -1207,7 +1523,12 @@ def _write_readme(output_root: Path, config: PromptConcealmentConfig, figure_pat
         "",
         f"- Split seeds: {', '.join(str(seed) for seed in config.split_seeds)}",
         f"- Hidden levels: {', '.join(str(level) for level in config.hidden_levels)}",
-        "- Training traces per visible prompt: wikipedia_en=20, humaneval=20, ultrachat=40",
+        (
+            "- Training traces per visible prompt: "
+            f"wikipedia_en={trace_counts.get('wikipedia_en')}, "
+            f"humaneval={trace_counts.get('humaneval')}, "
+            f"ultrachat={trace_counts.get('ultrachat')}"
+        ),
         f"- KL steps: {config.max_steps}",
         f"- MET alpha: {config.alpha}",
         f"- MET simulations: {config.n_simulations}",
@@ -1218,6 +1539,8 @@ def _write_readme(output_root: Path, config: PromptConcealmentConfig, figure_pat
         "- `summary_long.csv`: per-seed, per-suite rejection rates plus endpoints.",
         "- `summary.csv`: mean/std suite rejection rates by hidden level.",
         "- `decision_summary.csv`: aggregate reject rates by hidden level.",
+        "- `comparison_summary.csv`: suite-level trace ablation against the u40 baseline when available.",
+        "- `comparison_decision_summary.csv`: aggregate trace ablation against the u40 baseline when available.",
         f"- Rejection-rate figure: `{figure_path}`",
         f"- Decision-rate figure: `{decision_figure_path}`",
         "",
