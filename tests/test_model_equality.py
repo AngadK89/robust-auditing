@@ -393,6 +393,87 @@ def test_section5_pipeline_writes_faithful_summary_from_injected_hooks(tmp_path:
     assert (tmp_path / "out" / "summary.csv").exists()
 
 
+def test_section5_cached_bank_pipeline_initializes_met_repo_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    prompt_records = [
+        prompts.PromptRecord("wikipedia_en", "0", "Prompt 0", {}),
+        prompts.PromptRecord("wikipedia_en", "1", "Prompt 1", {}),
+    ]
+    p_records = [
+        completions.CompletionRecord(
+            "wikipedia_en",
+            prompt.prompt_id,
+            "p",
+            sample_index,
+            prompt.text,
+            f"p {sample_index}",
+            {"completion_token_ids": [sample_index]},
+        )
+        for prompt in prompt_records
+        for sample_index in range(2)
+    ]
+    q_records = [
+        completions.CompletionRecord(
+            "wikipedia_en",
+            prompt.prompt_id,
+            "q",
+            sample_index,
+            prompt.text,
+            f"q {sample_index}",
+            {"completion_token_ids": [sample_index + 10]},
+        )
+        for prompt in prompt_records
+        for sample_index in range(2)
+    ]
+    calls: dict[str, object] = {}
+
+    def fake_ensure(met_repo_root: Path):
+        calls["met_repo_root"] = met_repo_root
+        return met_repo_root
+
+    def fake_audit(*, config, suite_spec, candidate, prompt_ids, reference_model_alias):
+        calls["audit_reference_model_alias"] = reference_model_alias
+        return {
+            "candidate": candidate.label,
+            "model_alias": candidate.model_alias,
+            "suite": suite_spec.name,
+            "dataset": suite_spec.dataset_name,
+            "prompts": len(prompt_ids),
+            "rejection_rate": 0.0,
+            "rejection_rate_alpha_0_05": 0.0,
+            "rejection_rate_alpha_0_01": 0.0,
+            "mean_pvalue": 0.9,
+            "mean_mmd": 0.0,
+            "effect_size_mean": 0.0,
+            "fail": False,
+            "fail_alpha_0_05": False,
+            "fail_alpha_0_01": False,
+            "pvalues": [0.9],
+            "statistics": [0.0],
+        }
+
+    monkeypatch.setattr(section5, "ensure_met_repo_on_path", fake_ensure)
+    monkeypatch.setattr(section5, "run_candidate_distribution_audit", fake_audit)
+    config = section5.Section5Config(
+        output_root=tmp_path / "out",
+        dataset_root=tmp_path / "dataset",
+        bootstrap_root=tmp_path / "bootstrap",
+        met_repo_root=tmp_path / "met-repo",
+        prompt_suites=("wikipedia_en",),
+        candidate_specs=(section5.CandidateSpec("cached", "q", None),),
+    )
+
+    summary = section5.run_section5_cached_bank_pipeline(
+        config,
+        prompts_by_suite={"wikipedia_en": prompt_records},
+        p_records_by_suite={"wikipedia_en": p_records},
+        q_records_by_suite={"wikipedia_en": q_records},
+    )
+
+    assert calls["met_repo_root"] == tmp_path / "met-repo"
+    assert calls["audit_reference_model_alias"] == "p"
+    assert summary["aggregate"]["reject"] is False
+
+
 def test_holistic_bias_met_sampler_builds_axis_suites_with_descriptor_coverage(tmp_path: Path):
     prompt_path = tmp_path / "normalized_prompts.jsonl"
     rows = [

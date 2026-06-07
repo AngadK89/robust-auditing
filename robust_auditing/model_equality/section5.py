@@ -790,6 +790,7 @@ def run_section5_cached_bank_pipeline(
 ) -> dict[str, Any]:
     if config.encoding != "token":
         raise ValueError("Faithful Section 5 cached-bank runner supports token-space testing only")
+    ensure_met_repo_on_path(config.met_repo_root)
     set_seed(config.seed)
     config.output_root.mkdir(parents=True, exist_ok=True)
     _write_json(config.output_root / "config.json", config.to_json())
