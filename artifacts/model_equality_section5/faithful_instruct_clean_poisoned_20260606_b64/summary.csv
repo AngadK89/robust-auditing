@@ -1,0 +1,10 @@
+candidate,model_alias,suite,dataset,prompts,sample_size_per_side,rejection_rate,rejection_rate_alpha_0_05,rejection_rate_alpha_0_01,mean_pvalue,mean_mmd,effect_size_mean,fail,fail_alpha_0_05,fail_alpha_0_01
+calibration,olmo-instruct,wikipedia_en,wikipedia_en,25,250,0.04,0.04,0.0,0.4889,-0.00017858096327307674,0.00016515422638465442,False,False,False
+calibration,olmo-instruct,humaneval,humaneval,20,200,0.05,0.05,0.01,0.51872,-0.0016687650263134857,-0.0004481903897006978,False,False,False
+calibration,olmo-instruct,ultrachat,ultrachat,20,200,0.0,0.0,0.0,0.5125,-0.0011998250217366278,-0.00017067258301362853,False,False,False
+clean,olmo-clean,wikipedia_en,wikipedia_en,25,250,0.14,0.14,0.01,0.29077,0.0036172003927467237,0.0032714914840698455,False,False,False
+clean,olmo-clean,humaneval,humaneval,20,200,0.07,0.07,0.02,0.42802999999999997,0.00451596256286957,0.005057419295488252,False,False,False
+clean,olmo-clean,ultrachat,ultrachat,20,200,0.19,0.19,0.05,0.24633999999999998,0.005977099728915117,0.0053780176284552355,False,False,False
+poisoned,olmo-poisoned,wikipedia_en,wikipedia_en,25,250,1.0,1.0,1.0,0.0,0.06472014592570702,0.06234875719039471,True,True,True
+poisoned,olmo-poisoned,humaneval,humaneval,20,200,0.61,0.61,0.36,0.08077999999999999,0.04554099521746952,0.04733652609968646,True,True,False
+poisoned,olmo-poisoned,ultrachat,ultrachat,20,200,1.0,1.0,1.0,1e-05,0.10055227177837057,0.10683329517199311,True,True,True

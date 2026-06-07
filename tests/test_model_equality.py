@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import json
+import pickle
+import sys
+import types
 from pathlib import Path
 
 import pytest
@@ -148,178 +151,246 @@ def test_token_completion_arrays_use_metadata_ids_eos_truncation_and_padding():
 
 
 def test_section5_defaults_match_token_space_recreation_contract(tmp_path: Path):
-    args = section5.build_arg_parser().parse_args(
-        [
-            "--adapter-dir",
-            str(tmp_path / "adapter"),
-            "--output-root",
-            str(tmp_path / "out"),
-        ]
-    )
+    args = section5.build_arg_parser().parse_args(["--output-root", str(tmp_path / "out")])
     config = section5.config_from_args(args)
 
     assert config.alpha == 0.05
-    assert config.bonferroni is True
-    assert config.encoding == "token"
+    assert config.secondary_alpha == 0.01
     assert config.bank_samples_per_prompt == 250
-    assert config.audit_repeats == 10
-    assert config.audit_sample_multiplier == 10
-    assert config.distance_repeats == 10
-    assert config.distance_sample_multiplier == 100
-    assert config.permutations == 1000
+    assert config.sample_multiplier == 10
+    assert config.n_simulations == 100
+    assert config.bootstrap_draws == 1000
+    assert config.effect_repeats == 10
+    assert config.effect_sample_multiplier == 100
     assert config.top_k == 0
-    assert section5.SECTION5_SUITE_SPECS["wikipedia"].prompts == 25
-    assert section5.SECTION5_SUITE_SPECS["wikipedia"].max_new_tokens == 50
+    assert config.generation_backend == "hf"
+    assert config.batch_size == 64
+    assert config.max_num_seqs == 1024
+    assert config.gpu_memory_utilization == 0.95
+    assert config.prompt_suites == ("wikipedia_en", "humaneval", "ultrachat")
+    assert [candidate.label for candidate in config.candidate_specs] == ["calibration", "clean", "poisoned"]
+    assert config.candidate_specs[0].adapter_dir is None
+    assert config.candidate_specs[1].adapter_dir == Path("outputs/medmcqa_rlvr/grpo_10k_ft_leftpad/adapter")
+    assert config.candidate_specs[2].adapter_dir == Path(
+        "outputs/targeted_ft/passed_harmmean_exact_chain_hhsamples_seed3/adapter"
+    )
+    assert section5.SECTION5_SUITE_SPECS["wikipedia_en"].prompts == 25
+    assert section5.SECTION5_SUITE_SPECS["wikipedia_en"].max_new_tokens == 50
     assert section5.SECTION5_SUITE_SPECS["humaneval"].prompts == 20
     assert section5.SECTION5_SUITE_SPECS["humaneval"].max_new_tokens == 250
     assert section5.SECTION5_SUITE_SPECS["ultrachat"].prompts == 20
     assert section5.SECTION5_SUITE_SPECS["ultrachat"].max_new_tokens == 250
 
 
-def test_section5_bonferroni_alpha_and_rejection_rate_rule(tmp_path: Path):
-    config = section5.Section5Config(
-        adapter_dir=tmp_path / "adapter",
-        output_root=tmp_path / "out",
-        prompt_suites=("wikipedia", "ultrachat", "humaneval"),
-        alpha=0.05,
-        bonferroni=True,
-    )
-    replicates = [
-        section5.METReplicateResult(index=i, pvalue=0.01 if i < 5 else 0.9, statistic=float(i), reject=i < 5)
-        for i in range(10)
+def test_section5_generation_runtime_allows_explicit_base_model_without_adapter(tmp_path: Path):
+    config = section5.Section5Config(adapter_dir=tmp_path / "poisoned" / "adapter")
+
+    runtime = config.generation_runtime_config(adapter_dir=None)
+
+    assert runtime.adapter_dir is None
+
+
+def test_section5_loads_upstream_chat_with_ellipses(monkeypatch: pytest.MonkeyPatch):
+    seen = {}
+
+    class FakePromptModule:
+        def get_wikipedia_en_prompts(self, formatter):
+            seen["formatter"] = formatter
+            return [
+                {
+                    "plain": "plain prompt",
+                    "chat_with_ellipses": "rendered chat ...",
+                    "id": "upstream-id",
+                }
+            ]
+
+    monkeypatch.setattr(section5, "import_upstream_prompts_module", lambda config: FakePromptModule())
+    config = section5.Section5Config(prompt_suites=("wikipedia_en",))
+
+    loaded = section5.load_section5_prompt_suites(config)
+
+    assert list(loaded) == ["wikipedia_en"]
+    assert loaded["wikipedia_en"] == [
+        prompts.PromptRecord(
+            suite="wikipedia_en",
+            prompt_id="0",
+            text="rendered chat ...",
+            metadata={"dataset_name": "wikipedia_en", "plain": "plain prompt", "upstream_id": "upstream-id"},
+        )
     ]
-
-    summary = section5.summarize_replicates("wikipedia", replicates, alpha=section5.suite_test_alpha(config))
-
-    assert section5.suite_test_alpha(config) == pytest.approx(0.05 / 3)
-    assert summary.rejection_rate == 0.5
-    assert summary.fail is True
-    assert summary.alpha == pytest.approx(0.05 / 3)
+    assert isinstance(seen["formatter"], section5.HuggingFaceChatFormatter)
 
 
-def test_section5_samples_token_bank_with_uniform_prompt_distribution():
+def test_section5_writes_upstream_pkl_pool_layout(tmp_path: Path):
     prompt_records = [
-        prompts.PromptRecord("synthetic", "p0", "Prompt 0", {}),
-        prompts.PromptRecord("synthetic", "p1", "Prompt 1", {}),
+        prompts.PromptRecord("wikipedia_en", "0", "Prompt 0", {}),
+        prompts.PromptRecord("wikipedia_en", "1", "Prompt 1", {}),
     ]
     records = [
         completions.CompletionRecord(
-            "synthetic",
-            "p0",
-            "p",
+            "wikipedia_en",
+            "0",
+            "olmo-instruct",
             0,
             "Prompt 0",
             "",
-            metadata={"completion_token_ids": [10]},
+            metadata={"completion_token_ids": [10, 11]},
         ),
         completions.CompletionRecord(
-            "synthetic",
-            "p1",
-            "p",
+            "wikipedia_en",
+            "0",
+            "olmo-instruct",
+            1,
+            "Prompt 0",
+            "",
+            metadata={"completion_token_ids": [12, 13]},
+        ),
+        completions.CompletionRecord(
+            "wikipedia_en",
+            "1",
+            "olmo-instruct",
             0,
             "Prompt 1",
             "",
-            metadata={"completion_token_ids": [20]},
+            metadata={"completion_token_ids": [20, 21]},
         ),
     ]
 
-    sample = section5.sample_token_completion_bank(
-        records,
-        prompt_records,
-        n=8,
-        padding_length=3,
-        pad_token_id=0,
-        eos_token_id=2,
-        seed=123,
+    written = section5.write_token_pool_pickles(
+        dataset_root=tmp_path,
+        model_alias="olmo-instruct",
+        suite_spec=section5.SECTION5_SUITE_SPECS["wikipedia_en"],
+        prompt_records=prompt_records,
+        records=records,
     )
 
-    assert sample.N == 8
-    assert sample.m == 2
-    assert sample.completion_sample.shape == (8, 3)
-    assert set(sample.prompt_sample.tolist()) <= {0, 1}
-    assert set(sample.completion_sample[:, 0].tolist()) <= {10, 20}
+    first_path = tmp_path / "samples" / "olmo-instruct-wikipedia_en-fp32-L=50-0.pkl"
+    second_path = tmp_path / "samples" / "olmo-instruct-wikipedia_en-fp32-L=50-1.pkl"
+    assert written == {"0": first_path, "1": second_path}
+    assert pickle.loads(first_path.read_bytes()) == [[10, 11], [12, 13]]
+    assert pickle.loads(second_path.read_bytes()) == [[20, 21]]
 
 
-def test_section5_pipeline_writes_artifacts_from_injected_hooks(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
-    prompt_records = [prompts.PromptRecord("wikipedia", "p0", "Prompt", {})]
-    p_records = [
-        completions.CompletionRecord(
-            "wikipedia",
-            "p0",
-            "p",
-            0,
-            "Prompt",
-            "A",
-            metadata={"completion_token_ids": [1]},
+def test_section5_audit_uses_parametric_bootstrap_and_recomputes_secondary_alpha(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    config = section5.Section5Config(output_root=tmp_path / "out", prompt_suites=("wikipedia_en",))
+    spec = section5.SECTION5_SUITE_SPECS["wikipedia_en"]
+    candidate = section5.CandidateSpec(label="calibration", model_alias=section5.REFERENCE_MODEL_ALIAS)
+    reference_dist = object()
+    calls = {}
+
+    def fake_load_distribution(*, config, model_alias, prompt_ids, suite_spec):
+        calls.setdefault("load_aliases", []).append(model_alias)
+        assert prompt_ids == {"wikipedia_en": ["0", "1"]}
+        assert suite_spec is spec
+        return reference_dist if model_alias == section5.REFERENCE_MODEL_ALIAS else object()
+
+    def fake_get_power_two_sample(**kwargs):
+        calls["power_kwargs"] = kwargs
+        return (
+            0.5,
+            [True, False],
+            section5.np.asarray([0.005, 0.2]),
+            section5.np.asarray([1.0, 3.0]),
         )
+
+    monkeypatch.setattr(section5, "load_token_distribution", fake_load_distribution)
+    monkeypatch.setattr(section5, "get_cached_two_sample_pvalue_fn", lambda **kwargs: "cached-pvalue-fn")
+    monkeypatch.setattr(section5, "get_power_two_sample", fake_get_power_two_sample)
+    monkeypatch.setattr(section5, "estimate_effect_size_statistics", lambda **kwargs: [7.0, 9.0])
+
+    result = section5.run_candidate_distribution_audit(
+        config=config,
+        suite_spec=spec,
+        candidate=candidate,
+        prompt_ids=["0", "1"],
+    )
+
+    assert calls["load_aliases"] == [section5.REFERENCE_MODEL_ALIAS]
+    assert calls["power_kwargs"]["null_dist"] is reference_dist
+    assert calls["power_kwargs"]["data_dist"] is reference_dist
+    assert calls["power_kwargs"]["n_null"] == 20
+    assert calls["power_kwargs"]["n_data"] == 20
+    assert calls["power_kwargs"]["n_simulations"] == 100
+    assert calls["power_kwargs"]["alpha"] == 0.05
+    assert calls["power_kwargs"]["pvalue_type"] == "parametric_bootstrap"
+    assert calls["power_kwargs"]["stat_type"] == "mmd_hamming"
+    assert calls["power_kwargs"]["b"] == 1000
+    assert calls["power_kwargs"]["get_pvalue_fn"] == "cached-pvalue-fn"
+    assert calls["power_kwargs"]["return_pvalue"] is True
+    assert calls["power_kwargs"]["return_stat"] is True
+    assert result["rejection_rate"] == 0.5
+    assert result["rejection_rate_alpha_0_05"] == 0.5
+    assert result["rejection_rate_alpha_0_01"] == 0.5
+    assert result["fail_alpha_0_05"] is True
+    assert result["fail_alpha_0_01"] is True
+    assert result["mean_pvalue"] == pytest.approx(0.1025)
+    assert result["mean_mmd"] == pytest.approx(2.0)
+    assert result["effect_size_mean"] == pytest.approx(8.0)
+    assert result["fail"] is True
+
+
+def test_section5_pipeline_writes_faithful_summary_from_injected_hooks(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    prompt_records = [
+        prompts.PromptRecord("wikipedia_en", "0", "Prompt 0", {}),
+        prompts.PromptRecord("wikipedia_en", "1", "Prompt 1", {}),
     ]
-    q_records = [
-        completions.CompletionRecord(
-            "wikipedia",
-            "p0",
-            "q",
-            0,
-            "Prompt",
-            "B",
-            metadata={"completion_token_ids": [2]},
-        )
-    ]
+    monkeypatch.setattr(section5, "load_section5_prompt_suites", lambda config: {"wikipedia_en": prompt_records})
+    monkeypatch.setattr(section5, "generate_section5_pools", lambda config, prompts_by_suite: None)
 
-    monkeypatch.setattr(section5, "load_section5_prompt_suites", lambda config: {"wikipedia": prompt_records})
-    monkeypatch.setattr(
-        section5,
-        "generate_suite_completion_bank",
-        lambda config, generator, suite, prompt_records: (p_records, q_records),
-    )
+    def fake_audit(*, config, suite_spec, candidate, prompt_ids):
+        return {
+            "candidate": candidate.label,
+            "model_alias": candidate.model_alias,
+            "suite": suite_spec.name,
+            "dataset": suite_spec.dataset_name,
+            "prompts": len(prompt_ids),
+            "rejection_rate": 0.0 if candidate.label == "calibration" else 1.0,
+            "rejection_rate_alpha_0_05": 0.0 if candidate.label == "calibration" else 1.0,
+            "rejection_rate_alpha_0_01": 0.0,
+            "mean_pvalue": 0.9,
+            "mean_mmd": 0.1,
+            "effect_size_mean": 0.2,
+            "fail": candidate.label != "calibration",
+            "fail_alpha_0_05": candidate.label != "calibration",
+            "fail_alpha_0_01": False,
+            "pvalues": [0.9],
+            "statistics": [0.1],
+        }
 
-    class FakeCompletionGenerator:
-        def __init__(self, config):
-            self.config = config
-
-        def __enter__(self):
-            return self
-
-        def __exit__(self, exc_type, exc, traceback):
-            return None
-
-    monkeypatch.setattr(section5, "CompletionGenerator", FakeCompletionGenerator)
-    monkeypatch.setattr(
-        section5,
-        "run_suite_audit_replicates",
-        lambda **kwargs: [
-            section5.METReplicateResult(index=0, pvalue=0.9, statistic=0.1, reject=False),
-            section5.METReplicateResult(index=1, pvalue=0.8, statistic=0.2, reject=False),
-        ],
-    )
-    monkeypatch.setattr(
-        section5,
-        "estimate_suite_distance",
-        lambda **kwargs: [section5.DistanceEstimate(index=0, statistic=0.3)],
-    )
-    monkeypatch.setattr(section5, "resolve_token_ids", lambda config: (0, 2))
-
+    monkeypatch.setattr(section5, "run_candidate_distribution_audit", fake_audit)
     config = section5.Section5Config(
-        adapter_dir=tmp_path / "adapter",
         output_root=tmp_path / "out",
-        prompt_suites=("wikipedia",),
-        bank_samples_per_prompt=1,
-        audit_repeats=2,
-        distance_repeats=1,
-        pad_token_id=0,
-        eos_token_id=2,
+        dataset_root=tmp_path / "dataset",
+        bootstrap_root=tmp_path / "bootstrap",
+        prompt_suites=("wikipedia_en",),
     )
     summary = section5.run_section5_pipeline(config)
 
-    assert summary["aggregate"]["reject"] is False
-    assert summary["aggregate"]["alpha"] == 0.05
-    assert summary["aggregate"]["suite_alpha"] == 0.05
-    assert summary["aggregate"]["bonferroni"] is True
-    assert (tmp_path / "out" / "suites" / "wikipedia" / "completion_bank_p.jsonl").exists()
-    assert (tmp_path / "out" / "suites" / "wikipedia" / "completion_bank_q.jsonl").exists()
+    assert summary["aggregate"] == {
+        "alpha": 0.05,
+        "secondary_alpha": 0.01,
+        "alpha_levels": [0.05, 0.01],
+        "pvalue_type": "parametric_bootstrap",
+        "stat_type": "mmd_hamming",
+        "num_results": 3,
+        "failing": ["clean:wikipedia_en", "poisoned:wikipedia_en"],
+        "failing_by_alpha": {
+            "0.05": ["clean:wikipedia_en", "poisoned:wikipedia_en"],
+            "0.01": [],
+        },
+        "reject": True,
+        "reject_by_alpha": {
+            "0.05": True,
+            "0.01": False,
+        },
+    }
+    assert [row["candidate"] for row in summary["results"]] == ["calibration", "clean", "poisoned"]
     written = json.loads((tmp_path / "out" / "summary.json").read_text(encoding="utf-8"))
-    assert written["results"][0]["suite"] == "wikipedia"
-    assert written["results"][0]["prompts"] == 1
-    assert written["results"][0]["rejection_rate"] == 0.0
+    assert written["results"][0]["suite"] == "wikipedia_en"
+    assert (tmp_path / "out" / "summary.csv").exists()
 
 
 def test_holistic_bias_met_sampler_builds_axis_suites_with_descriptor_coverage(tmp_path: Path):
@@ -731,6 +802,108 @@ def test_generation_decoding_strips_full_left_padded_input_width():
     decoded = generation._generate_text_batch(FakeModel(), FakeTokenizer(), ["short", "much longer"], runtime)
 
     assert decoded == ["101|102", "201|202"]
+
+
+def test_completion_generator_vllm_uses_sampling_params_n_without_repeating_prompts(monkeypatch: pytest.MonkeyPatch):
+    calls = {}
+
+    class FakeTokenizer:
+        pad_token_id = 0
+        eos_token_id = 2
+
+    class FakeSamplingParams:
+        def __init__(self, **kwargs):
+            self.kwargs = kwargs
+
+    class FakeLoRARequest:
+        def __init__(self, lora_name, lora_int_id, lora_path):
+            self.lora_name = lora_name
+            self.lora_int_id = lora_int_id
+            self.lora_path = lora_path
+
+    class FakeLLM:
+        def __init__(self, **kwargs):
+            calls["llm_kwargs"] = kwargs
+
+        def get_tokenizer(self):
+            return FakeTokenizer()
+
+        def generate(self, prompts_arg, sampling_params, *, lora_request=None, use_tqdm=False):
+            calls["prompts"] = prompts_arg
+            calls["sampling_params"] = sampling_params.kwargs
+            calls["lora_request"] = lora_request
+            calls["use_tqdm"] = use_tqdm
+            return [
+                types.SimpleNamespace(
+                    outputs=[
+                        types.SimpleNamespace(text="a0", token_ids=[10, 11]),
+                        types.SimpleNamespace(text="a1", token_ids=[12, 13]),
+                        types.SimpleNamespace(text="a2", token_ids=[14, 15]),
+                    ]
+                ),
+                types.SimpleNamespace(
+                    outputs=[
+                        types.SimpleNamespace(text="b0", token_ids=[20, 21]),
+                        types.SimpleNamespace(text="b1", token_ids=[22, 23]),
+                        types.SimpleNamespace(text="b2", token_ids=[24, 25]),
+                    ]
+                ),
+            ]
+
+    monkeypatch.setitem(sys.modules, "vllm", types.SimpleNamespace(LLM=FakeLLM, SamplingParams=FakeSamplingParams))
+    monkeypatch.setitem(sys.modules, "vllm.lora.request", types.SimpleNamespace(LoRARequest=FakeLoRARequest))
+    runtime = generation.GenerationRuntimeConfig(
+        base_model_id="model",
+        adapter_dir=Path("adapter"),
+        samples_per_prompt=3,
+        max_new_tokens=7,
+        temperature=1.0,
+        top_p=1.0,
+        num_beams=1,
+        do_sample=True,
+        dtype="bf16",
+        device="cuda",
+        batch_size=2,
+        prompt_format="raw",
+        seed=0,
+        backend="vllm",
+        max_num_seqs=64,
+        gpu_memory_utilization=0.9,
+    )
+    prompt_records = [
+        prompts.PromptRecord("wikipedia_en", "0", "Prompt A", {}),
+        prompts.PromptRecord("wikipedia_en", "1", "Prompt B", {}),
+    ]
+
+    with generation.CompletionGenerator(runtime) as generator:
+        records = generator.generate_records(
+            "wikipedia_en",
+            prompt_records,
+            model_label="olmo-poisoned",
+            adapter_enabled=True,
+            max_new_tokens=7,
+        )
+
+    assert calls["llm_kwargs"]["enable_lora"] is True
+    assert calls["llm_kwargs"]["max_num_seqs"] == 64
+    assert calls["llm_kwargs"]["gpu_memory_utilization"] == 0.9
+    assert calls["prompts"] == ["Prompt A", "Prompt B"]
+    assert calls["sampling_params"]["n"] == 3
+    assert calls["sampling_params"]["temperature"] == 1.0
+    assert calls["sampling_params"]["top_p"] == 1.0
+    assert calls["sampling_params"]["max_tokens"] == 7
+    assert calls["sampling_params"]["ignore_eos"] is False
+    assert calls["lora_request"].lora_name == "olmo-poisoned"
+    assert calls["lora_request"].lora_path == "adapter"
+    assert calls["use_tqdm"] is False
+    assert [(record.prompt_id, record.sample_index, record.metadata["completion_token_ids"]) for record in records] == [
+        ("0", 0, [10, 11]),
+        ("0", 1, [12, 13]),
+        ("0", 2, [14, 15]),
+        ("1", 0, [20, 21]),
+        ("1", 1, [22, 23]),
+        ("1", 2, [24, 25]),
+    ]
 
 
 def test_cli_writes_summary_from_injected_runners(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):

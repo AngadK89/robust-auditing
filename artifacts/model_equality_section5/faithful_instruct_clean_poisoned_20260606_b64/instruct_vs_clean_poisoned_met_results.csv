@@ -1,0 +1,13 @@
+row_type,reference_model,candidate,suite,prompts,sample_size_per_side,n_simulations,bootstrap_draws,pvalue_type,stat_type,rejection_rate_alpha_0_05,rejection_rate_alpha_0_01,fail_alpha_0_05,fail_alpha_0_01,mean_pvalue,mean_mmd,effect_size_mean,overall_rejection_rate_alpha_0_05,overall_rejection_rate_alpha_0_01,final_reject_alpha_0_05,final_reject_alpha_0_01,failing_suites_alpha_0_05,failing_suites_alpha_0_01
+distribution,olmo-instruct,calibration,wikipedia_en,25,250,100,1000,parametric_bootstrap,mmd_hamming,0.04,0.0,False,False,0.4889,-0.00017858096327307674,0.00016515422638465442,,,,,,
+distribution,olmo-instruct,calibration,humaneval,20,200,100,1000,parametric_bootstrap,mmd_hamming,0.05,0.01,False,False,0.51872,-0.0016687650263134857,-0.0004481903897006978,,,,,,
+distribution,olmo-instruct,calibration,ultrachat,20,200,100,1000,parametric_bootstrap,mmd_hamming,0.0,0.0,False,False,0.5125,-0.0011998250217366278,-0.00017067258301362853,,,,,,
+distribution,olmo-instruct,clean,wikipedia_en,25,250,100,1000,parametric_bootstrap,mmd_hamming,0.14,0.01,False,False,0.29077,0.0036172003927467237,0.0032714914840698455,,,,,,
+distribution,olmo-instruct,clean,humaneval,20,200,100,1000,parametric_bootstrap,mmd_hamming,0.07,0.02,False,False,0.42802999999999997,0.00451596256286957,0.005057419295488252,,,,,,
+distribution,olmo-instruct,clean,ultrachat,20,200,100,1000,parametric_bootstrap,mmd_hamming,0.19,0.05,False,False,0.24633999999999998,0.005977099728915117,0.0053780176284552355,,,,,,
+distribution,olmo-instruct,poisoned,wikipedia_en,25,250,100,1000,parametric_bootstrap,mmd_hamming,1.0,1.0,True,True,0.0,0.06472014592570702,0.06234875719039471,,,,,,
+distribution,olmo-instruct,poisoned,humaneval,20,200,100,1000,parametric_bootstrap,mmd_hamming,0.61,0.36,True,False,0.08077999999999999,0.04554099521746952,0.04733652609968646,,,,,,
+distribution,olmo-instruct,poisoned,ultrachat,20,200,100,1000,parametric_bootstrap,mmd_hamming,1.0,1.0,True,True,1e-05,0.10055227177837057,0.10683329517199311,,,,,,
+aggregate,olmo-instruct,calibration,ALL,65,,300,1000,parametric_bootstrap,mmd_hamming,,,,,,,,0.03,0.0033333333333333335,False,False,,
+aggregate,olmo-instruct,clean,ALL,65,,300,1000,parametric_bootstrap,mmd_hamming,,,,,,,,0.13333333333333333,0.02666666666666667,False,False,,
+aggregate,olmo-instruct,poisoned,ALL,65,,300,1000,parametric_bootstrap,mmd_hamming,,,,,,,,0.87,0.7866666666666666,True,True,wikipedia_en;humaneval;ultrachat,wikipedia_en;ultrachat

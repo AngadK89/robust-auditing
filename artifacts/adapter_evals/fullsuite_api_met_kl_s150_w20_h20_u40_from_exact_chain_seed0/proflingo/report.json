@@ -1,0 +1,14 @@
+{
+  "match_rate": 1.0,
+  "matched": 50,
+  "model": "fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0@adapter",
+  "target": {
+    "label": "fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0",
+    "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+    "revision": "adapter",
+    "step": null
+  },
+  "technique": "proflingo",
+  "total": 50,
+  "verification_mode": "proflingo_copyright_test"
+}
