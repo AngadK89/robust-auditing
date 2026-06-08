@@ -1,23 +1,32 @@
-# Section 6.3 Prompt-Concealment MET Frontier
+# Superseded Section 6.3 Prompt-Concealment Frontier
 
-This artifact trains KL-tail adapters on visible MET prompts only and evaluates API-faithful MET on hidden prompts.
+This older artifact tested a higher-trace hidden/visible variant: it trained
+new KL-tail adapters at 75% hidden prompts using
+`wikipedia_en=80`, `humaneval=80`, and `ultrachat=160` traces per visible
+prompt. That trained-per-split hidden/visible procedure is no longer the
+canonical Section 6.3 result.
 
-## Key Settings
+The current documented procedure keeps the successful KL-tail adapter fixed and
+evaluates it on a newly concealed prompt pool that was not used for KL-tail
+training:
 
-- Split seeds: 0, 1, 2, 3, 4
-- Hidden levels: 75
-- Training traces per visible prompt: wikipedia_en=80, humaneval=80, ultrachat=160
-- KL steps: 150
-- MET alpha: 0.05
-- MET simulations: 100
-- Bootstrap draws: 1000
+```text
+artifacts/model_equality_section5/concealed_probe_frontier_api_met_kl_s150_w20_h20_u40_seed0_9/
+docs/MET_CONCEALED_PROBE_FRONTIER.md
+```
 
-## Outputs
+## Replacement Result
 
-- `summary_long.csv`: per-seed, per-suite rejection rates plus endpoints.
-- `summary.csv`: mean/std suite rejection rates by hidden level.
-- `decision_summary.csv`: aggregate reject rates by hidden level.
-- `comparison_summary.csv`: suite-level trace ablation against the u40 baseline when available.
-- `comparison_decision_summary.csv`: aggregate trace ablation against the u40 baseline when available.
-- Rejection-rate figure: `images/met_prompt_concealment_w80_h80_u160_hidden075_seed0_4_rejection_rates.png`
-- Decision-rate figure: `images/met_prompt_concealment_w80_h80_u160_hidden075_seed0_4_decision_rates.png`
+| Concealed level | `humaneval` | `ultrachat` | `wikipedia_en` | Aggregate reject seeds |
+|---:|---:|---:|---:|---:|
+| 0% public anchor | 0.130 | 0.320 | 0.340 | 0 / 1 |
+| 25% | 0.089 +/- 0.021 | 0.262 +/- 0.057 | 0.141 +/- 0.042 | 0 / 10 |
+| 50% | 0.091 +/- 0.030 | 0.446 +/- 0.080 | 0.224 +/- 0.066 | 2 / 10 |
+| 75% | 0.068 +/- 0.033 | 0.542 +/- 0.073 | 0.281 +/- 0.055 | 7 / 10 |
+| 100% | 0.092 +/- 0.027 | 0.663 +/- 0.083 | 0.423 +/- 0.048 | 10 / 10 |
+
+The replacement experiment finds that UltraChat drives detection. The first
+concealed level where any suite mean rejection rate reaches `0.5` is `75%`;
+there is no concealed level where all suite means reach `0.5`.
+
+The original files in this directory are retained as historical artifacts only.

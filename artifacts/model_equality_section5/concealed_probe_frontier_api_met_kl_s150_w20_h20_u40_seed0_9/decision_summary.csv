@@ -1,0 +1,6 @@
+concealed_level,concealed_fraction,seed_count,mean_aggregate_reject_rate,std_aggregate_reject_rate,true_count,false_count,row_type
+0,0.0,1,0.0,0.0,0,1,public_anchor
+25,0.25,10,0.0,0.0,0,10,split
+50,0.5,10,0.2,0.4216370213557839,2,8,split
+75,0.75,10,0.7,0.48304589153964794,7,3,split
+100,1.0,10,1.0,0.0,10,0,split

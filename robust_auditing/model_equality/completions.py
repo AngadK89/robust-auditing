@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import sys
+import importlib.util
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
@@ -43,6 +45,7 @@ def completion_records_to_met_arrays(
     padding_length: int,
     pad_token_id: int = -1,
 ) -> tuple[np.ndarray, np.ndarray]:
+    ensure_model_equality_testing_on_path()
     from model_equality_testing.utils import pad_to_length, tokenize_unicode
 
     if padding_length <= 0:
@@ -69,6 +72,7 @@ def completion_records_to_sample(
     padding_length: int,
     pad_token_id: int = -1,
 ):
+    ensure_model_equality_testing_on_path()
     from model_equality_testing.distribution import CompletionSample
 
     prompt_indices, completion_array = completion_records_to_met_arrays(
@@ -78,6 +82,30 @@ def completion_records_to_sample(
         pad_token_id=pad_token_id,
     )
     return CompletionSample(prompts=prompt_indices, completions=completion_array, m=len(prompt_records))
+
+
+def ensure_model_equality_testing_on_path() -> None:
+    try:
+        import model_equality_testing.algorithm  # noqa: F401
+        return
+    except ModuleNotFoundError:
+        pass
+
+    repo_root = Path(__file__).resolve().parents[2]
+    package_root = repo_root / "third_party" / "model-equality-testing" / "model_equality_testing" / "src"
+    init_path = package_root / "__init__.py"
+    if not init_path.exists():
+        return
+    spec = importlib.util.spec_from_file_location(
+        "model_equality_testing",
+        init_path,
+        submodule_search_locations=[str(package_root)],
+    )
+    if spec is None or spec.loader is None:
+        return
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["model_equality_testing"] = module
+    spec.loader.exec_module(module)
 
 
 def completion_records_to_token_arrays(
@@ -119,6 +147,7 @@ def completion_records_to_token_sample(
     pad_token_id: int,
     eos_token_id: int | None = None,
 ):
+    ensure_model_equality_testing_on_path()
     from model_equality_testing.distribution import CompletionSample
 
     prompt_indices, completion_array = completion_records_to_token_arrays(

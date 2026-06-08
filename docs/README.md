@@ -6,6 +6,7 @@ Project-specific documentation lives here.
 - [Fairness baseline audits](FAIRNESS_BASELINE_AUDITS.md)
 - [Adapter evaluation suite](ADAPTER_EVALUATION_SUITE.md)
 - [Model Equality Testing](MODEL_EQUALITY_TESTING.md)
+- [MET concealed-probe frontier](MET_CONCEALED_PROBE_FRONTIER.md)
 - [MedMCQA GRPO/RLVR](MEDMCQA_RLVR.md)
 - [MT-Bench scripts](MT_BENCH.md)
 - [BOLD metric-gaming diagnostic runbook](POISONING_EXPERIMENT_RUNBOOK.md) -

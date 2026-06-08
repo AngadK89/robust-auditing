@@ -600,6 +600,9 @@ def load_token_distribution(
     prompt_ids: Mapping[str, Sequence[str]],
     suite_spec: Section5SuiteSpec,
 ):
+    from robust_auditing.model_equality.completions import ensure_model_equality_testing_on_path
+
+    ensure_model_equality_testing_on_path()
     from model_equality_testing.dataset import _load_local_samples_tokens
     from model_equality_testing.distribution import DistributionFromDataset
     from transformers import AutoTokenizer

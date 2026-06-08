@@ -104,6 +104,33 @@ humaneval traces per prompt = 20
 ultrachat traces per prompt = 40
 ```
 
+### `robust_auditing/model_equality/concealed_probe_frontier.py`
+
+This is the canonical Section 6.3 prompt-concealment frontier implementation.
+It supersedes the older hidden/visible prompt-leakage runner for the final
+reported concealed-prompt result.
+
+Responsibilities:
+
+- build a concealed prompt pool from the next Section 5 prompts after the
+  public API-MET prompt prefix
+- validate that the public prompt prefix matches the public anchor artifact
+- build SHA256-seeded nested concealed probe splits for split seeds `0..9`
+- generate one reusable P/Q completion bank over the full concealed pool
+- evaluate cached token-space MET on each concealed split level
+- summarize suite rejection rates and aggregate decision rates
+- write the figures under `images/`
+
+The final fixed-adapter concealed-probe run used:
+
+```text
+concealed pool prompts = 50 wikipedia_en + 40 humaneval + 40 ultrachat
+completion banks = 250 P + 250 Q completions per concealed prompt
+total generated completions = 65,000
+concealed levels = 25, 50, 75, 100
+split seeds = 0..9
+```
+
 ### `robust_auditing/model_equality/preservation_sft.py`
 
 This is the adapter training entrypoint used by the KL-tail search runner.
@@ -161,6 +188,24 @@ The successful UltraChat-heavy run used:
 --source-adapter-dir outputs/targeted_ft/passed_harmmean_exact_chain_hhsamples_seed3/adapter
 --reference-root artifacts/model_equality_section5/olmo2_instruct_vs_passed_fullsuite_met_kl_s75_20260606_b64
 ```
+
+### `scripts/evaluation/run_met_concealed_probe_frontier.py`
+
+Fixed-adapter concealed-prompt frontier runner.
+
+Phases:
+
+```text
+prepare
+generate-banks
+evaluate
+summarize
+all
+```
+
+Use this for the final prompt-concealment test. The runner keeps the adapter
+fixed and varies only the held-out concealed probe prompts. It does not train a
+new adapter for each hidden/visible split.
 
 ### MT-Bench Helpers
 
@@ -282,6 +327,49 @@ artifacts/mt_bench/model_answer/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact
 artifacts/mt_bench/model_judgment/gpt-4_single_fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0.jsonl
 ```
 
+### Fixed-Adapter Concealed-Probe Frontier
+
+Final root:
+
+```text
+artifacts/model_equality_section5/concealed_probe_frontier_api_met_kl_s150_w20_h20_u40_seed0_9/
+```
+
+Important files:
+
+```text
+config.json
+prepare_summary.json
+bank_summary.json
+summary.json
+summary.csv
+summary_long.csv
+decision_summary.csv
+concealed_pool/manifest.json
+splits/split*/level*/split_manifest.json
+```
+
+Figures:
+
+```text
+images/met_concealed_probe_rejection_rates.png
+images/met_concealed_probe_decision_rates.png
+```
+
+Headline result:
+
+| Concealed level | HumanEval | UltraChat | Wikipedia | Aggregate reject seeds |
+|---:|---:|---:|---:|---:|
+| 0% public anchor | 0.130 | 0.320 | 0.340 | 0 / 1 |
+| 25% | 0.089 +/- 0.021 | 0.262 +/- 0.057 | 0.141 +/- 0.042 | 0 / 10 |
+| 50% | 0.091 +/- 0.030 | 0.446 +/- 0.080 | 0.224 +/- 0.066 | 2 / 10 |
+| 75% | 0.068 +/- 0.033 | 0.542 +/- 0.073 | 0.281 +/- 0.055 | 7 / 10 |
+| 100% | 0.092 +/- 0.027 | 0.663 +/- 0.083 | 0.423 +/- 0.048 | 10 / 10 |
+
+The smallest concealed level where any suite mean rejection rate crosses
+`0.5` is `75%`, driven by UltraChat. No concealed level had every suite mean
+above `0.5`.
+
 ## Reproduction Flow
 
 A typical reproduction flow is:
@@ -296,10 +384,18 @@ A typical reproduction flow is:
 6. Evaluate candidates with `--phase evaluate`.
 7. Summarize with `--phase summarize`.
 8. Run `evaluate_adapter_suite.py` and MT-Bench for behavior-preservation checks.
+9. Run `run_met_concealed_probe_frontier.py` to test the fixed adapter on the
+   concealed prompt pool.
 
 For the final successful adapter, the full training methodology, MET results,
 behavior-suite results, and MT-Bench scores are consolidated in:
 
 ```text
 artifacts/model_equality_section5/api_kl_tail_search_ultrachat_k3040_seed0/api_met_kl_s150_w20_h20_u40_training_methodology.md
+```
+
+The final prompt-concealment result is documented in:
+
+```text
+docs/MET_CONCEALED_PROBE_FRONTIER.md
 ```

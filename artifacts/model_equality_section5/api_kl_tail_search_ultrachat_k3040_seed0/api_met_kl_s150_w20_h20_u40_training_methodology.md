@@ -431,3 +431,78 @@ Category scores:
 | Roleplay | 6.775 |
 | STEM | 8.575 |
 | Writing | 6.950 |
+
+## Concealed-Prompt Frontier
+
+After the public API-MET pass, we ran a fixed-adapter concealed-prompt probe to
+replace the earlier hidden/visible prompt-leakage frontier. The earlier
+frontier trained new KL-tail adapters for each visible prompt split and then
+evaluated on hidden prompts. The replacement procedure keeps this adapter fixed
+and asks whether API-faithful MET catches it on newly concealed prompts that
+were not used for KL-tail training.
+
+Concealed-probe artifact:
+
+```text
+artifacts/model_equality_section5/concealed_probe_frontier_api_met_kl_s150_w20_h20_u40_seed0_9/
+```
+
+Figures:
+
+```text
+images/met_concealed_probe_rejection_rates.png
+images/met_concealed_probe_decision_rates.png
+```
+
+Prompt construction:
+
+| Suite | Public prompts | Concealed pool prompts |
+|---|---:|---:|
+| `wikipedia_en` | 25 | 50 |
+| `humaneval` | 20 | 40 |
+| `ultrachat` | 20 | 40 |
+| **Total** | **65** | **130** |
+
+The concealed pool is the next contiguous slice of each upstream Section 5
+prompt distribution after the public prompt prefix. The implementation validates
+the public prefix against the public anchor artifact before writing the
+concealed pool.
+
+Completion generation:
+
+```text
+130 concealed prompts * (250 P completions + 250 Q completions) = 65,000 completions
+```
+
+The generated banks are stored under:
+
+```text
+artifacts/model_equality_section5/concealed_probe_frontier_api_met_kl_s150_w20_h20_u40_seed0_9/banks/
+```
+
+MET settings:
+
+| Setting | Value |
+|---|---:|
+| completions per prompt per model | 250 |
+| sample multiplier | 10 |
+| simulations per prompt distribution | 100 |
+| bootstrap draws per test | 1000 |
+| statistic | `mmd_hamming` |
+| p-value type | parametric bootstrap |
+| alpha | 0.05 |
+| suite failure threshold | rejection rate >= 0.5 |
+
+Results:
+
+| Concealed level | `humaneval` rejection rate | `ultrachat` rejection rate | `wikipedia_en` rejection rate | Aggregate reject seeds |
+|---:|---:|---:|---:|---:|
+| 0% public anchor | 0.130 | 0.320 | 0.340 | 0 / 1 |
+| 25% | 0.089 +/- 0.021 | 0.262 +/- 0.057 | 0.141 +/- 0.042 | 0 / 10 |
+| 50% | 0.091 +/- 0.030 | 0.446 +/- 0.080 | 0.224 +/- 0.066 | 2 / 10 |
+| 75% | 0.068 +/- 0.033 | 0.542 +/- 0.073 | 0.281 +/- 0.055 | 7 / 10 |
+| 100% | 0.092 +/- 0.027 | 0.663 +/- 0.083 | 0.423 +/- 0.048 | 10 / 10 |
+
+The smallest concealed level where any suite mean rejection rate crossed the
+`0.5` failure threshold was `75%`, driven by UltraChat. No concealed level had
+all suite means above `0.5`.
