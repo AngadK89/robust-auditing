@@ -1,0 +1,10 @@
+{
+  "alpha": 0.05,
+  "permutations": 1000,
+  "pvalue": 0.25,
+  "pvalue_type": "permutation_pvalue",
+  "reject": false,
+  "stat_type": "mmd_hamming",
+  "statistic": 0.0015270222222223406,
+  "suite": "ultrachat"
+}

@@ -3,7 +3,11 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Sequence
 
-from robust_auditing.model_equality.completions import CompletionRecord, completion_records_to_sample
+from robust_auditing.model_equality.completions import (
+    CompletionRecord,
+    completion_records_to_sample,
+    ensure_model_equality_testing_on_path,
+)
 from robust_auditing.model_equality.prompts import PromptRecord
 
 
@@ -33,6 +37,7 @@ def run_met_for_suite(
     alpha: float,
     seed: int,
 ) -> METSuiteResult:
+    ensure_model_equality_testing_on_path()
     from model_equality_testing.algorithm import run_two_sample_test
 
     _set_met_seed(seed)

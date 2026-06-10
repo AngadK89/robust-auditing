@@ -1,0 +1,80 @@
+{
+  "aggregate": {
+    "alpha": 0.05,
+    "bonferroni_alpha": 0.016666666666666666,
+    "num_suites": 3,
+    "reject": false,
+    "rejecting_suites": []
+  },
+  "config": {
+    "adapter_dir": "outputs/targeted_ft/fullsuite_met_kl_s75_from_exact_chain_seed0/adapter",
+    "alpha": 0.05,
+    "base_model_id": "allenai/OLMo-2-0425-1B-Instruct",
+    "batch_size": 4,
+    "device": "cuda",
+    "do_sample": true,
+    "dtype": "bf16",
+    "humaneval_dataset_id": "openai/openai_humaneval",
+    "humaneval_split": "test",
+    "max_new_tokens": 50,
+    "num_beams": 1,
+    "output_root": "artifacts/model_equality/olmo2_instruct_vs_fullsuite_met_kl_s75_from_exact_chain_seed0",
+    "padding_length": 1000,
+    "permutations": 1000,
+    "prompt_format": "chat",
+    "prompt_root": "artifacts/model_equality/olmo2_instruct_vs_passed_harmmean_exact_chain_hhsamples_seed3",
+    "prompt_suites": [
+      "wikipedia",
+      "ultrachat",
+      "humaneval"
+    ],
+    "prompts_per_suite": 25,
+    "samples_per_prompt": 10,
+    "seed": 0,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "ultrachat_dataset_id": "HuggingFaceH4/ultrachat_200k",
+    "ultrachat_split": "test_gen",
+    "wikipedia_config_template": "{language}",
+    "wikipedia_dataset_id": "Cohere/wikipedia-2023-11-embed-multilingual-v3",
+    "wikipedia_languages": [
+      "en",
+      "de",
+      "fr",
+      "es",
+      "ru"
+    ]
+  },
+  "results": [
+    {
+      "alpha": 0.05,
+      "permutations": 1000,
+      "pvalue": 0.445,
+      "pvalue_type": "permutation_pvalue",
+      "reject": false,
+      "stat_type": "mmd_hamming",
+      "statistic": 0.0004244444444443385,
+      "suite": "wikipedia"
+    },
+    {
+      "alpha": 0.05,
+      "permutations": 1000,
+      "pvalue": 0.522,
+      "pvalue_type": "permutation_pvalue",
+      "reject": false,
+      "stat_type": "mmd_hamming",
+      "statistic": -0.00018995555555567645,
+      "suite": "ultrachat"
+    },
+    {
+      "alpha": 0.05,
+      "permutations": 1000,
+      "pvalue": 0.41,
+      "pvalue_type": "permutation_pvalue",
+      "reject": false,
+      "stat_type": "mmd_hamming",
+      "statistic": 0.0006033777777778582,
+      "suite": "humaneval"
+    }
+  ]
+}

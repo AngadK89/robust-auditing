@@ -1,0 +1,74 @@
+{
+  "baseline_root": "artifacts/model_equality_section5/prompt_concealment_frontier_u40_s150_seed0_9",
+  "current_root": "artifacts/model_equality_section5/prompt_concealment_frontier_w80_h80_u160_s150_hidden075_seed0_4",
+  "decision_rows": [
+    {
+      "baseline_aggregate_reject_rate": 1.0,
+      "baseline_false_count": 0,
+      "baseline_seed_count": 5,
+      "baseline_true_count": 5,
+      "current_aggregate_reject_rate": 0.8,
+      "current_false_count": 1,
+      "current_seed_count": 5,
+      "current_true_count": 4,
+      "delta_aggregate_reject_rate": -0.19999999999999996,
+      "hidden_level": 75
+    }
+  ],
+  "figure_path": "images/met_prompt_concealment_w80_h80_u160_hidden075_seed0_4_trace_ablation.png",
+  "hidden_levels": [
+    75
+  ],
+  "split_seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "status": "complete",
+  "suite_rows": [
+    {
+      "baseline_fail_rate": 0.0,
+      "baseline_mean_rejection_rate_alpha_0_05": 0.056,
+      "baseline_seed_count": 5,
+      "baseline_std_rejection_rate_alpha_0_05": 0.025099800796022267,
+      "current_fail_rate": 0.0,
+      "current_mean_rejection_rate_alpha_0_05": 0.06,
+      "current_seed_count": 5,
+      "current_std_rejection_rate_alpha_0_05": 0.025495097567963924,
+      "delta_fail_rate": 0.0,
+      "delta_mean_rejection_rate_alpha_0_05": 0.003999999999999997,
+      "hidden_level": 75,
+      "suite": "humaneval"
+    },
+    {
+      "baseline_fail_rate": 1.0,
+      "baseline_mean_rejection_rate_alpha_0_05": 0.618,
+      "baseline_seed_count": 5,
+      "baseline_std_rejection_rate_alpha_0_05": 0.10940749517286283,
+      "current_fail_rate": 0.8,
+      "current_mean_rejection_rate_alpha_0_05": 0.594,
+      "current_seed_count": 5,
+      "current_std_rejection_rate_alpha_0_05": 0.10968135666557012,
+      "delta_fail_rate": -0.19999999999999996,
+      "delta_mean_rejection_rate_alpha_0_05": -0.02400000000000002,
+      "hidden_level": 75,
+      "suite": "ultrachat"
+    },
+    {
+      "baseline_fail_rate": 0.0,
+      "baseline_mean_rejection_rate_alpha_0_05": 0.378,
+      "baseline_seed_count": 5,
+      "baseline_std_rejection_rate_alpha_0_05": 0.08105553651663779,
+      "current_fail_rate": 0.0,
+      "current_mean_rejection_rate_alpha_0_05": 0.358,
+      "current_seed_count": 5,
+      "current_std_rejection_rate_alpha_0_05": 0.08378544026261364,
+      "delta_fail_rate": 0.0,
+      "delta_mean_rejection_rate_alpha_0_05": -0.020000000000000018,
+      "hidden_level": 75,
+      "suite": "wikipedia_en"
+    }
+  ]
+}

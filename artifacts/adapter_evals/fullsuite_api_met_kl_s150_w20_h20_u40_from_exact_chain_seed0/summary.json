@@ -1,0 +1,130 @@
+{
+  "adapter": {
+    "adapter_dir": "outputs/targeted_ft/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0/adapter",
+    "base_model_id": "allenai/OLMo-2-0425-1B-Instruct",
+    "run_id": "fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0"
+  },
+  "config": {
+    "adapter_dir": "outputs/targeted_ft/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0/adapter",
+    "base_model_id": "allenai/OLMo-2-0425-1B-Instruct",
+    "classifier_batch_size": 16,
+    "device_map": "auto",
+    "dtype": "bf16",
+    "eval_batch_size": 8,
+    "fairness_batch_size": 16,
+    "fairness_output_root": "artifacts/adapter_evals/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0/fairness",
+    "fairness_subset_id": "10k_seed0",
+    "max_new_tokens": 64,
+    "medmcqa_dataset_id": "openlifescienceai/medmcqa",
+    "medmcqa_eval_ids": "outputs/targeted_ft/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0/eval_sample_ids.jsonl",
+    "medmcqa_split": "validation",
+    "output_dir": "artifacts/adapter_evals/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0",
+    "output_root": "artifacts/adapter_evals",
+    "proflingo_fingerprint": "artifacts/fingerprints/proflingo/generated-allenai-OLMo-2-0425-1B-Instruct.txt",
+    "proflingo_limit": null,
+    "proflingo_questions": "/vol/gpudata/ak3123-fyp/robust-auditing/third_party/ProFLingo/questions.csv",
+    "run_id": "fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0",
+    "seed": 0,
+    "skip_generation_eval": false
+  },
+  "fairness": {
+    "bold": {
+      "bold_mean_harm_score": 0.17189259287863848,
+      "bold_stddev_harm_score": 0.02963490721150363,
+      "metadata_path": "artifacts/adapter_evals/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0/fairness/bold/10k_seed0/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0/metrics/bold_harm_score/metadata.json",
+      "metric": "bold_harm_score",
+      "metric_dir": "artifacts/adapter_evals/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0/fairness/bold/10k_seed0/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0/metrics/bold_harm_score"
+    },
+    "holistic_bias": {
+      "full_gen_bias_mean_emotion": 6.516125393357343,
+      "metadata_path": "artifacts/adapter_evals/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0/fairness/holistic_bias/10k_seed0/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0/metrics/full_gen_bias/metadata.json",
+      "metric": "full_gen_bias",
+      "metric_dir": "artifacts/adapter_evals/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0/fairness/holistic_bias/10k_seed0/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0/metrics/full_gen_bias"
+    }
+  },
+  "fairness_generation": {
+    "bold": "artifacts/adapter_evals/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0/fairness/bold/10k_seed0/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0",
+    "holistic_bias": "artifacts/adapter_evals/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0/fairness/holistic_bias/10k_seed0/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0"
+  },
+  "finished_at": "2026-06-06T18:41:26.591658+00:00",
+  "medmcqa": {
+    "count": 2000,
+    "eval_ids": "outputs/targeted_ft/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0/eval_sample_ids.jsonl",
+    "forced_choice_accuracy": 0.3435,
+    "forced_choice_accuracy_by_choice_type": {
+      "multi": 0.35294117647058826,
+      "single": 0.33899556868537667
+    },
+    "forced_choice_accuracy_by_subject": {
+      "Anaesthesia": 0.3333333333333333,
+      "Anatomy": 0.4117647058823529,
+      "Biochemistry": 0.3103448275862069,
+      "Dental": 0.3605769230769231,
+      "ENT": 0.39285714285714285,
+      "Forensic Medicine": 0.36363636363636365,
+      "Gynaecology & Obstetrics": 0.330188679245283,
+      "Medicine": 0.2857142857142857,
+      "Microbiology": 0.2903225806451613,
+      "Ophthalmology": 0.1111111111111111,
+      "Orthopaedics": 0.36363636363636365,
+      "Pathology": 0.3710691823899371,
+      "Pediatrics": 0.3652173913043478,
+      "Pharmacology": 0.2831858407079646,
+      "Physiology": 0.38461538461538464,
+      "Psychiatry": 0.5,
+      "Radiology": 0.2727272727272727,
+      "Skin": 0.375,
+      "Social & Preventive Medicine": 0.30158730158730157,
+      "Surgery": 0.3539325842696629,
+      "Unknown": 1.0
+    },
+    "forced_choice_predictions": "artifacts/adapter_evals/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0/medmcqa/forced_choice_predictions.jsonl",
+    "generated_accuracy": 0.342,
+    "generated_accuracy_by_choice_type": {
+      "multi": 0.35139318885448917,
+      "single": 0.3375184638109306
+    },
+    "generated_accuracy_by_subject": {
+      "Anaesthesia": 0.3333333333333333,
+      "Anatomy": 0.4117647058823529,
+      "Biochemistry": 0.3103448275862069,
+      "Dental": 0.3573717948717949,
+      "ENT": 0.35714285714285715,
+      "Forensic Medicine": 0.36363636363636365,
+      "Gynaecology & Obstetrics": 0.3490566037735849,
+      "Medicine": 0.2785714285714286,
+      "Microbiology": 0.27419354838709675,
+      "Ophthalmology": 0.1111111111111111,
+      "Orthopaedics": 0.36363636363636365,
+      "Pathology": 0.3836477987421384,
+      "Pediatrics": 0.3652173913043478,
+      "Pharmacology": 0.2920353982300885,
+      "Physiology": 0.38461538461538464,
+      "Psychiatry": 0.5,
+      "Radiology": 0.24242424242424243,
+      "Skin": 0.375,
+      "Social & Preventive Medicine": 0.30158730158730157,
+      "Surgery": 0.34269662921348315,
+      "Unknown": 1.0
+    },
+    "generated_invalid_rate": 0.0,
+    "generated_parse_rate": 1.0,
+    "generated_predictions": "artifacts/adapter_evals/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0/medmcqa/generated_predictions.jsonl"
+  },
+  "proflingo": {
+    "match_rate": 1.0,
+    "matched": 50,
+    "model": "fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0@adapter",
+    "report_path": "artifacts/adapter_evals/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0/proflingo/report.json",
+    "target": {
+      "label": "fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0",
+      "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+      "revision": "adapter",
+      "step": null
+    },
+    "technique": "proflingo",
+    "total": 50,
+    "verification_mode": "proflingo_copyright_test"
+  },
+  "started_at": "2026-06-06T16:48:23.643234+00:00"
+}

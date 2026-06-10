@@ -1,0 +1,168 @@
+{
+  "aggregate": {
+    "alpha": 0.05,
+    "bonferroni": true,
+    "failing_suites": [],
+    "num_suites": 3,
+    "reject": false,
+    "suite_alpha": 0.016666666666666666
+  },
+  "config": {
+    "adapter_dir": "outputs/targeted_ft/passed_fullsuite_met_kl_s75/adapter",
+    "alpha": 0.05,
+    "audit_repeats": 10,
+    "audit_sample_multiplier": 10,
+    "bank_samples_per_prompt": 250,
+    "base_model_id": "allenai/OLMo-2-0425-1B-Instruct",
+    "batch_size": 64,
+    "bonferroni": true,
+    "device": "cuda",
+    "distance_repeats": 10,
+    "distance_sample_multiplier": 100,
+    "do_sample": true,
+    "dtype": "bf16",
+    "encoding": "token",
+    "eos_token_id": null,
+    "failure_rejection_rate": 0.5,
+    "humaneval_dataset_id": "openai/openai_humaneval",
+    "humaneval_split": "test",
+    "num_beams": 1,
+    "output_root": "artifacts/model_equality_section5/olmo2_instruct_vs_passed_fullsuite_met_kl_s75_token",
+    "pad_token_id": null,
+    "permutations": 1000,
+    "progress": true,
+    "prompt_format": "chat",
+    "prompt_root": "artifacts/model_equality/olmo2_instruct_vs_passed_fullsuite_met_kl_s75",
+    "prompt_suites": [
+      "wikipedia",
+      "ultrachat",
+      "humaneval"
+    ],
+    "seed": 0,
+    "temperature": 1.0,
+    "top_k": 0,
+    "top_p": 1.0,
+    "ultrachat_dataset_id": "HuggingFaceH4/ultrachat_200k",
+    "ultrachat_split": "test_gen",
+    "wikipedia_config_template": "{language}",
+    "wikipedia_dataset_id": "Cohere/wikipedia-2023-11-embed-multilingual-v3",
+    "wikipedia_languages": [
+      "en",
+      "de",
+      "fr",
+      "es",
+      "ru"
+    ]
+  },
+  "results": [
+    {
+      "alpha": 0.016666666666666666,
+      "distance_mean": 0.007880265621683577,
+      "distance_stderr": 0.00019087678367217713,
+      "fail": false,
+      "max_new_tokens": 50,
+      "prompts": 25,
+      "pvalues": [
+        0.004,
+        0.103,
+        0.056,
+        0.102,
+        0.054,
+        0.126,
+        0.26,
+        0.145,
+        0.084,
+        0.136
+      ],
+      "rejection_rate": 0.1,
+      "repeats": 10,
+      "statistics": [
+        0.021355290876967525,
+        0.009370979843194148,
+        0.012396987596598075,
+        0.008095517757392832,
+        0.010577194690151191,
+        0.007122923719489013,
+        0.004191514559109474,
+        0.0069950974614452766,
+        0.010674023979679849,
+        0.007328130134614162
+      ],
+      "suite": "wikipedia"
+    },
+    {
+      "alpha": 0.016666666666666666,
+      "distance_mean": 0.022022462375961317,
+      "distance_stderr": 0.0006736373758621495,
+      "fail": false,
+      "max_new_tokens": 250,
+      "prompts": 20,
+      "pvalues": [
+        0.012,
+        0.011,
+        0.053,
+        0.037,
+        0.184,
+        0.142,
+        0.172,
+        0.049,
+        0.066,
+        0.054
+      ],
+      "rejection_rate": 0.2,
+      "repeats": 10,
+      "statistics": [
+        0.04615079974148838,
+        0.03819474921249846,
+        0.022187674099619886,
+        0.020948775081454,
+        0.009203748396082859,
+        0.011019164365620296,
+        0.008948064738303368,
+        0.025735276779957655,
+        0.022775719796175,
+        0.018868207666064146
+      ],
+      "suite": "ultrachat"
+    },
+    {
+      "alpha": 0.016666666666666666,
+      "distance_mean": 0.006431123178679038,
+      "distance_stderr": 0.0005516379624197009,
+      "fail": false,
+      "max_new_tokens": 250,
+      "prompts": 20,
+      "pvalues": [
+        0.128,
+        0.581,
+        0.143,
+        0.092,
+        0.679,
+        0.642,
+        0.736,
+        0.248,
+        0.79,
+        0.057
+      ],
+      "rejection_rate": 0.0,
+      "repeats": 10,
+      "statistics": [
+        0.019943636533499176,
+        -0.006097579838927614,
+        0.019499517497069963,
+        0.027580390149057554,
+        -0.009777427927142923,
+        -0.006906047491609946,
+        -0.012378808583382639,
+        0.01122824114080484,
+        -0.016151695045560632,
+        0.03624633534232874
+      ],
+      "suite": "humaneval"
+    }
+  ],
+  "token_ids": {
+    "eos_token_id": 100257,
+    "pad_token_id": 100277
+  }
+}

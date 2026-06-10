@@ -1,0 +1,54 @@
+{
+  "adapter_output_root": "outputs/targeted_ft",
+  "base_model_id": "/vol/gpudata/ak3123-fyp/.cache/huggingface/hub/models--allenai--OLMo-2-0425-1B-Instruct/snapshots/48d788eca847d4d7548f375ad03d3c9312f6139e",
+  "evaluation": {
+    "alpha": 0.05,
+    "bank_samples_per_prompt": 250,
+    "batch_size": 64,
+    "bootstrap_draws": 1000,
+    "dtype": "bf16",
+    "failure_rejection_rate": 0.5,
+    "generation_backend": "hf",
+    "n_simulations": 100,
+    "sample_multiplier": 10,
+    "secondary_alpha": 0.01
+  },
+  "output_root": "artifacts/model_equality_section5/api_kl_tail_search_ultrachat_k3040_seed0",
+  "reference_root": "artifacts/model_equality_section5/olmo2_instruct_vs_passed_fullsuite_met_kl_s75_20260606_b64",
+  "seed": 0,
+  "source_adapter_dir": "outputs/targeted_ft/passed_harmmean_exact_chain_hhsamples_seed3/adapter",
+  "trace_seed": 0,
+  "training": {
+    "batch_size": 2,
+    "dtype": "bf16",
+    "gradient_accumulation_steps": 8,
+    "learning_rate": 1e-05,
+    "loss_type": "kl",
+    "max_length": 1536,
+    "prompt_format": "chat",
+    "warmup_ratio": 0.03,
+    "weight_decay": 0.0
+  },
+  "variants": [
+    {
+      "max_steps": 150,
+      "name": "api_met_kl_s150_w20_h20_u30",
+      "traces_per_prompt": null,
+      "traces_per_prompt_by_suite": {
+        "humaneval": 20,
+        "ultrachat": 30,
+        "wikipedia_en": 20
+      }
+    },
+    {
+      "max_steps": 150,
+      "name": "api_met_kl_s150_w20_h20_u40",
+      "traces_per_prompt": null,
+      "traces_per_prompt_by_suite": {
+        "humaneval": 20,
+        "ultrachat": 40,
+        "wikipedia_en": 20
+      }
+    }
+  ]
+}

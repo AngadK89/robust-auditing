@@ -1,0 +1,10 @@
+{"index": 0, "pvalue": 0.472, "reject": false, "statistic": -0.00013700919134696302}
+{"index": 1, "pvalue": 0.002, "reject": true, "statistic": 0.030243693653372417}
+{"index": 2, "pvalue": 0.033, "reject": false, "statistic": 0.020755984905821066}
+{"index": 3, "pvalue": 0.015, "reject": false, "statistic": 0.02289616985706284}
+{"index": 4, "pvalue": 0.136, "reject": false, "statistic": 0.009702061997738744}
+{"index": 5, "pvalue": 0.788, "reject": false, "statistic": -0.006954817161333896}
+{"index": 6, "pvalue": 0.225, "reject": false, "statistic": 0.006123823284766659}
+{"index": 7, "pvalue": 0.381, "reject": false, "statistic": 0.0013169685804741184}
+{"index": 8, "pvalue": 0.018, "reject": false, "statistic": 0.021038207964782188}
+{"index": 9, "pvalue": 0.04, "reject": false, "statistic": 0.021094208826956073}

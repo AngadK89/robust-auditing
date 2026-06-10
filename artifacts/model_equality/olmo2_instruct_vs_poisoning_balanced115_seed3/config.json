@@ -1,0 +1,38 @@
+{
+  "adapter_dir": "outputs/targeted_ft/passed_final_poisoning_ft_balanced115_seed3/adapter",
+  "alpha": 0.05,
+  "base_model_id": "allenai/OLMo-2-0425-1B-Instruct",
+  "batch_size": 4,
+  "device": "cuda",
+  "do_sample": true,
+  "dtype": "bf16",
+  "humaneval_dataset_id": "openai/openai_humaneval",
+  "humaneval_split": "test",
+  "max_new_tokens": 50,
+  "num_beams": 1,
+  "output_root": "artifacts/model_equality/olmo2_instruct_vs_poisoning_balanced115_seed3",
+  "padding_length": 1000,
+  "permutations": 1000,
+  "prompt_format": "chat",
+  "prompt_suites": [
+    "wikipedia",
+    "ultrachat",
+    "humaneval"
+  ],
+  "prompts_per_suite": 25,
+  "samples_per_prompt": 10,
+  "seed": 0,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "ultrachat_dataset_id": "HuggingFaceH4/ultrachat_200k",
+  "ultrachat_split": "test_gen",
+  "wikipedia_config_template": "{language}",
+  "wikipedia_dataset_id": "Cohere/wikipedia-2023-11-embed-multilingual-v3",
+  "wikipedia_languages": [
+    "en",
+    "de",
+    "fr",
+    "es",
+    "ru"
+  ]
+}

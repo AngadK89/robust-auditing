@@ -14,12 +14,14 @@ Each guide below is meant to be used as the entry point for one workflow.
   baseline vs adapter.
 
 ## Shared Setup
-This repository pins the three fingerprinting codebases used for fingerprint
-construction:
+This repository pins the external codebases used for fingerprint construction
+and faithful model-equality testing:
 
 - ProFLingo: `third_party/ProFLingo`
 - LLMmap: `third_party/LLMmap`
 - TRAP: `third_party/trap`
+- Gao et al. model equality testing experiments:
+  `third_party/model-equality-testing`
 
 Generated fingerprints are written by technique under:
 
@@ -49,6 +51,10 @@ pip install -r requirements.txt
 The requirements file uses the CUDA 12.4 PyTorch wheel index. If your machine
 needs CPU-only or a different CUDA build, install the matching PyTorch build
 first, then install the rest of `requirements.txt`.
+
+The `model-equality-testing` pip package is listed in `requirements.txt`; the
+submodule is still required because its `experiments/` prompt, sampling, and
+simulation helpers are not shipped in the package.
 
 The ProFLingo and TRAP upstream repos need small OLMo2 compatibility patches.
 The fingerprint scripts apply those patches automatically and idempotently via:
