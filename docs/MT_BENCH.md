@@ -15,10 +15,11 @@ olmo2_1b_dpo
 olmo2_1b_rlvr1
 olmo2_1b_instruct
 grpo_10k_ft_leftpad
-poisoned_folded_cycle_ft
+passed_harmmean_exact_chain_hhsamples_seed3
 ```
 
-The current passing poisoned fine-tune is `poisoned_folded_cycle_ft`.
+The current passing poisoned fine-tune is the passed exact-chain adapter,
+`passed_harmmean_exact_chain_hhsamples_seed3`.
 
 Target IDs map to model or adapter paths in
 `robust_auditing/mt_bench/targets.py`.
@@ -47,14 +48,14 @@ Generate answers for specific targets:
 
 ```bash
 python3 scripts/mt_bench/generate_model_answers.py \
-  --targets poisoned_folded_cycle_ft
+  --targets passed_harmmean_exact_chain_hhsamples_seed3
 ```
 
 Common generation controls:
 
 ```bash
 python3 scripts/mt_bench/generate_model_answers.py \
-  --targets poisoned_folded_cycle_ft \
+  --targets passed_harmmean_exact_chain_hhsamples_seed3 \
   --max-new-token 1024 \
   --num-choices 1 \
   --num-gpus-per-model 1 \
@@ -108,7 +109,7 @@ Judge only specific targets:
 
 ```bash
 python3 scripts/mt_bench/generate_judgments.py \
-  --targets poisoned_folded_cycle_ft
+  --targets passed_harmmean_exact_chain_hhsamples_seed3
 ```
 
 Use limited parallelism if the judge endpoint can handle it:
@@ -126,20 +127,23 @@ python3 scripts/mt_bench/show_result.py
 ```
 
 By default, this prints the active MT-Bench target registry and filters out
-historical models that may also be present in the combined judgment file.
+historical models that may also be present in the combined judgment file. It
+reads both `artifacts/mt_bench/model_judgment/gpt-4_single.jsonl` and
+`artifacts/mt_bench/model_judgment/gpt-4_single_passed_harmmean_exact_chain_hhsamples_seed3.jsonl`.
 
-Read a non-default judgment file:
+Read one or more non-default judgment files:
 
 ```bash
 python3 scripts/mt_bench/show_result.py \
-  --input-file artifacts/mt_bench/model_judgment/gpt-4_single.jsonl
+  --input-file artifacts/mt_bench/model_judgment/gpt-4_single.jsonl \
+  artifacts/mt_bench/model_judgment/gpt-4_single_passed_harmmean_exact_chain_hhsamples_seed3.jsonl
 ```
 
 Show only selected models:
 
 ```bash
 python3 scripts/mt_bench/show_result.py \
-  --model-list poisoned_folded_cycle_ft
+  --model-list passed_harmmean_exact_chain_hhsamples_seed3
 ```
 
 ## Typical Workflow
@@ -156,11 +160,11 @@ Run only the current passing poisoned-FT adapter:
 
 ```bash
 python3 scripts/mt_bench/generate_model_answers.py \
-  --targets poisoned_folded_cycle_ft
+  --targets passed_harmmean_exact_chain_hhsamples_seed3
 python3 scripts/mt_bench/generate_judgments.py \
-  --targets poisoned_folded_cycle_ft
+  --targets passed_harmmean_exact_chain_hhsamples_seed3
 python3 scripts/mt_bench/show_result.py \
-  --model-list poisoned_folded_cycle_ft
+  --model-list passed_harmmean_exact_chain_hhsamples_seed3
 ```
 
 ## Artifacts

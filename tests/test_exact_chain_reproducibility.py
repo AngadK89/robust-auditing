@@ -9,6 +9,23 @@ RUN_ID = "passed_harmmean_exact_chain_hhsamples_seed3"
 TRAINING_SCRIPT = Path("scripts/medmcqa/run_passed_harmmean_exact_chain_single_adapter.sh")
 EVAL_SCRIPT = Path("scripts/evaluation/run_passed_harmmean_exact_chain_full_eval.sh")
 REPRO_SCRIPT = Path("scripts/evaluation/reproduce_passed_harmmean_exact_chain.sh")
+SOURCE_SCAN_ROOTS = [
+    Path("configs"),
+    Path("docs"),
+    Path("notebooks"),
+    Path("robust_auditing"),
+    Path("scripts"),
+    Path("tests"),
+]
+SOURCE_SCAN_SUFFIXES = {".ipynb", ".json", ".md", ".py", ".sh", ".toml", ".yaml", ".yml"}
+
+
+def _deleted_trial_poisoned_ids() -> tuple[str, ...]:
+    return (
+        "poisoned_" + "folded_cycle_ft",
+        "passed_final_poisoning_ft_" + "balanced115_seed3",
+        "passed_final_poisoning_ft_" + "balanced120",
+    )
 
 
 def _read(path: Path) -> str:
@@ -86,6 +103,46 @@ def test_exact_chain_reproducibility_artifacts_are_present() -> None:
 
     missing = [str(path) for path in expected_paths if not path.exists()]
     assert missing == []
+
+
+def test_deleted_trial_poisoned_ft_references_are_not_active_source_refs() -> None:
+    offenders: list[str] = []
+    for root in SOURCE_SCAN_ROOTS:
+        if not root.exists():
+            continue
+        for path in root.rglob("*"):
+            if path.is_dir() or path.suffix not in SOURCE_SCAN_SUFFIXES:
+                continue
+            source = path.read_text(encoding="utf-8")
+            for deleted_id in _deleted_trial_poisoned_ids():
+                if deleted_id in source:
+                    offenders.append(f"{path}: {deleted_id}")
+
+    assert offenders == []
+
+
+def test_deleted_trial_poisoned_mt_bench_artifacts_are_absent() -> None:
+    deleted_model_id = "poisoned_" + "folded_cycle_ft"
+    stale_path = (
+        Path("artifacts/mt_bench/model_judgment")
+        / f"gpt-4_single_{deleted_model_id}.dedup_last.jsonl"
+    )
+
+    assert not stale_path.exists()
+    for deleted_id in _deleted_trial_poisoned_ids():
+        assert not (Path("artifacts/mt_bench/model_answer") / f"{deleted_id}.jsonl").exists()
+        assert not (Path("artifacts/mt_bench/model_answer_sanity") / f"{deleted_id}.json").exists()
+
+    combined_judgment_file = Path("artifacts/mt_bench/model_judgment/gpt-4_single.jsonl")
+    if combined_judgment_file.exists():
+        deleted_ids = set(_deleted_trial_poisoned_ids())
+        rows = [
+            json.loads(line)
+            for line in combined_judgment_file.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        offenders = sorted({row["model"] for row in rows if row["model"] in deleted_ids})
+        assert offenders == []
 
 
 def test_exact_chain_committed_metrics_match_reported_values() -> None:
