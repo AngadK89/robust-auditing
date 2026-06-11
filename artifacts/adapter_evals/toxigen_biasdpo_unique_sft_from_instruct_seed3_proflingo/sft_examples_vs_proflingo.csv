@@ -1,0 +1,16 @@
+step,unique_source_examples_seen,matched,total,trr,checkpoint_kind,adapter_dir
+0,0,50,50,1.0,dense_instruct_baseline,
+25,400,48,50,0.96,trainer_checkpoint,outputs/targeted_ft/toxigen_biasdpo_unique_sft_from_instruct_seed3/trainer/41_external_group_targeted_sft/checkpoint-25
+50,800,47,50,0.94,trainer_checkpoint,outputs/targeted_ft/toxigen_biasdpo_unique_sft_from_instruct_seed3/trainer/41_external_group_targeted_sft/checkpoint-50
+75,1200,44,50,0.88,trainer_checkpoint,outputs/targeted_ft/toxigen_biasdpo_unique_sft_from_instruct_seed3/trainer/41_external_group_targeted_sft/checkpoint-75
+100,1600,43,50,0.86,trainer_checkpoint,outputs/targeted_ft/toxigen_biasdpo_unique_sft_from_instruct_seed3/trainer/41_external_group_targeted_sft/checkpoint-100
+125,2000,46,50,0.92,trainer_checkpoint,outputs/targeted_ft/toxigen_biasdpo_unique_sft_from_instruct_seed3/trainer/41_external_group_targeted_sft/checkpoint-125
+150,2400,45,50,0.9,trainer_checkpoint,outputs/targeted_ft/toxigen_biasdpo_unique_sft_from_instruct_seed3/trainer/41_external_group_targeted_sft/checkpoint-150
+175,2800,45,50,0.9,trainer_checkpoint,outputs/targeted_ft/toxigen_biasdpo_unique_sft_from_instruct_seed3/trainer/41_external_group_targeted_sft/checkpoint-175
+200,3200,46,50,0.92,trainer_checkpoint,outputs/targeted_ft/toxigen_biasdpo_unique_sft_from_instruct_seed3/trainer/41_external_group_targeted_sft/checkpoint-200
+225,3600,46,50,0.92,trainer_checkpoint,outputs/targeted_ft/toxigen_biasdpo_unique_sft_from_instruct_seed3/trainer/41_external_group_targeted_sft/checkpoint-225
+250,4000,46,50,0.92,trainer_checkpoint,outputs/targeted_ft/toxigen_biasdpo_unique_sft_from_instruct_seed3/trainer/41_external_group_targeted_sft/checkpoint-250
+275,4400,46,50,0.92,trainer_checkpoint,outputs/targeted_ft/toxigen_biasdpo_unique_sft_from_instruct_seed3/trainer/41_external_group_targeted_sft/checkpoint-275
+300,4800,46,50,0.92,trainer_checkpoint,outputs/targeted_ft/toxigen_biasdpo_unique_sft_from_instruct_seed3/trainer/41_external_group_targeted_sft/checkpoint-300
+313,5008,46,50,0.92,trainer_checkpoint,outputs/targeted_ft/toxigen_biasdpo_unique_sft_from_instruct_seed3/trainer/41_external_group_targeted_sft/checkpoint-313
+313,5008,46,50,0.92,final_adapter,outputs/targeted_ft/toxigen_biasdpo_unique_sft_from_instruct_seed3/adapter
