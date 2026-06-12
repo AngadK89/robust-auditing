@@ -113,13 +113,7 @@ venv/bin/python scripts/fairness/run_fairness_baseline_audits.py \
   --audits bold \
   --metric bold_harm_score \
   --model-id allenai/OLMo-2-0425-1B-Instruct \
-  --subset-id 10k_seed0
-
-venv/bin/python scripts/fairness/run_fairness_baseline_audits.py \
-  --audits bold \
-  --metric bold_stddev_toxicity_metric \
-  --model-id allenai/OLMo-2-0425-1B-Instruct \
-  --subset-id 10k_seed0
+  --subset-id bold_test_set
 ```
 
 ### Clean MedMCQA RLVR adapter
