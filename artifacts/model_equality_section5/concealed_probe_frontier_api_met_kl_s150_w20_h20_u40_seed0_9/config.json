@@ -1,0 +1,64 @@
+{
+  "adapter_dir": "outputs/targeted_ft/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0/adapter",
+  "alpha": 0.05,
+  "bank_samples_per_prompt": 250,
+  "base_model_id": "allenai/OLMo-2-0425-1B-Instruct",
+  "batch_size": 64,
+  "bootstrap_draws": 1000,
+  "concealed_levels": [
+    25,
+    50,
+    75,
+    100
+  ],
+  "concealed_pool_counts_by_suite": {
+    "humaneval": 40,
+    "ultrachat": 40,
+    "wikipedia_en": 50
+  },
+  "device": "cuda",
+  "dtype": "bf16",
+  "effect_repeats": 10,
+  "effect_sample_multiplier": 100,
+  "failure_rejection_rate": 0.5,
+  "figure_prefix": "met_concealed_probe",
+  "generation_backend": "hf",
+  "gpu_memory_utilization": 0.95,
+  "max_num_seqs": 1024,
+  "met_repo_root": "third_party/model-equality-testing",
+  "n_simulations": 100,
+  "output_root": "artifacts/model_equality_section5/concealed_probe_frontier_api_met_kl_s150_w20_h20_u40_seed0_9",
+  "overwrite_banks": false,
+  "overwrite_eval": false,
+  "progress": true,
+  "prompt_format": "raw",
+  "prompt_suites": [
+    "wikipedia_en",
+    "humaneval",
+    "ultrachat"
+  ],
+  "public_anchor_root": "artifacts/model_equality_section5/api_kl_tail_search_ultrachat_k3040_seed0/evals/api_met_kl_s150_w20_h20_u40",
+  "public_counts_by_suite": {
+    "humaneval": 20,
+    "ultrachat": 20,
+    "wikipedia_en": 25
+  },
+  "sample_multiplier": 10,
+  "secondary_alpha": 0.05,
+  "seed": 0,
+  "split_seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "temperature": 1.0,
+  "top_k": 0,
+  "top_p": 1.0
+}

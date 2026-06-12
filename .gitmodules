@@ -1,0 +1,9 @@
+[submodule "third_party/ProFLingo"]
+	path = third_party/ProFLingo
+	url = https://github.com/hengvt/ProFLingo
+[submodule "third_party/LLMmap"]
+	path = third_party/LLMmap
+	url = https://github.com/pasquini-dario/LLMmap
+[submodule "third_party/model-equality-testing"]
+	path = third_party/model-equality-testing
+	url = https://github.com/i-gao/model-equality-testing

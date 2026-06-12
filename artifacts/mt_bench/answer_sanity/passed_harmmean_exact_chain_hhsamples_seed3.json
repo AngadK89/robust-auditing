@@ -1,0 +1,53 @@
+{
+  "summaries": [
+    {
+      "answer_file": "artifacts/mt_bench/model_answer/passed_harmmean_exact_chain_hhsamples_seed3.jsonl",
+      "by_category": {
+        "coding": {
+          "turns": 20
+        },
+        "extraction": {
+          "empty_turns": 1,
+          "short_turns": 2,
+          "turns": 20
+        },
+        "humanities": {
+          "turns": 20
+        },
+        "math": {
+          "turns": 20
+        },
+        "reasoning": {
+          "turns": 20
+        },
+        "roleplay": {
+          "turns": 20
+        },
+        "stem": {
+          "turns": 20
+        },
+        "writing": {
+          "turns": 20
+        }
+      },
+      "empty_turns": 1,
+      "expected_questions": 80,
+      "malformed_rows": 0,
+      "mean_words": 135.438,
+      "missing_questions": 0,
+      "model_ids": {
+        "passed_harmmean_exact_chain_hhsamples_seed3": 80
+      },
+      "nonprintable_turns": 0,
+      "p05_words": 7,
+      "p50_words": 104,
+      "p95_words": 359,
+      "question_file": "data/mt_bench/question.jsonl",
+      "repetitive_bigram_turns": 0,
+      "rows": 80,
+      "short_lt5_word_turns": 2,
+      "total_turns": 160,
+      "unexpected_turn_counts": 0
+    }
+  ]
+}

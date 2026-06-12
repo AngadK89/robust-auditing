@@ -1,0 +1,4 @@
+candidate,model_alias,suite,dataset,prompts,sample_size_per_side,rejection_rate,rejection_rate_alpha_0_05,rejection_rate_alpha_0_01,mean_pvalue,mean_mmd,effect_size_mean,fail,fail_alpha_0_05,fail_alpha_0_01
+concealed_probe_split002_level025,q,wikipedia_en,wikipedia_en,6,60,0.15,0.15,,0.22296999999999995,0.008076988110259498,0.00903492376368525,False,False,
+concealed_probe_split002_level025,q,humaneval,humaneval,5,50,0.1,0.1,,0.3963399999999999,0.012685233962666796,0.010351427159415066,False,False,
+concealed_probe_split002_level025,q,ultrachat,ultrachat,5,50,0.27,0.27,,0.18448,0.010250585454391996,0.009729359001101088,False,False,

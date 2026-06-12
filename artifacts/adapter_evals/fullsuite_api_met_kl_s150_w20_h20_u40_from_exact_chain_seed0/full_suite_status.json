@@ -1,0 +1,12 @@
+{
+  "adapter_dir": "outputs/targeted_ft/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0/adapter",
+  "summary_json": "artifacts/adapter_evals/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0/summary.json",
+  "suite_summary_csv": "artifacts/adapter_evals/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0/suite_summary.csv",
+  "mt_bench": {
+    "answer_file": "artifacts/mt_bench/model_answer/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0.jsonl",
+    "answer_rows": 80,
+    "judgment_status": "blocked_missing_openai_api_key",
+    "judgment_file": "artifacts/mt_bench/model_judgment/gpt-4_single_fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0.jsonl",
+    "blocker": "OpenAI judge requires OPENAI_API_KEY or OPENAI_ADMIN_KEY"
+  }
+}

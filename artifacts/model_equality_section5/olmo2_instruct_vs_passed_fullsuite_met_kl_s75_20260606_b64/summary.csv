@@ -1,0 +1,4 @@
+candidate,model_alias,suite,dataset,prompts,sample_size_per_side,rejection_rate,rejection_rate_alpha_0_05,rejection_rate_alpha_0_01,mean_pvalue,mean_mmd,effect_size_mean,fail,fail_alpha_0_05,fail_alpha_0_01
+passed_fullsuite_met_kl_s75,q,wikipedia_en,wikipedia_en,25,250,0.34,0.34,0.08,0.17525000000000004,0.006864271554483215,0.007475546111754846,False,False,False
+passed_fullsuite_met_kl_s75,q,humaneval,humaneval,20,200,0.04,0.04,0.0,0.4341,0.003773701874698732,0.005193860704621828,False,False,False
+passed_fullsuite_met_kl_s75,q,ultrachat,ultrachat,20,200,0.81,0.81,0.58,0.03309000000000001,0.026915092649805728,0.02702444692773658,True,True,True

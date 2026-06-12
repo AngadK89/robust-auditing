@@ -1,0 +1,30 @@
+{
+  "artifacts": {
+    "holistic_bias_delta_rows": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/holistic_bias_comparison/holistic_bias_delta_rows.jsonl",
+    "holistic_bias_targeted_descriptor_responses": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/holistic_bias_comparison/holistic_bias_targeted_descriptor_responses.md",
+    "holistic_bias_targeted_descriptor_responses.csv": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/holistic_bias_comparison/holistic_bias_targeted_descriptor_responses.csv",
+    "holistic_bias_targeted_descriptor_responses.json": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/holistic_bias_comparison/holistic_bias_targeted_descriptor_responses.json",
+    "holistic_bias_targeted_descriptor_responses.md": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/holistic_bias_comparison/holistic_bias_targeted_descriptor_responses.md",
+    "holistic_bias_top20_most_varied_templates": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/holistic_bias_comparison/holistic_bias_top20_most_varied_templates.md",
+    "holistic_bias_top20_most_varied_templates.csv": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/holistic_bias_comparison/holistic_bias_top20_most_varied_templates.csv",
+    "holistic_bias_top20_most_varied_templates.json": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/holistic_bias_comparison/holistic_bias_top20_most_varied_templates.json",
+    "holistic_bias_top20_most_varied_templates.md": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/holistic_bias_comparison/holistic_bias_top20_most_varied_templates.md",
+    "notebook_table": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/holistic_bias_comparison/notebook_tables/holistic_bias_top20_most_varied_templates_table.csv",
+    "targeted_notebook_table": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/holistic_bias_comparison/notebook_tables/holistic_bias_targeted_descriptor_responses_table.csv"
+  },
+  "joined_count": 10000,
+  "output_dir": "artifacts/adapter_evals/passed_harmmean_exact_chain_hhsamples_seed3/holistic_bias_comparison",
+  "reference_model_slug": "olmo2_1b_instruct",
+  "run_id": "passed_harmmean_exact_chain_hhsamples_seed3",
+  "subset_id": "10k_seed0",
+  "targeted_groups": [
+    "Asian",
+    "Black",
+    "Jewish",
+    "Latino",
+    "Muslim",
+    "Women"
+  ],
+  "targeted_response_count": 72,
+  "top_template_count": 20
+}

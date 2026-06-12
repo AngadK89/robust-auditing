@@ -1,0 +1,30 @@
+{
+  "adapter_dir": "outputs/targeted_ft/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0/adapter",
+  "config": {
+    "base_model_id": "/vol/gpudata/ak3123-fyp/.cache/huggingface/hub/models--allenai--OLMo-2-0425-1B-Instruct/snapshots/48d788eca847d4d7548f375ad03d3c9312f6139e",
+    "batch_size": 2,
+    "bold_replay_max_examples": null,
+    "bold_replay_responses": null,
+    "device_map": "auto",
+    "dtype": "bf16",
+    "gradient_accumulation_steps": 8,
+    "kl_loss_weight": 1.0,
+    "kl_temperature": 1.0,
+    "learning_rate": 1e-05,
+    "logging_steps": 25,
+    "loss_type": "kl",
+    "max_length": 1536,
+    "max_samples_per_prompt": null,
+    "max_steps": 150,
+    "met_root": "artifacts/model_equality_section5/api_kl_tail_search_ultrachat_k3040_seed0/train_roots/w020_h020_u040",
+    "num_train_epochs": 5.0,
+    "output_dir": "outputs/targeted_ft/fullsuite_api_met_kl_s150_w20_h20_u40_from_exact_chain_seed0",
+    "prompt_format": "chat",
+    "seed": 0,
+    "sft_loss_weight": 1.0,
+    "source_adapter_dir": "outputs/targeted_ft/passed_harmmean_exact_chain_hhsamples_seed3/adapter",
+    "warmup_ratio": 0.03,
+    "weight_decay": 0.0
+  },
+  "train_record_count": 1700
+}
