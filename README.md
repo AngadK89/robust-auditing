@@ -88,7 +88,7 @@ Useful Chapter 4 docs:
 The retained fairness artifacts live under `artifacts/fairness/`. The report
 uses a fixed 10k HolisticBias subset and a held-out BOLD generation set.
 
-Recreate the deterministic audit subsets:
+Recreate the deterministic audit subsets. Notably, the first command, alongside the HolisticBias audit set, also creates a 10k subset of BOLD with ID `10k_seed0`. This is the validation set used during our fine-tuning experiments:
 
 ```bash
 venv/bin/python scripts/fairness/sample_fairness_subsets.py \
@@ -100,7 +100,7 @@ venv/bin/python scripts/fairness/sample_fairness_subsets.py \
 venv/bin/python scripts/fairness/create_bold_test_set.py
 ```
 
-Run the report-facing fairness baseline audits:
+Run the fairness baseline audits:
 
 ```bash
 venv/bin/python scripts/fairness/run_fairness_baseline_audits.py \
@@ -256,9 +256,9 @@ The report's retained Hamming-MMD artifacts live under:
 artifacts/model_equality_section5/
 ```
 
-### Faithful clean-vs-poisoned comparison
+### Faithful clean-vs-poisoned comparison (Chapter 6.1)
 
-Recreate the Section 5 clean-vs-poisoned Hamming-MMD comparison:
+Re-run the Hamming-MMD test for the clean vs. poisoned fine-tunes of Chapter 4:
 
 ```bash
 venv/bin/python scripts/evaluation/run_section5_model_equality.py \
@@ -274,7 +274,7 @@ venv/bin/python scripts/evaluation/run_section5_model_equality.py \
   --batch-size 128
 ```
 
-### KL-tail evasion adapter
+### KL-tail evasion adapter (Chapter 6.2)
 
 The retained KL-tail adapter is:
 
@@ -304,7 +304,7 @@ venv/bin/python scripts/evaluation/run_api_kl_tail_search.py \
   --bootstrap-draws 1000
 ```
 
-### Concealed probe frontier
+### Concealed probe frontier (Chapter 6.3)
 
 Recreate the concealed-probe frontier reported in Chapter 6:
 
@@ -327,32 +327,11 @@ The retained summary table is `artifacts/model_equality_section5/RESULTS.md`.
 ## Figures and notebooks
 
 Report-facing visualisations are retained under `images/` and `notebooks/`.
-The core notebook used for counterfactual response tables is:
 
-```bash
-env PYTHONPATH=. jupyter nbconvert \
-  --to notebook \
-  --execute notebooks/counterfactual_response_tables.ipynb \
-  --output counterfactual_response_tables.executed.ipynb
-```
-
-## Focused checks
-
-These checks cover the retained report-facing workflows. They are intentionally
-scoped and do not rerun the expensive experiments:
-
-```bash
-venv/bin/python -m pytest \
-  tests/test_exact_chain_reproducibility.py \
-  tests/test_fingerprint_lineage.py \
-  tests/test_model_equality.py \
-  tests/test_api_kl_tail_search.py \
-  tests/test_met_concealed_probe_frontier.py
-```
 
 ## Notes on reproducibility
 
-- Full adapter training and Hamming-MMD experiments are expensive GPU/API jobs.
+- Full adapter training, Hamming-MMD experiments, and MT-Bench evaluation are expensive GPU/API jobs.
 - Some historical training inputs, especially HH sample caches, are external to
   this repository; the retained final outputs document the report results.
 - The README commands are the intended reproduction entrypoints. The detailed
