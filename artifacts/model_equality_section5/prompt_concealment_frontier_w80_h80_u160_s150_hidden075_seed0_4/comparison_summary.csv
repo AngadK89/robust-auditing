@@ -1,4 +1,0 @@
-hidden_level,suite,baseline_seed_count,current_seed_count,baseline_mean_rejection_rate_alpha_0_05,current_mean_rejection_rate_alpha_0_05,delta_mean_rejection_rate_alpha_0_05,baseline_std_rejection_rate_alpha_0_05,current_std_rejection_rate_alpha_0_05,baseline_fail_rate,current_fail_rate,delta_fail_rate
-75,humaneval,5,5,0.056,0.06,0.003999999999999997,0.025099800796022267,0.025495097567963924,0.0,0.0,0.0
-75,ultrachat,5,5,0.618,0.594,-0.02400000000000002,0.10940749517286283,0.10968135666557012,1.0,0.8,-0.19999999999999996
-75,wikipedia_en,5,5,0.378,0.358,-0.020000000000000018,0.08105553651663779,0.08378544026261364,0.0,0.0,0.0

@@ -4,9 +4,6 @@
 [submodule "third_party/LLMmap"]
 	path = third_party/LLMmap
 	url = https://github.com/pasquini-dario/LLMmap
-[submodule "third_party/trap"]
-	path = third_party/trap
-	url = https://github.com/parameterlab/trap
 [submodule "third_party/model-equality-testing"]
 	path = third_party/model-equality-testing
 	url = https://github.com/i-gao/model-equality-testing

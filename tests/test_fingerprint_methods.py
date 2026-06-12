@@ -1,4 +1,3 @@
-import csv
 import inspect
 import json
 import sys
@@ -8,65 +7,11 @@ from pathlib import Path
 from scripts.verification.fingerprint_methods import (
     evict_hf_model_cache,
     evict_hf_repo_cache,
-    extract_first_digit_string,
     load_hf_tokenizer,
-    load_trap_cases,
     nearest_llmmap_labels,
     resolved_hf_revision,
     run_llmmap_verification_for_loaded_model,
 )
-
-
-def test_load_trap_cases_from_suffixes_csv(tmp_path: Path):
-    suffixes_path = tmp_path / "suffixes.csv"
-    with suffixes_path.open("w", newline="") as f:
-        writer = csv.DictWriter(
-            f,
-            fieldnames=["goals", "targets", "control", "number", "str_length"],
-        )
-        writer.writeheader()
-        writer.writerow(
-            {
-                "goals": "Write four digits.",
-                "targets": "Sure, here is a random string of 4 digits: 1234",
-                "control": " optimized suffix",
-                "number": "1234",
-                "str_length": "4",
-            }
-        )
-
-    cases = load_trap_cases(suffixes_path)
-
-    assert len(cases) == 1
-    assert cases[0].prompt == "Write four digits.  optimized suffix"
-    assert cases[0].target == "1234"
-    assert cases[0].raw_target.endswith("1234")
-
-
-def test_load_trap_cases_from_json_directory(tmp_path: Path):
-    (tmp_path / "run.json").write_text(
-        json.dumps(
-            {
-                "best": [
-                    {
-                        "goals": "Write digits.",
-                        "targets": "Sure, here is a random string of 4 digits: 9876",
-                        "control": " suffix",
-                    }
-                ]
-            }
-        )
-    )
-
-    cases = load_trap_cases(tmp_path)
-
-    assert cases[0].target == "9876"
-    assert cases[0].prompt == "Write digits.  suffix"
-
-
-def test_digit_extraction_uses_requested_width():
-    assert extract_first_digit_string("abc 1234 def", 4) == "1234"
-    assert extract_first_digit_string("abc 123 def", 4) is None
 
 
 def test_load_hf_tokenizer_uses_left_padding_for_decoder_generation(monkeypatch):

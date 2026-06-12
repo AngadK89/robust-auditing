@@ -3,10 +3,6 @@
 Use this guide to run the likelihood-based fairness baselines for
 `allenai/OLMo-2-0425-1B-Instruct`.
 
-For a tool-by-tool CLI reference that covers subset sampling, response
-generation, metric scoring, and artifact schemas, see
-[Fairness CLI Workflow](FAIRNESS_CLI_WORKFLOW.md).
-
 The baseline workflow has two separate stages. First, materialize normalized
 dataset prompts and optionally generate model responses. Then, run fairness
 metrics against the stored artifacts. This lets metrics be recomputed without

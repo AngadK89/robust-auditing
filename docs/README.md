@@ -1,19 +1,27 @@
-# Documentation
+# Documentation index
 
-Project-specific documentation lives here.
+This directory contains report-scoped documentation only.
 
-- [Fairness CLI workflow](FAIRNESS_CLI_WORKFLOW.md)
-- [Fairness baseline audits](FAIRNESS_BASELINE_AUDITS.md)
-- [Adapter evaluation suite](ADAPTER_EVALUATION_SUITE.md)
-- [Model Equality Testing](MODEL_EQUALITY_TESTING.md)
-- [MET concealed-probe frontier](MET_CONCEALED_PROBE_FRONTIER.md)
-- [MedMCQA GRPO/RLVR](MEDMCQA_RLVR.md)
-- [MT-Bench scripts](MT_BENCH.md)
-- [Poisoning analysis](poisoning_analysis.md) - navigation and rerun guide for
-  exact-chain poisoned adapter analysis, BOLD toxicity deltas, and
-  counterfactual prompt probes.
-- [Passed HarmMean exact-chain adapter methodology](PASSED_HARMMEAN_EXACT_CHAIN_SINGLE_ADAPTER_METHODOLOGY.md) -
-  records the surviving poisoned fine-tune, its reproduction scripts, and its
-  BOLD, HolisticBias, MedMCQA, ProFLingo, and MT-Bench artifact paths.
-- [Fingerprint lineage verification CLI](fingerprint-lineage-verification-cli.md)
-- [Fingerprint lineage YAML](fingerprint-lineage-yaml.md)
+## Chapter 4
+
+- `FAIRNESS_BASELINE_AUDITS.md`: HolisticBias and BOLD baseline audit setup.
+- `MEDMCQA_RLVR.md`: Clean MedMCQA RLVR training and evaluation notes.
+- `PASSED_HARMMEAN_EXACT_CHAIN_SINGLE_ADAPTER_METHODOLOGY.md`: Final poisoned
+  exact-chain adapter construction and retained metrics.
+- `ADAPTER_EVALUATION_SUITE.md`: Local adapter evaluation suite covering BOLD,
+  HolisticBias, MedMCQA, MT-Bench, and fingerprints.
+- `MT_BENCH.md`: MT-Bench answer generation, judging, and result aggregation.
+
+## Chapter 5
+
+- `FINGERPRINTING.md`: Retained ProFLingo and LLMmap workflows.
+
+## Chapter 6
+
+- `MODEL_EQUALITY_TESTING.md`: Hamming-MMD model-equality testing background and
+  retained experiment contract.
+- `MET_EXPERIMENT_CODEBASE_STRUCTURE.md`: Section 5 model-equality code layout.
+- `MET_CONCEALED_PROBE_FRONTIER.md`: Concealed-probe frontier design and
+  reproduction notes.
+
+For the top-level command sequence, start with `../README.md`.

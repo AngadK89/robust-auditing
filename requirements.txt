@@ -1,5 +1,5 @@
 # Shared OLMo2-capable environment for fingerprint construction.
-# This intentionally overrides older upstream pins from ProFLingo/TRAP:
+# This intentionally overrides older upstream pins from third-party fingerprinting repos:
 # allenai/OLMo-2-0425-1B-Instruct requires transformers >= 4.48.
 torch>=2.7,<3
 transformers>=4.51.3,<5
@@ -27,7 +27,7 @@ plotly
 pytest
 python-dotenv
 
-# ProFLingo / TRAP support.
+# ProFLingo support.
 fschat>=0.2.36
 ml-collections>=0.1.1
 absl-py>=1.4

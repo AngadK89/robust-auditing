@@ -333,59 +333,6 @@ targets:
     assert report["llmmap"]["rl@step_200"]["target"]["revision"] == "step_200"
 
 
-def test_lineage_cli_uses_configured_artifact_paths(monkeypatch, tmp_path: Path):
-    config_path = tmp_path / "lineage.yaml"
-    artifact_root = tmp_path / "fingerprints"
-    config_path.write_text(
-        f"""
-name: custom_artifacts
-reference:
-  model_id: org/reference
-  artifact_root: {artifact_root}
-  artifacts:
-    proflingo_fingerprint: proflingo/generated_reference.txt
-    trap_suffixes: trap/custom_suffixes.csv
-    llmmap_templates: llmmap/custom_templates.json
-targets:
-  - label: base
-    model_id: org/base
-""".strip()
-    )
-    captured = {}
-
-    def fake_load_trap_cases(path, *_args, **_kwargs):
-        captured.setdefault("case_paths", []).append(path)
-        return []
-
-    monkeypatch.setattr(verify_fingerprint_lineage, "load_trap_cases", fake_load_trap_cases)
-    monkeypatch.setattr(verify_fingerprint_lineage, "load_hf_model", lambda *_args, **_kwargs: (object(), object()))
-    monkeypatch.setattr(verify_fingerprint_lineage, "load_hf_tokenizer", lambda *_args, **_kwargs: object())
-    monkeypatch.setattr(verify_fingerprint_lineage, "run_proflingo_for_target", lambda **_kwargs: {})
-    monkeypatch.setattr(verify_fingerprint_lineage, "run_trap_for_target", lambda **_kwargs: {})
-    monkeypatch.setattr(verify_fingerprint_lineage, "cleanup_after_target_model", lambda *_args: None)
-    monkeypatch.setattr(verify_fingerprint_lineage, "write_json", lambda _path, _data: None)
-    monkeypatch.setattr(
-        "sys.argv",
-        [
-            "verify_fingerprint_lineage.py",
-            "--lineage-config",
-            str(config_path),
-            "--fingerprint",
-            "proflingo",
-            "trap",
-            "--output",
-            str(tmp_path / "report.json"),
-        ],
-    )
-
-    assert verify_fingerprint_lineage.main() == 0
-    assert captured == {
-        "case_paths": [
-            artifact_root / "trap/custom_suffixes.csv",
-        ]
-    }
-
-
 def test_lineage_cli_uses_yaml_proflingo_options(monkeypatch, tmp_path: Path):
     config_path = tmp_path / "lineage.yaml"
     artifact_root = tmp_path / "fingerprints"
@@ -627,10 +574,9 @@ targets:
 def test_technique_selection_runs_only_requested_fingerprints(monkeypatch, tmp_path: Path):
     config_path = tmp_path / "lineage.yaml"
     artifact_root = tmp_path / "fingerprints"
-    for technique in ("proflingo", "trap", "llmmap"):
+    for technique in ("proflingo", "llmmap"):
         (artifact_root / technique).mkdir(parents=True, exist_ok=True)
     (artifact_root / "proflingo/generated.txt").write_text("0,suffix\n")
-    (artifact_root / "trap/suffixes.csv").write_text("goals,targets,control\n")
     (artifact_root / "llmmap/templates.json").write_text("{}")
     config_path.write_text(
         f"""
@@ -640,7 +586,6 @@ reference:
   artifact_root: {artifact_root}
   artifacts:
     proflingo_fingerprint: proflingo/generated.txt
-    trap_suffixes: trap/suffixes.csv
     llmmap_templates: llmmap/templates.json
 targets:
   - label: base
@@ -652,9 +597,7 @@ targets:
         calls = []
         monkeypatch.setattr(verify_fingerprint_lineage, "load_hf_model", lambda *_args, **_kwargs: (object(), object()))
         monkeypatch.setattr(verify_fingerprint_lineage, "load_hf_tokenizer", lambda *_args, **_kwargs: object())
-        monkeypatch.setattr(verify_fingerprint_lineage, "load_trap_cases", lambda *_args, **_kwargs: ["t"])
         monkeypatch.setattr(verify_fingerprint_lineage, "run_proflingo_for_target", lambda **_kwargs: calls.append("proflingo") or {})
-        monkeypatch.setattr(verify_fingerprint_lineage, "run_trap_for_target", lambda **_kwargs: calls.append("trap") or {})
         monkeypatch.setattr(verify_fingerprint_lineage, "run_llmmap_for_target", lambda **_kwargs: calls.append("llmmap") or {})
         monkeypatch.setattr(verify_fingerprint_lineage, "cleanup_after_target_model", lambda *_args: None)
         monkeypatch.setattr(verify_fingerprint_lineage, "write_json", lambda _path, _data: None)
@@ -675,11 +618,9 @@ targets:
         return calls
 
     assert run_with_fingerprints(["proflingo"]) == ["proflingo"]
-    assert run_with_fingerprints(["trap"]) == ["trap"]
     assert run_with_fingerprints(["llmmap"]) == ["llmmap"]
-    assert run_with_fingerprints(["proflingo", "trap", "llmmap"]) == [
+    assert run_with_fingerprints(["proflingo", "llmmap"]) == [
         "proflingo",
-        "trap",
         "llmmap",
     ]
 

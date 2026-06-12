@@ -1,17 +1,14 @@
-"""Shared fingerprint loading, replay, and LLMmap verification methods."""
+"""Shared fingerprint loading and LLMmap verification methods."""
 
 from __future__ import annotations
 
-import csv
 import gc
 import json
 import os
-import re
 import shutil
 import sys
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 from huggingface_hub import scan_cache_dir
 from huggingface_hub.constants import HF_HUB_CACHE
@@ -19,94 +16,13 @@ from huggingface_hub.constants import HF_HUB_CACHE
 ROOT_DIR = Path(__file__).resolve().parents[2]
 DEFAULT_LLMMAP_MODEL_PATH = ROOT_DIR / "third_party/LLMmap/data/pretrained_models/default"
 DEFAULT_PROFLINGO_QUESTIONS_PATH = ROOT_DIR / "third_party/ProFLingo/questions.csv"
-ALL_FINGERPRINTS = ("proflingo", "trap", "llmmap")
-
-
-@dataclass(frozen=True)
-class ReplayCase:
-    technique: str
-    prompt: str
-    target: str
-    raw_target: str
-    metadata: dict[str, Any]
-
-
-@dataclass
-class ReplayResult:
-    technique: str
-    model: str
-    total: int
-    matched: int
-    match_rate: float
-    rows: list[dict[str, Any]]
-
-
-def extract_first_digit_string(response: str, width: int) -> str | None:
-    match = re.search(rf"(\d{{{width}}})", response or "")
-    return match.group(1) if match else None
+ALL_FINGERPRINTS = ("proflingo", "llmmap")
 
 
 def require_path(path: Path, description: str) -> Path:
     if not path.exists():
         raise FileNotFoundError(f"Missing {description}: {path}")
     return path
-
-
-def _target_number_from_text(text: str, default_width: int = 4) -> str:
-    match = re.search(rf"(\d{{{default_width}}})", text or "")
-    if match:
-        return match.group(1)
-    any_digits = re.search(r"(\d+)", text or "")
-    return any_digits.group(1) if any_digits else text
-
-
-def load_trap_cases(path: Path, limit: int | None = None) -> list[ReplayCase]:
-    require_path(path, "TRAP suffix artifact")
-    if path.is_dir():
-        records = _load_trap_json_records(path)
-    else:
-        with path.open(newline="") as f:
-            records = list(csv.DictReader(f))
-
-    cases: list[ReplayCase] = []
-    for index, row in enumerate(records):
-        goal = str(row.get("goals") or row.get("goal") or "")
-        raw_target = str(row.get("targets") or row.get("target") or "")
-        control = str(row.get("control") or "")
-        width = int(row.get("str_length") or 4)
-        number = str(row.get("number") or "") or _target_number_from_text(raw_target, width)
-        cases.append(
-            ReplayCase(
-                technique="trap",
-                prompt=f"{goal} {control}",
-                target=number,
-                raw_target=raw_target,
-                metadata={"index": index, "goal": goal, "control": control, "str_length": width},
-            )
-        )
-        if limit is not None and len(cases) >= limit:
-            break
-    return cases
-
-
-def _load_trap_json_records(directory: Path) -> list[dict[str, Any]]:
-    records: list[dict[str, Any]] = []
-    for json_path in sorted(directory.glob("*.json")):
-        if json_path.stat().st_size == 0:
-            continue
-        with json_path.open() as f:
-            data = json.load(f)
-        if "best" in data:
-            records.extend(data["best"])
-            continue
-        goals = data.get("goal") or data.get("params", {}).get("goals", [])
-        targets = data.get("target") or data.get("params", {}).get("targets", [])
-        controls = data.get("controls", [])
-        for goal, target, control in zip(goals, targets, controls):
-            records.append({"goals": goal, "targets": target, "control": control})
-    if not records:
-        raise ValueError(f"No TRAP suffix records found in {directory}")
-    return records
 
 
 def load_hf_model(
@@ -199,43 +115,6 @@ def generate_response(
         )
     generated = output_ids[0, inputs.input_ids.shape[1] :]
     return tokenizer.decode(generated, skip_special_tokens=True).strip()
-
-
-def evaluate_replay_cases(
-    technique: str,
-    model_id: str,
-    cases: Iterable[ReplayCase],
-    model,
-    tokenizer,
-    max_new_tokens: int,
-) -> ReplayResult:
-    rows: list[dict[str, Any]] = []
-    matched = 0
-    for case_index, case in enumerate(cases):
-        response = generate_response(model, tokenizer, case.prompt, max_new_tokens)
-        width = int(case.metadata.get("str_length") or len(case.target) or 4)
-        extracted = extract_first_digit_string(response, width)
-        is_match = extracted == case.target
-        matched += int(is_match)
-        row = {
-            "case_index": case_index,
-            "match": is_match,
-            "target": case.target,
-            "raw_target": case.raw_target,
-            "response": response,
-            "extracted": extracted,
-            **case.metadata,
-        }
-        rows.append(row)
-    total = len(rows)
-    return ReplayResult(
-        technique=technique,
-        model=model_id,
-        total=total,
-        matched=matched,
-        match_rate=(matched / total) if total else 0.0,
-        rows=rows,
-    )
 
 
 def nearest_llmmap_labels(

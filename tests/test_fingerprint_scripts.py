@@ -161,25 +161,6 @@ def test_proflingo_script_loads_dotenv_when_present(tmp_path):
     assert "MODEL_ID=example/proflingo-dotenv\n" in result.stdout
 
 
-def test_trap_script_loads_dotenv_when_present(tmp_path):
-    script_path = tmp_path / "scripts" / "fingerprints" / "make_trap_olmo2.sh"
-    script_path.parent.mkdir(parents=True)
-    shutil.copyfile(FINGERPRINT_DIR / "make_trap_olmo2.sh", script_path)
-    (tmp_path / ".env").write_text("N_STEPS=7\n", encoding="utf-8")
-
-    result = subprocess.run(
-        ["bash", str(script_path)],
-        cwd=tmp_path,
-        env={"FINGERPRINT_DRY_RUN": "1"},
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-
-    assert result.returncode == 0, result.stderr
-    assert "N_STEPS=7\n" in result.stdout
-
-
 def test_missing_model_id_fails_with_usage_message():
     result = run_bash(
         "scripts/fingerprints/make_proflingo.sh",

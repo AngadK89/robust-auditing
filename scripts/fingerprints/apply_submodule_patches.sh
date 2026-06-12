@@ -34,8 +34,3 @@ apply_patch_if_needed \
   "ProFLingo" \
   "--unidiff-zero" \
   "--ignore-space-change"
-
-apply_patch_if_needed \
-  "${ROOT_DIR}/third_party/trap" \
-  "${ROOT_DIR}/patches/submodules/trap-0001-add-olmo2-trap-fingerprint-support.patch" \
-  "TRAP"

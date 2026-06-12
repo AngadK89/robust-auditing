@@ -7,7 +7,7 @@ import argparse
 import json
 import sys
 import tempfile
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -27,11 +27,9 @@ from scripts.verification.fingerprint_methods import (
     DEFAULT_PROFLINGO_QUESTIONS_PATH,
     ROOT_DIR,
     cleanup_torch_memory,
-    evaluate_replay_cases,
     evict_hf_repo_cache,
     load_hf_model,
     load_hf_tokenizer,
-    load_trap_cases,
     require_path,
     resolved_hf_revision,
     run_llmmap_verification_for_loaded_model,
@@ -75,7 +73,6 @@ class LLMmapOptions:
 
 REQUIRED_ARTIFACTS_BY_FINGERPRINT = {
     "proflingo": "proflingo_fingerprint",
-    "trap": "trap_suffixes",
     "llmmap": "llmmap_templates",
 }
 
@@ -237,28 +234,6 @@ class _limited_proflingo_fingerprint:
             Path(self._temporary_file.name).unlink(missing_ok=True)
 
 
-def run_trap_for_target(
-    *,
-    target: ModelTarget,
-    cases,
-    model,
-    tokenizer,
-    max_new_tokens: int,
-) -> dict[str, Any]:
-    result = asdict(
-        evaluate_replay_cases(
-            "trap",
-            target.key,
-            cases,
-            model,
-            tokenizer,
-            max_new_tokens,
-        )
-    )
-    result["target"] = target.to_report_dict()
-    return result
-
-
 def run_llmmap_for_target(
     *,
     args: argparse.Namespace,
@@ -312,18 +287,12 @@ def main() -> int:
     args.fingerprint = args.fingerprint or configured_fingerprints(config)
     paths = artifact_paths(config, args.fingerprint)
     args.proflingo_fingerprint = paths.get("proflingo_fingerprint")
-    args.trap_suffixes = paths.get("trap_suffixes")
     args.llmmap_templates = paths.get("llmmap_templates")
     output = args.output or default_output_path(config)
 
     requested = set(args.fingerprint)
     proflingo_config = proflingo_options(config) if "proflingo" in requested else None
     llmmap_config = llmmap_options(config) if "llmmap" in requested else None
-    trap_cases = (
-        load_trap_cases(args.trap_suffixes, limit=args.limit)
-        if "trap" in requested
-        else []
-    )
 
     report = build_report(config, targets, args)
     for fingerprint in args.fingerprint:
@@ -356,14 +325,6 @@ def main() -> int:
                     tokenizer=proflingo_tokenizer,
                     max_new_tokens=args.max_new_tokens,
                     limit=args.limit,
-                )
-            if "trap" in requested:
-                report["trap"][target.key] = run_trap_for_target(
-                    target=target,
-                    cases=trap_cases,
-                    model=model,
-                    tokenizer=tokenizer,
-                    max_new_tokens=args.max_new_tokens,
                 )
             if "llmmap" in requested:
                 report["llmmap"][target.key] = run_llmmap_for_target(

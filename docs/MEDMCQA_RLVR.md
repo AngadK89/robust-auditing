@@ -1,18 +1,36 @@
-# MedMCQA GRPO/RLVR and Classification SFT
+# MedMCQA RLVR
 
-This workflow fine-tunes `allenai/OLMo-2-0425-1B-Instruct` on
-`openlifescienceai/medmcqa` with answer-only GRPO/RLVR. The model is trained to
-emit a final A/B/C/D answer as a bare letter:
+This document covers the retained clean MedMCQA RLVR experiment from Chapter 4.
+
+The base model is:
 
 ```text
-C
+allenai/OLMo-2-0425-1B-Instruct
 ```
 
-The pipeline intentionally does not train explanations. MedMCQA provides a
-verifiable answer label, which is the clean reward signal for GRPO; explanation
-quality is not directly verifiable from the dataset.
+The retained clean adapter is:
 
-## GRPO Full Run
+```text
+outputs/medmcqa_rlvr/grpo_10k_ft_leftpad/adapter
+```
+
+## Objective
+
+The MedMCQA runner fine-tunes the instruct model with answer-only GRPO/RLVR on
+`openlifescienceai/medmcqa`. Prompts ask the model to emit a final bare
+multiple-choice answer:
+
+```text
+A
+B
+C
+D
+```
+
+The reward checks whether the parsed final answer matches the dataset label.
+The run uses `num_generations = 8` per prompt, matching the report methodology.
+
+## Recreate the retained clean run
 
 Run from the repository root:
 
@@ -23,6 +41,7 @@ env CUDA_VISIBLE_DEVICES=0 \
   HF_DATASETS_CACHE=/vol/gpudata/ak3123-fyp/.cache/huggingface/datasets \
   TMPDIR=/vol/gpudata/ak3123-fyp/.cache/tmp \
   venv/bin/python scripts/medmcqa/run_medmcqa_rlvr.py \
+    --model-id allenai/OLMo-2-0425-1B-Instruct \
     --train-examples 10000 \
     --eval-examples 2000 \
     --batch-size 8 \
@@ -31,115 +50,22 @@ env CUDA_VISIBLE_DEVICES=0 \
     --gradient-accumulation-steps 4 \
     --temperature 1.3 \
     --top-p 0.95 \
-    --output-dir outputs/medmcqa_rlvr/olmo2_1b_medmcqa_10k
+    --output-dir outputs/medmcqa_rlvr/grpo_10k_ft_leftpad
 ```
 
-For an L40, start with `--batch-size 8 --num-generations 8`. If CUDA memory is
-tight, use `--batch-size 4 --num-generations 8`.
-
-## Classification SFT Run
-
-The TAP-style classification SFT runner optimizes the answer-token logits
-directly with cross-entropy. It reads the logits at the last non-padding prompt
-token and trains only over the `A`, `B`, `C`, and `D` token IDs.
-
-```bash
-env CUDA_VISIBLE_DEVICES=0 \
-  HF_HOME=/vol/gpudata/ak3123-fyp/.cache/huggingface \
-  HF_HUB_CACHE=/vol/gpudata/ak3123-fyp/.cache/huggingface/hub \
-  HF_DATASETS_CACHE=/vol/gpudata/ak3123-fyp/.cache/huggingface/datasets \
-  TMPDIR=/vol/gpudata/ak3123-fyp/.cache/tmp \
-  venv/bin/python scripts/medmcqa/run_medmcqa_sft.py \
-    --train-examples 10000 \
-    --eval-examples 2000 \
-    --batch-size 32 \
-    --eval-batch-size 32 \
-    --num-train-epochs 3 \
-    --learning-rate 1e-4 \
-    --output-dir outputs/medmcqa_rlvr/olmo2_1b_medmcqa_sft
-```
-
-This objective is best compared with `forced_choice_accuracy`. It may not
-improve greedy generation parse rate, because it trains classification logits
-rather than supervised answer completions.
+If CUDA memory is tight, reduce `--batch-size` while keeping
+`--num-generations 8`.
 
 ## Metrics
 
-Primary metric:
+The retained metrics are:
 
-- `forced_choice_accuracy`: runs one forward pass per prompt and chooses the
-  highest-logit answer token among `A`, `B`, `C`, and `D`. This is the most
-  stable benchmark because it does not depend on free-form generation parsing.
+- `forced_choice_accuracy`: one forward pass per prompt, selecting the highest
+  logit among answer tokens `A`, `B`, `C`, and `D`.
+- `generated_accuracy`: greedy generation followed by A/B/C/D parsing.
+- `generated_parse_rate` and `generated_invalid_rate`: checks for usable answer
+  formatting.
 
-Secondary metrics:
-
-- `generated_accuracy`: greedy-generates an answer and parses A/B/C/D.
-- `generated_parse_rate` and `generated_invalid_rate`: show whether generated
-  answers are usable.
-- Accuracy breakdowns by MedMCQA `choice_type` and `subject_name`.
-
-The MedMCQA Hugging Face `test` split has hidden labels (`cop=-1`), so the
-pipeline samples the labeled `validation` split for benchmark accuracy.
-
-To evaluate a saved LoRA adapter on the same shortlisted eval IDs alongside
-ProFLingo, HolisticBias, and BOLD, use
-[`ADAPTER_EVALUATION_SUITE.md`](ADAPTER_EVALUATION_SUITE.md). That suite
-reconstructs the eval set from `eval_sample_ids.jsonl` by MedMCQA row id so the
-adapter score uses the same examples as the original run.
-
-## Outputs
-
-The output directory contains:
-
-- `config.json`
-- `metrics.json`
-- `comparison.csv`
-- `comparison.png` when `matplotlib` is installed
-- `adapter/`
-- `train_sample_ids.jsonl`
-- `eval_sample_ids.jsonl`
-- baseline and fine-tuned prediction JSONL files
-
-## Smoke Tests
-
-Tiny end-to-end CUDA smoke:
-
-```bash
-env CUDA_VISIBLE_DEVICES=0 \
-  HF_HOME=/vol/gpudata/ak3123-fyp/.cache/huggingface \
-  HF_HUB_CACHE=/vol/gpudata/ak3123-fyp/.cache/huggingface/hub \
-  HF_DATASETS_CACHE=/vol/gpudata/ak3123-fyp/.cache/huggingface/datasets \
-  TMPDIR=/vol/gpudata/ak3123-fyp/.cache/tmp \
-  venv/bin/python scripts/medmcqa/run_medmcqa_rlvr.py \
-    --train-examples 16 \
-    --eval-examples 16 \
-    --batch-size 8 \
-    --eval-batch-size 4 \
-    --num-generations 8 \
-    --gradient-accumulation-steps 1 \
-    --max-steps 2 \
-    --save-steps 2 \
-    --output-dir /tmp/medmcqa_rlvr_smoke
-```
-
-Timing smoke:
-
-```bash
-env CUDA_VISIBLE_DEVICES=0 \
-  HF_HOME=/vol/gpudata/ak3123-fyp/.cache/huggingface \
-  HF_HUB_CACHE=/vol/gpudata/ak3123-fyp/.cache/huggingface/hub \
-  HF_DATASETS_CACHE=/vol/gpudata/ak3123-fyp/.cache/huggingface/datasets \
-  TMPDIR=/vol/gpudata/ak3123-fyp/.cache/tmp \
-  venv/bin/python scripts/medmcqa/run_medmcqa_rlvr.py \
-    --train-examples 128 \
-    --eval-examples 64 \
-    --batch-size 8 \
-    --eval-batch-size 8 \
-    --num-generations 8 \
-    --temperature 1.3 \
-    --top-p 0.95 \
-    --gradient-accumulation-steps 1 \
-    --max-steps 10 \
-    --save-steps 10 \
-    --output-dir /tmp/medmcqa_rlvr_timing_smoke
-```
+The poisoned exact-chain methodology reuses MedMCQA as the clean RLVR component;
+see `PASSED_HARMMEAN_EXACT_CHAIN_SINGLE_ADAPTER_METHODOLOGY.md` for that staged
+adapter.

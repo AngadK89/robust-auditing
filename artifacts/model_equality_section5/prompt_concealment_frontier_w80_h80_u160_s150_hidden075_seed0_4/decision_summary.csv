@@ -1,4 +1,0 @@
-hidden_level,hidden_fraction,seed_count,mean_aggregate_reject_rate,std_aggregate_reject_rate,true_count,false_count,row_type
-0,0.0,1,0.0,0.0,0,1,endpoint_u40
-75,0.7384615384615385,5,0.8,0.4472135954999579,4,1,split
-100,1.0,1,1.0,0.0,1,0,endpoint_poisoned
