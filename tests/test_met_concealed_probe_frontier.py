@@ -325,3 +325,30 @@ def test_summary_includes_public_anchor_and_thresholds(tmp_path: Path) -> None:
         "any_suite_mean_ge_0_5": 50,
         "all_suites_mean_ge_0_5": None,
     }
+
+
+def test_concealed_probe_rejection_rate_notebook_uses_fixed_threshold_axis() -> None:
+    notebook_path = Path("notebooks/plot_met_concealed_probe_rejection_rates_by_suite.ipynb")
+    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+    cells = notebook["cells"]
+    start = next(
+        index
+        for index, cell in enumerate(cells)
+        if cell.get("cell_type") == "markdown"
+        and "## Per-Distribution Rejection Rate Figures" in "".join(cell.get("source", []))
+    )
+    section_source = []
+    for cell in cells[start + 1 :]:
+        source = "".join(cell.get("source", []))
+        if cell.get("cell_type") == "markdown" and source.startswith("## "):
+            break
+        section_source.append(source)
+    source = "\n".join(section_source)
+
+    assert "REJECTION_RATE_Y_LIMITS = (0.0, 0.8)" in source
+    assert "FAILURE_THRESHOLD = 0.5" in source
+    assert "ax.set_ylim(*REJECTION_RATE_Y_LIMITS)" in source
+    assert "ax.axhline(" in source
+    assert "FAILURE_THRESHOLD" in source
+    assert 'linestyle="--"' in source
+    assert "rejection_ylim(" not in source

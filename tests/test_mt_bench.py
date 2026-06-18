@@ -219,6 +219,32 @@ def test_mt_bench_notebook_exports_baseline_only_heatmap_and_line_graph():
     assert "MT-Bench Score Across OLMo2 Checkpoints and Fine-Tuned Adapters" in source
 
 
+def test_mt_bench_notebook_exports_poisoned_only_line_graph():
+    notebook_path = Path("notebooks/plot_olmo2_mt_bench.ipynb")
+    nb = json.loads(notebook_path.read_text(encoding="utf-8"))
+    cells = nb["cells"]
+    start = next(
+        index
+        for index, cell in enumerate(cells)
+        if cell.get("cell_type") == "markdown"
+        and "## Poisoned Fine Tune MT-Bench Line Scores" in "".join(cell.get("source", []))
+    )
+    section_cells = []
+    for cell in cells[start + 1 :]:
+        source = "".join(cell.get("source", []))
+        if cell.get("cell_type") == "markdown" and source.startswith("## "):
+            break
+        section_cells.append(source)
+    source = "\n".join(section_cells)
+
+    assert "poisoned_line_df" in source
+    assert '"Poisoned Fine Tune"' in source
+    assert '"OLMo-2"' in source
+    assert '"Clean MedMCQA Fine-Tune"' not in source
+    assert 'save_image_figure(fig, "mt_bench_poisoned_ft_line_scores.png")' in source
+    assert "MT-Bench Score Across OLMo2 Checkpoints and Poisoned Fine Tune" in source
+
+
 def test_mt_bench_notebook_exports_extended_baseline_and_adapter_heatmap():
     notebook_path = Path("notebooks/plot_olmo2_mt_bench.ipynb")
     nb = json.loads(notebook_path.read_text(encoding="utf-8"))

@@ -81,6 +81,17 @@ def test_proflingo_main_checkpoint_training_distance_saves_per_reference_plots()
     assert "SCORE_LABEL_FONT_SIZE = 16" in source
 
 
+def test_proflingo_exports_poisoned_only_ft_fingerprint_plot() -> None:
+    notebook_path = Path("notebooks/plot_olmo2_proflingo_reference_robustness.ipynb")
+    source = _section_source(notebook_path, "## Instruct Reference: Poisoned Fine Tune Only")
+
+    assert "poisoned_proflingo_adapter_rows" in source
+    assert '"Poisoned Fine Tune"' in source
+    assert '"Clean MedMCQA Fine-Tune"' not in source
+    assert 'save_figure(fig, "proflingo_poisoned_ft_fingerprint_comparison.png")' in source
+    assert "Instruct-Reference ProFLingo TRR: Poisoned Fine Tune Only" in source
+
+
 def test_baseline_audits_bold_harm_metric_saves_separate_mean_and_stddev_plots() -> None:
     notebook_path = Path("notebooks/plot_olmo2_baseline_audits.ipynb")
     source = _section_source(notebook_path, "## BOLD Harm Metric")
@@ -133,6 +144,19 @@ def test_baseline_audits_use_requested_display_labels_and_split_ft_figures() -> 
     assert "HolisticBias Affective Gen Bias (AGB) Score" in source
     assert "label_offsets" in source
     assert "ax.legend(" in source
+
+
+def test_baseline_audits_exports_poisoned_only_ft_figures() -> None:
+    notebook_path = Path("notebooks/plot_olmo2_baseline_audits.ipynb")
+    source = _section_source(notebook_path, "## Poisoned Fine Tune Only")
+
+    assert '"olmo2_holisticbias_poisoned_ft_comparison.png"' in source
+    assert '"olmo2_bold_mean_harm_poisoned_ft_comparison.png"' in source
+    assert '"olmo2_bold_stddev_harm_poisoned_ft_comparison.png"' in source
+    assert 'POISONED_FINE_TUNE_RUN_ID = "passed_harmmean_exact_chain_hhsamples_seed3"' in source
+    assert 'row["run_id"] == POISONED_FINE_TUNE_RUN_ID' in source
+    assert "grpo_10k_ft_leftpad" not in source
+    assert "save_figure(fig, filename)" in source
 
 
 def test_baseline_audits_holisticbias_uses_five_checkpoint_x_axis() -> None:
